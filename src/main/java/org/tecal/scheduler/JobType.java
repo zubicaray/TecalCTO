@@ -28,10 +28,12 @@ public class JobType {
 
 
 	// task qui permettent au pont se s'en aller ailleurs
-	List<TaskOrdo> tasksAllowP1;
+	// !!!!!!!!!!
+	// elles comprennent les zone slongues et des portions de zones regroupées "non overlapable"
+	List<TaskOrdo> tasksOverlapableP1;
 	// dates d'entrée et de sortie du pont 2 sur toutes les zones après ANODISATION
-	List<TaskOrdo> tasksAllowP2;
-	List<List<TaskOrdo>> tasksAllowMove;
+	List<TaskOrdo> tasksOverlapableP2;
+	List<List<TaskOrdo>> tasksOverlapablePont;
 
 	// dates d'entrée et de sortie du pont 1 sur toutes les zones avant anodisation
 	List<IntVar> mvtP1;
@@ -67,6 +69,63 @@ public class JobType {
 	ListeZone zonesRegroupeesP1;
 	ListeZone zonesRegroupeesP2;
 	ArrayListeZonePonts zonesRegroupeesPonts;
+	
+	
+
+	JobType(int jobid, String inname, CpModel inModel) {
+
+		model = inModel;
+		jobId = jobid;
+		name = inname;
+		
+		tasksOverlapableP1= new ArrayList<TaskOrdo>();
+		// dates d'entrée et de sortie du pont 2 sur toutes les zones après ANODISATION
+		tasksOverlapableP2= new ArrayList<TaskOrdo>();
+		tasksOverlapablePont =new ArrayList< List<TaskOrdo>>();
+		tasksOverlapablePont.add(tasksOverlapableP1);
+		tasksOverlapablePont.add(tasksOverlapableP2);
+		
+
+		mvtP1 = new ArrayList<IntVar>();
+		mvtP2 = new ArrayList<IntVar>();
+
+		idRegroupeesP1 = new ArrayList<int[]>();
+		idRegroupeesP2 = new ArrayList<int[]>();
+
+		idRegroupeesPont = new ArrayList<List<int[]>>();
+		idRegroupeesPont.add(idRegroupeesP1);
+		idRegroupeesPont.add(idRegroupeesP2);
+
+		idLonguePont = new ArrayList<List<int[]>>();
+		idLongueP1 = new ArrayList<int[]>();
+		idLongueP2 = new ArrayList<int[]>();
+		idLonguePont.add(idLongueP1);
+		idLonguePont.add(idLongueP2);
+
+		mvts = new ArrayList<List<IntVar>>();
+		mvts.add(mvtP1);
+		mvts.add(mvtP2);
+
+		coordsRegroupeesP1 = new CoordsRincage();
+		coordsRegroupeesP2 = new CoordsRincage();
+		coordsRegroupeesPonts = new ArrayCoordsRincagePonts();
+		coordsRegroupeesPonts.add(coordsRegroupeesP1);
+		coordsRegroupeesPonts.add(coordsRegroupeesP2);
+
+		zonesRegroupeesP1 = new ListeZone();
+		zonesRegroupeesP2 = new ListeZone();
+		zonesRegroupeesPonts = new ArrayListeZonePonts();
+		zonesRegroupeesPonts.add(zonesRegroupeesP1);
+		zonesRegroupeesPonts.add(zonesRegroupeesP2);
+
+		zonesLonguesP1 = new ListeZone();
+		zonesLonguesP2 = new ListeZone();
+		zonesLonguesPonts = new ArrayListeZonePonts();
+		zonesLonguesPonts.add(zonesLonguesP1);
+		zonesLonguesPonts.add(zonesLonguesP2);
+
+	}
+	
 
 	public void printNoOverlapZones() {
 		int pont = 0;
@@ -139,51 +198,6 @@ public class JobType {
 
 	}
 
-	JobType(int jobid, String inname, CpModel inModel) {
-
-		model = inModel;
-		jobId = jobid;
-		name = inname;
-
-		mvtP1 = new ArrayList<IntVar>();
-		mvtP2 = new ArrayList<IntVar>();
-
-		idRegroupeesP1 = new ArrayList<int[]>();
-		idRegroupeesP2 = new ArrayList<int[]>();
-
-		idRegroupeesPont = new ArrayList<List<int[]>>();
-		idRegroupeesPont.add(idRegroupeesP1);
-		idRegroupeesPont.add(idRegroupeesP2);
-
-		idLonguePont = new ArrayList<List<int[]>>();
-		idLongueP1 = new ArrayList<int[]>();
-		idLongueP2 = new ArrayList<int[]>();
-		idLonguePont.add(idLongueP1);
-		idLonguePont.add(idLongueP2);
-
-		mvts = new ArrayList<List<IntVar>>();
-		mvts.add(mvtP1);
-		mvts.add(mvtP2);
-
-		coordsRegroupeesP1 = new CoordsRincage();
-		coordsRegroupeesP2 = new CoordsRincage();
-		coordsRegroupeesPonts = new ArrayCoordsRincagePonts();
-		coordsRegroupeesPonts.add(coordsRegroupeesP1);
-		coordsRegroupeesPonts.add(coordsRegroupeesP2);
-
-		zonesRegroupeesP1 = new ListeZone();
-		zonesRegroupeesP2 = new ListeZone();
-		zonesRegroupeesPonts = new ArrayListeZonePonts();
-		zonesRegroupeesPonts.add(zonesRegroupeesP1);
-		zonesRegroupeesPonts.add(zonesRegroupeesP2);
-
-		zonesLonguesP1 = new ListeZone();
-		zonesLonguesP2 = new ListeZone();
-		zonesLonguesPonts = new ArrayListeZonePonts();
-		zonesLonguesPonts.add(zonesLonguesP1);
-		zonesLonguesPonts.add(zonesLonguesP2);
-
-	}
 
 	void ComputeZonesNoOverlap(int jobID, Map<List<Integer>, TaskOrdo> allTasks) {
 
@@ -232,6 +246,15 @@ public class JobType {
 
 
 			}
+			
+
+		}
+
+	}
+	void ComputeZonesLongues(int jobID, Map<List<Integer>, TaskOrdo> allTasks) {
+
+		for (int pont = 0; pont < idRegroupeesPont.size(); pont++) {
+			
 			// zones chevauchables
 			for (int chevauID = 0; chevauID < idLonguePont.get(pont).size(); ++chevauID) {
 

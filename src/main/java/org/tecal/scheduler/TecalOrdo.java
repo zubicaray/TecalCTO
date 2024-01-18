@@ -1,23 +1,4 @@
-// Copyright 2010-2022 Google LLC
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-// Minimal example to call the GLOP solver.
-// [START program]
-
 package org.tecal.scheduler;
-//package com.google.ortools.sat.samples;
-
-
 
 import com.google.ortools.Loader;
 import com.google.ortools.sat.CpModel;
@@ -35,7 +16,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 
 
 
@@ -92,71 +72,6 @@ class ZonesIntervalVar extends ArrayList<IntervalVar> {	private static final lon
 class ListeZone extends ArrayList<IntervalVar> {	private static final long serialVersionUID = 1L;}
 class ArrayListeZonePonts   extends ArrayList<ListeZone>{	private static final long serialVersionUID = 1L;};
 
-
-class TaskOrdo {
-
-
-	IntVar startBDD;
-	IntVar endBDD;
-	IntVar derive;
-	IntVar arriveePont;
-	//interval théorique
-	IntervalVar intervalBDD;
-	
-	//réel , qui inttègre les contraintes du pont
-	IntVar deb;
-	IntVar fin;
-	IntervalVar intervalReel;
-
-	//dérive aux postes entre deux task d'un même job
-	IntervalVar deriveInt;  
-	// temps incompresible d'arrivée du pont
-	IntervalVar intArriveePont;
-
-	//List<IntervalVar> zoneRegroupees=new ArrayList<>();
-
-
-
-	TaskOrdo(CpModel model,int horizon,int duration,int inderive,String suffix){
-		startBDD = model.newIntVar(0, horizon, "start" + suffix);        
-		endBDD = model.newIntVar(0, horizon, "end" + suffix);
-		derive = model.newIntVar(0, horizon,  "derive_" + suffix);
-		arriveePont = model.newIntVar(0, horizon,  "pontArrive_" + suffix);
-		intervalBDD = model.newIntervalVar(
-				startBDD, LinearExpr.constant(duration),endBDD, "interval" + suffix);
-
-		
-		inderive-=Constantes.TEMPS_MVT_PONT_MIN;
-		inderive=Math.max(Constantes.TEMPS_MVT_PONT_MIN,inderive);
-
-		
-		intArriveePont = model.newIntervalVar(endBDD, LinearExpr.constant(Constantes.TEMPS_MVT_PONT_MIN), arriveePont, "intPontArrive" + suffix);
-		
-		
-		deriveInt = model.newIntervalVar(
-					arriveePont, LinearExpr.constant(inderive), derive, "derive" + suffix);
-
-		
-		//  !!
-		// avec un temps d'arrivée au pont de 15 secondes
-		// et une dérive théorique 15 secondes minimum
-		// cela fait une dérive réelle de 15 secondes au minimum 
-		// et une dérive réelle de 30 secondes max pour une dérive théorique nullu
-
-
-		deb=model.newIntVar(0, horizon, "deb_nooverlap");
-		fin=model.newIntVar(0, horizon, "fin_nooverlap");
-
-		model.newIntervalVar(deb,LinearExpr.constant(Constantes.TEMPS_MVT_PONT_MIN),startBDD,"");             
-		model.newIntervalVar(endBDD,LinearExpr.constant(Constantes.TEMPS_MVT_PONT_MIN),fin,"");           
-		intervalReel=model.newIntervalVar(deb,model.newIntVar(0, horizon,  ""),fin,"");
-		
-
-
-	}
-
-
-}
 
 /** Minimal Jobshop problem. */
 public class TecalOrdo {
@@ -216,7 +131,10 @@ public class TecalOrdo {
 		}
 
 		for (int jobID = 0; jobID < allJobs.size(); ++jobID) {
-			allJobs.get(jobID).ComputeZonesNoOverlap(jobID, allTasks);      
+			
+			allJobs.get(jobID).ComputeZonesNoOverlap(jobID, allTasks);  
+			allJobs.get(jobID).ComputeZonesLongues(jobID, allTasks);  
+			
 			allJobs.get(jobID).printNoOverlapZones();
 		}
 
@@ -253,13 +171,13 @@ public class TecalOrdo {
 		//--------------------------------------------------------------------------------------------
 		// les zones de rincages ne doivent pas se croiser
 
-		ArrayList<ZonesIntervalVar> listListeZonesParPont  = new  ArrayList<ZonesIntervalVar>();  
-		listListeZonesParPont.add( new  ZonesIntervalVar()); // add zones pont 1
-		listListeZonesParPont.add( new  ZonesIntervalVar()); // add zones pont 2
+		ArrayList<ZonesIntervalVar> listZonesNoOverlapParPont  = new  ArrayList<ZonesIntervalVar>();  
+		listZonesNoOverlapParPont.add( new  ZonesIntervalVar()); // add zones pont 1
+		listZonesNoOverlapParPont.add( new  ZonesIntervalVar()); // add zones pont 2
 
-		ArrayList<ZonesIntervalVar> listListeZonesParPont2  = new  ArrayList<ZonesIntervalVar>();  
-		listListeZonesParPont2.add( new  ZonesIntervalVar()); // add zones pont 1
-		listListeZonesParPont2.add( new  ZonesIntervalVar()); // add zones pont 2
+		ArrayList<ZonesIntervalVar> listZonesLonguesParPont  = new  ArrayList<ZonesIntervalVar>();  
+		listZonesLonguesParPont.add( new  ZonesIntervalVar()); // add zones pont 1
+		listZonesLonguesParPont.add( new  ZonesIntervalVar()); // add zones pont 2
 
 		
 		//---------------------------------------------------------------------------
@@ -267,13 +185,13 @@ public class TecalOrdo {
 		for (JobType j  :allJobs) { 
 			int p=0;    	
 			for(ListeZone zonesRegroupeesP :j.zonesRegroupeesPonts) {   
-				listListeZonesParPont.get(p).addAll(zonesRegroupeesP);   
+				listZonesNoOverlapParPont.get(p).addAll(zonesRegroupeesP);   
 				p++;
 			}
 
 
 		}
-		for(ArrayList<IntervalVar> z: listListeZonesParPont) {
+		for(ArrayList<IntervalVar> z: listZonesNoOverlapParPont) {
 			model.addNoOverlap(z);
 		}
 
@@ -282,14 +200,14 @@ public class TecalOrdo {
 		for (JobType j  :allJobs) { 
 			int p=0;    	
 			for(ListeZone zonesLonguesP :j.zonesLonguesPonts) {   
-				listListeZonesParPont2.get(p).addAll(zonesLonguesP);   
+				listZonesLonguesParPont.get(p).addAll(zonesLonguesP);   
 				p++;
 			}
 
 
 		}
-		for(ArrayList<IntervalVar> z: listListeZonesParPont2) {
-			model.addNoOverlap(z);
+		for(ArrayList<IntervalVar> z: listZonesLonguesParPont) {
+			//model.addNoOverlap(z);
 		}
 
 		//---------------------------------------------------------------------------
