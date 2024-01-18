@@ -1,7 +1,7 @@
 package org.tecal.scheduler;
 
 
-public class Constantes {
+public class CST {
 	
 	// temps min du zone pour qu'on la considere overlapable
 	// ie qu'elle autorise d'aller d'autre mvt pendant son traitement
@@ -16,5 +16,6 @@ public class Constantes {
 	//--------------------------------------------------------------
 	public final static boolean PrintTaskTime =false;
 	public final static int ANODISATION_NUMZONE =15;
+	public final static int NB_PONTS =2;
 	
 }

@@ -7,7 +7,6 @@ import com.google.ortools.sat.CpSolverStatus;
 import com.google.ortools.sat.CumulativeConstraint;
 import com.google.ortools.sat.IntVar;
 import com.google.ortools.sat.IntervalVar;
-import com.google.ortools.sat.LinearExpr;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,19 +17,25 @@ import java.util.List;
 import java.util.Map;
 
 
-
 import javax.swing.SwingUtilities;  
-
 import org.jfree.ui.RefineryUtilities;
-
 import org.tecal.scheduler.SQL_Anodisation.ZoneType;
 
+
+class CoordsRincage 			extends ArrayList<IntVar[]> 	{	private static final long serialVersionUID = 1L;}
+class ArrayCoordsRincagePonts   extends ArrayList<CoordsRincage>{	private static final long serialVersionUID = 1L;}
+class ZonesIntervalVar 			extends ArrayList<IntervalVar> 	{	private static final long serialVersionUID = 1L;}
+class ListeZone 				extends ArrayList<IntervalVar> 	{	private static final long serialVersionUID = 1L;}
+class ArrayListeZonePonts   	extends ArrayList<ListeZone>	{	private static final long serialVersionUID = 1L;}
+class ListeTaskOrdo				extends ArrayList<TaskOrdo> 	{	private static final long serialVersionUID = 1L;}
+
+
 class AssignedTask {
-	//id OF/GAMME propre à OR
+	//id OF/GAMME propre à G.OR
 	int jobID;
 	//id zone  propre à G.OR
 	int taskID;  
-	// cpt ,zone id, de la table ZONE (cpt "sans trou")
+	// numzone de la table ZONE
 	int numzone;
 	int start;
 	int duration;    
@@ -66,11 +71,7 @@ class Task {
 	}
 }
 
-class CoordsRincage extends ArrayList<IntVar[]> {	private static final long serialVersionUID = 1L;}
-class ArrayCoordsRincagePonts   extends ArrayList<CoordsRincage>{	private static final long serialVersionUID = 1L;};
-class ZonesIntervalVar extends ArrayList<IntervalVar> {	private static final long serialVersionUID = 1L;}
-class ListeZone extends ArrayList<IntervalVar> {	private static final long serialVersionUID = 1L;}
-class ArrayListeZonePonts   extends ArrayList<ListeZone>{	private static final long serialVersionUID = 1L;};
+
 
 
 /** Minimal Jobshop problem. */
@@ -132,10 +133,11 @@ public class TecalOrdo {
 
 		for (int jobID = 0; jobID < allJobs.size(); ++jobID) {
 			
-			allJobs.get(jobID).ComputeZonesNoOverlap(jobID, allTasks);  
+			allJobs.get(jobID).ComputeZonesRegroupables(jobID, allTasks);  
 			allJobs.get(jobID).ComputeZonesLongues(jobID, allTasks);  
 			
-			allJobs.get(jobID).printNoOverlapZones();
+			//allJobs.get(jobID).printNoOverlapZones();
+			
 		}
 
 		//--------------------------------------------------------------------------------------------
@@ -249,7 +251,7 @@ public class TecalOrdo {
 				List<Integer> nextKey = Arrays.asList(jobID, taskID + 1);
 
 				model.addGreaterOrEqual(allTasks.get(nextKey).deb, allTasks.get(prevKey).fin);
-				//IntVar deadl=model.new
+				
 				model.addLessOrEqual(allTasks.get(nextKey).deb, allTasks.get(prevKey).derive);
 
 				model.addGreaterThan(allTasks.get(nextKey).deb, allTasks.get(prevKey).arriveePont);
@@ -286,10 +288,9 @@ public class TecalOrdo {
 
 		if (status == CpSolverStatus.OPTIMAL || status == CpSolverStatus.FEASIBLE) {
 
-
-
 			for (int jobID = 0; jobID < allJobs.size(); ++jobID) {
-				allJobs.get(jobID).printZoneTimes(solver);
+				//allJobs.get(jobID).printZoneTimes(solver);
+				//allJobs.get(jobID).printMvtsPonts(solver);
 			}
 
 
@@ -307,7 +308,7 @@ public class TecalOrdo {
 					assignedJobs.get(task.numzone).add(assignedTask);
 				}
 			}
-			if(Constantes.PrintTaskTime) {
+			if(CST.PrintTaskTime) {
 				// Create per Zone output lines.
 				String output = "";
 				for (int numzone : numzoneArr) {

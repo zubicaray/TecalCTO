@@ -9,10 +9,10 @@ class GammeType {
     int time;
     int start;
     int derive;   
-    int nonChevauchementPont;
+    int id_regroupement_bdd;
     int cumul;
     GammeType(String numgamme,String codezone,int numligne,int numzone,
-    		int time,int idzone,int derive,   int nonChevauchementPont,int cumul) {
+    		int time,int idzone,int derive,   int id_regroupement_bdd,int cumul) {
         this.numgamme = numgamme;
         this.codezone = codezone;
         this.numligne = numligne;
@@ -20,7 +20,7 @@ class GammeType {
         this.time = time;
         this.idzonebdd = idzone;
         this.derive=derive;
-        this.nonChevauchementPont=nonChevauchementPont;
+        this.id_regroupement_bdd=id_regroupement_bdd;
         this.cumul=cumul;
         
       }

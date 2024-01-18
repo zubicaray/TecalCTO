@@ -29,25 +29,30 @@ class TaskOrdo {
 	boolean isOverlapable=false;
 
 
-
 	TaskOrdo(CpModel model,int horizon,int duration,int inderive,String suffix){
 		startBDD = model.newIntVar(0, horizon, "start" + suffix);        
 		endBDD = model.newIntVar(0, horizon, "end" + suffix);
 		derive = model.newIntVar(0, horizon,  "derive_" + suffix);
 		arriveePont = model.newIntVar(0, horizon,  "pontArrive_" + suffix);
-		intervalBDD = model.newIntervalVar(
-				startBDD, LinearExpr.constant(duration),endBDD, "interval" + suffix);
+		intervalBDD = model.newIntervalVar(startBDD, LinearExpr.constant(duration),endBDD, "interval" + suffix);
 
 		
-		inderive-=Constantes.TEMPS_MVT_PONT_MIN;
-		inderive=Math.max(Constantes.TEMPS_MVT_PONT_MIN,inderive);
+		if(inderive+duration>=CST.TEMPS_ZONE_OVERLAP_MIN){
+			isOverlapable=true;
+		}
+		
+		inderive-=CST.TEMPS_MVT_PONT_MIN;
+		inderive=Math.max(CST.TEMPS_MVT_PONT_MIN,inderive);
 
 		
-		intArriveePont = model.newIntervalVar(endBDD, LinearExpr.constant(Constantes.TEMPS_MVT_PONT_MIN), arriveePont, "intPontArrive" + suffix);
+		intArriveePont = model.newIntervalVar(endBDD, LinearExpr.constant(CST.TEMPS_MVT_PONT_MIN), arriveePont, "intPontArrive" + suffix);
 		
 		
-		deriveInt = model.newIntervalVar(
-					arriveePont, LinearExpr.constant(inderive), derive, "derive" + suffix);
+		// !!!!!!!!!!!
+		// NE PAS ajouter cet interval à la méthode addNoOverlap
+		// il sera ajouter mais pourra être réduit à nul si besoin
+		// cf model.addLessOrEqual(allTasks.get(nextKey).deb, allTasks.get(prevKey).derive);
+		deriveInt = model.newIntervalVar(arriveePont, LinearExpr.constant(inderive), derive, "derive" + suffix);
 
 		
 		//  !!
@@ -60,8 +65,8 @@ class TaskOrdo {
 		deb=model.newIntVar(0, horizon, "deb_nooverlap");
 		fin=model.newIntVar(0, horizon, "fin_nooverlap");
 
-		model.newIntervalVar(deb,LinearExpr.constant(Constantes.TEMPS_MVT_PONT_MIN),startBDD,"");             
-		model.newIntervalVar(endBDD,LinearExpr.constant(Constantes.TEMPS_MVT_PONT_MIN),fin,"");           
+		model.newIntervalVar(deb,LinearExpr.constant(CST.TEMPS_MVT_PONT_MIN),startBDD,"");             
+		model.newIntervalVar(endBDD,LinearExpr.constant(CST.TEMPS_MVT_PONT_MIN),fin,"");           
 		intervalReel=model.newIntervalVar(deb,model.newIntVar(0, horizon,  ""),fin,"");
 		
 

@@ -170,7 +170,7 @@ public HashMap<String, ArrayList<GammeType> >  getGammesZones() {
         String selectSql = ""
         		+ "select \r\n"
         		+ "	CONCAT(DC.NumBarre,'-',DC.NumGammeAnodisation),Z.CodeZone,numligne ,Z.numzone, TempsAuPosteSecondes+TempsEgouttageSecondes, \r\n"
-        		+ " Z.NonChevauchementPont,Z.derive,Z.NumDernierPoste-Z.NumPremierPoste+1 as cumul  "
+        		+ " Z.ID_GROUPEMENT,Z.derive,Z.NumDernierPoste-Z.NumPremierPoste+1 as cumul  "
         		+ "from  \r\n"
         		+ "	[Anodisation_secours].[dbo].[DetailsGammesAnodisation]  DG\r\n"
         		+ "	INNER JOIN [Anodisation_secours].[dbo].ZONES Z\r\n"
