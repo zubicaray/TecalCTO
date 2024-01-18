@@ -1,0 +1,55 @@
+	
+    
+   
+    for (int jobID = 0; jobID < allJobs.size()-1; ++jobID) {
+    	 JobType j1=allJobs.get(jobID);
+    	 for (int jobID2 = jobID+1; jobID2 < allJobs.size(); ++jobID2) {
+    		 
+    		 //if(jobID2==jobID) continue;
+    		 
+    		 JobType j2=allJobs.get(jobID2);
+    		 
+    		 for( IntVar mvtJ1: j1.mvtP1) {
+    			 for( IntVar mvtJ2: j2.mvtP1) {
+    				 
+    				 BoolVar b = model.newBoolVar("");
+    				 IntervalVar inter=model.newIntervalVar(mvtJ1,  
+    		   	      			model.newIntVar(0,100,""), model.newIntVar(0,horizon,""),
+    		   	      			"");
+    				 IntervalVar inter2=model.newIntervalVar(mvtJ2,  
+ 		   	      			model.newIntVar(0,100,""), model.newIntVar(0,horizon,""),
+ 		   	      			"");
+    				 
+    				 model.addGreaterThan(mvtJ2, inter.getEndExpr()).onlyEnforceIf(b);
+    				 model.addGreaterThan(mvtJ1, inter2.getEndExpr()).onlyEnforceIf(b.not());
+    				
+    				 
+    			 }
+    			 
+    		 }
+    	 }
+
+    }
+    
+    
+    
+    for (int idAllZones : allZones) {
+    	if( zoneToIntervals.containsKey(idAllZones)) {
+    		 List<IntervalVar> list = zoneToIntervals.get(idAllZones);
+    	        for (int taskID = 0; taskID < list.size() - 1; ++taskID) {
+    	        	IntervalVar prevKey = list.get(taskID);
+    	        	IntervalVar nextKey = list.get( taskID + 1);    	        	
+    	        	
+    	        	IntervalVar inter=model.newIntervalVar(prevKey.getEndExpr(),   
+    	        			LinearExpr.constant(90), model.newIntVar(0,horizon,"duréeEntreTache"),
+    	   	      			"zone_rincage_"+idAllZones+"_"+taskID+"_"+(taskID+1));
+    	        	
+    	        	model.addGreaterThan(nextKey.getStartExpr(), inter.getEndExpr());
+    	        	
+    	        	
+    	        }
+    	}
+       
+        
+    }
+    
