@@ -67,7 +67,7 @@ class TaskOrdo {
 
 		model.newIntervalVar(deb,LinearExpr.constant(CST.TEMPS_MVT_PONT_MIN),startBDD,"");             
 		model.newIntervalVar(endBDD,LinearExpr.constant(CST.TEMPS_MVT_PONT_MIN),fin,"");           
-		intervalReel=model.newIntervalVar(deb,model.newIntVar(0, horizon,  ""),fin,"");
+		intervalReel=model.newIntervalVar(deb,model.newIntVar(0, horizon,  ""),derive,"");
 		
 
 

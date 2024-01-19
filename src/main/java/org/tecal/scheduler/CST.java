@@ -10,12 +10,14 @@ public class CST {
 	public final static int TEMPS_MVT_PONT_MIN = 15;
 	//temps entre les différentes "zones regroupées"	
 	public final static int GAP_ZONE_NOOVERLAP =TEMPS_MVT_PONT_MIN*4;
-	public final static int TEMPS_MIN_DERIVE =15;	
+	//public final static int TEMPS_MIN_DERIVE =10;	
+	
+	public final static int TEMPS_MVT_PONT =15;	
 	
 	
 	//--------------------------------------------------------------
 	public final static boolean PrintTaskTime =false;
-	public final static int ANODISATION_NUMZONE =15;
+	public final static int ANODISATION_NUMZONE =30;
 	public final static int NB_PONTS =2;
 	
 }

@@ -267,7 +267,8 @@ public class GanttChart extends ApplicationFrame {
 			    			 dr[0],dr[0] ,dr[1] );
 			    }
 		    
-			    labelsModel.get(idjob)[cpt1]="start:"+at.start+", durée:"+at.duration+", fin:"+(at.duration+at.start)+ " " +df.get(at.taskID).codezone;
+			    labelsModel.get(idjob)[cpt1]="start:"+at.start+", durée:"+at.duration+"\n, fin:"+(at.duration+at.start)
+			    		+ " dérive: " +at.derive+ ", " +df.get(at.taskID).codezone;
 			    cpt1++;    
 			 
 			 };

@@ -21,7 +21,7 @@ import javax.swing.SwingUtilities;
 import org.jfree.ui.RefineryUtilities;
 import org.tecal.scheduler.SQL_Anodisation.ZoneType;
 
-
+class Coord 			        extends ArrayList<IntVar> 	{	private static final long serialVersionUID = 1L;}
 class CoordsRincage 			extends ArrayList<IntVar[]> 	{	private static final long serialVersionUID = 1L;}
 class ArrayCoordsRincagePonts   extends ArrayList<CoordsRincage>{	private static final long serialVersionUID = 1L;}
 class ZonesIntervalVar 			extends ArrayList<IntervalVar> 	{	private static final long serialVersionUID = 1L;}
@@ -39,15 +39,17 @@ class AssignedTask {
 	int numzone;
 	int start;
 	int duration;    
+	int derive;    
 	// offset pour les zones cumul
 	int IdPosteZoneCumul;
 	// Ctor
-	AssignedTask(int jobID, int taskID, int numzone,int start, int duration) {
+	AssignedTask(int jobID, int taskID, int numzone,int start, int duration,int derive) {
 		this.jobID = jobID;
 		this.taskID = taskID;
 		this.start = start;
 		this.duration = duration;
 		this.numzone=numzone;
+		this.derive=derive;
 	}
 }
 class SortTasks implements Comparator<AssignedTask> {
@@ -168,6 +170,30 @@ public class TecalOrdo {
 
 
 		}
+		
+		ArrayListeZonePonts mvtsPonts =new ArrayListeZonePonts();
+			
+		for(int pont=0;pont<CST.NB_PONTS;pont++) {
+			mvtsPonts.add(new ListeZone());
+		}
+			
+		for (int jobID = 0; jobID < allJobs.size(); ++jobID) {
+			
+			ArrayListeZonePonts mvtsPontsJob=allJobs.get(jobID).mvtsToInterval();
+			for(int pont=0;pont<CST.NB_PONTS;pont++) {
+				mvtsPonts.get(pont).addAll(mvtsPontsJob.get(pont));
+			}
+		}
+		for(int pont=0;pont<CST.NB_PONTS;pont++) {
+			model.addNoOverlap(mvtsPonts.get(pont)); 
+		}
+		
+		
+
+			
+		
+		
+		
 		//--------------------------------------------------------------------------------------------
 		// CONSTRAINTES SUR CHAQUE POSTE
 		//--------------------------------------------------------------------------------------------
@@ -208,9 +234,7 @@ public class TecalOrdo {
 
 
 		}
-		for(ArrayList<IntervalVar> z: listZonesLonguesParPont) {
-			//model.addNoOverlap(z);
-		}
+		//for(ArrayList<IntervalVar> z: listZonesLonguesParPont) {	model.addNoOverlap(z);		}
 
 		//---------------------------------------------------------------------------
 		//---------------------------------------------------------------------------
@@ -289,7 +313,7 @@ public class TecalOrdo {
 		if (status == CpSolverStatus.OPTIMAL || status == CpSolverStatus.FEASIBLE) {
 
 			for (int jobID = 0; jobID < allJobs.size(); ++jobID) {
-				//allJobs.get(jobID).printZoneTimes(solver);
+				allJobs.get(jobID).printZoneTimes(solver);
 				//allJobs.get(jobID).printMvtsPonts(solver);
 			}
 
@@ -303,7 +327,9 @@ public class TecalOrdo {
 					Task task = job.get(taskID);
 					List<Integer> key = Arrays.asList(jobID, taskID);
 					AssignedTask assignedTask = new AssignedTask(
-							jobID, taskID, task.numzone,(int) solver.value(allTasks.get(key).deb), task.duration);
+							jobID, taskID, task.numzone,
+							(int) solver.value(allTasks.get(key).deb), 
+							task.duration,(int) solver.value(allTasks.get(key).intervalReel.getEndExpr()));
 					assignedJobs.computeIfAbsent(task.numzone, (Integer k) -> new ArrayList<>());
 					assignedJobs.get(task.numzone).add(assignedTask);
 				}

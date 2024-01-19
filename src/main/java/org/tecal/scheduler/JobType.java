@@ -25,6 +25,7 @@ public class JobType {
 
 	int jobId;
 	String name;
+	int indexAnod=-1;;
 
 
 	// task qui permettent au pont se s'en aller ailleurs
@@ -33,7 +34,7 @@ public class JobType {
 	List<ListeTaskOrdo> tasksOverlapablePont;
 
 	// dates d'entrée et de sortie du pont 1 sur toutes les zones avant anodisation
-	List<List<IntVar>> mvts;
+	List<Coord> mvts;
 
 	List<GammeType> zones;
 	
@@ -70,7 +71,7 @@ public class JobType {
 
 		idLonguePont = new ArrayList<List<int[]>>();				
 		
-		mvts = new ArrayList<List<IntVar>>();		
+		mvts = new ArrayList<Coord>();		
 		
 		coordsRegroupeesPonts = new ArrayCoordsRincagePonts();
 
@@ -91,7 +92,7 @@ public class JobType {
 			idLonguePont.add(idLongue);
 			
 			
-			ArrayList<IntVar>mvt = new ArrayList<IntVar>();
+			Coord mvt = new Coord();
 			mvts.add(mvt);
 			
 			CoordsRincage coordsRegroupees = new CoordsRincage();
@@ -219,6 +220,43 @@ public class JobType {
 	}
 
 
+	ArrayListeZonePonts mvtsToInterval() {
+		ArrayListeZonePonts res= new ArrayListeZonePonts();
+		
+		for(Coord mvtPont: mvts) {
+			ListeZone listePont=new ListeZone();
+			for(IntVar coord:mvtPont) {
+				
+				IntervalVar deb= model.newIntervalVar(
+						model.newIntVar(0, horizon,  ""),
+						LinearExpr.constant(CST.TEMPS_MVT_PONT), 
+						coord, 
+						"");
+				IntervalVar fin= model.newIntervalVar(
+						model.newIntVar(0, horizon,  ""),
+						LinearExpr.constant(CST.TEMPS_MVT_PONT), 
+						coord, 
+						"");
+				
+				IntervalVar inter= model.newIntervalVar(deb.getStartExpr(),
+						model.newIntVar(0, horizon,  ""),
+						fin.getEndExpr(), 
+						"");
+						
+				
+				listePont.add(inter);
+				
+				
+			}
+			res.add(listePont);
+		}
+		
+		
+		
+		return res;
+		
+	}
+	
 	void ComputeZonesRegroupables(int jobID, Map<List<Integer>, TaskOrdo> allTasks) {
 
 		for (int pont = 0; pont < idRegroupeesPont.size(); pont++) {
@@ -236,13 +274,19 @@ public class JobType {
 					List<Integer> key = Arrays.asList(jobID, i);
 					TaskOrdo taskOrdo = allTasks.get(key);
 					// on ajoute tous les mouvement du pont concerné
-					mvts.get(pont).add(taskOrdo.deb);
-					mvts.get(pont).add(taskOrdo.fin);
+					
+					
 
-					if (i == idDebZone)
+					if (i == idDebZone) {
+						mvts.get(pont).add(taskOrdo.deb);
 						start = taskOrdo.deb;
-					if (i == idFinZone)
+					}
+						
+					if (i == idFinZone) {
+						//mvts.get(pont).add(taskOrdo.arriveePont);
 						end = taskOrdo.fin;
+					}
+						
 				}
 
 				IntVar[] coord = { start, end };
@@ -277,6 +321,9 @@ public class JobType {
 		}
 
 	}
+	//TODO:
+	// ajout deb anodisation aux mvts du pont 1
+	// ajout fin anodisation aux mvts du pont 2
 	void ComputeZonesLongues(int jobID, Map<List<Integer>, TaskOrdo> allTasks) {
 
 		for (int pont = 0; pont < idRegroupeesPont.size(); pont++) {
@@ -293,7 +340,7 @@ public class JobType {
 				
 				// on ajoute tous les mouvement du pont concerné
 				mvts.get(pont).add(taskOrdo.deb);
-				mvts.get(pont).add(taskOrdo.derive);
+				//mvts.get(pont).add(taskOrdo.arriveePont);
 
 				start = taskOrdo.deb;
 
