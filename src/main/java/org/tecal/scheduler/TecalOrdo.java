@@ -78,12 +78,29 @@ class Task {
 
 /** Minimal Jobshop problem. */
 public class TecalOrdo {
+	
+
 	public static void main(String[] args) {
+		
+		
+		
+		SQL_Anodisation sqlCnx = new SQL_Anodisation();
+		if(CST.PRINT_PROD_DIAG)
+		SwingUtilities.invokeLater(() -> {  
+
+			 final GanttChart ganttTecal = new GanttChart(sqlCnx,"Gantt Chart prod du 02/11/2023");
+			 ganttTecal.prod_diag();
+			 ganttTecal.pack();
+			 ganttTecal.setSize(new java.awt.Dimension(1500, 870));
+		     RefineryUtilities.centerFrameOnScreen(ganttTecal);
+		     ganttTecal.setVisible(true);
+
+		});
 		Loader.loadNativeLibraries();
 
 
 
-		SQL_Anodisation sqlCnx = new SQL_Anodisation();
+		
 		HashMap<String, ArrayList<GammeType> > gammeToZones=sqlCnx.getGammesZones();
 
 		HashMap<Integer,ZoneType> zonesBDD=sqlCnx.getZones();
@@ -184,6 +201,7 @@ public class TecalOrdo {
 				mvtsPonts.get(pont).addAll(mvtsPontsJob.get(pont));
 			}
 		}
+		if(CST.CSTR_MVTS_PONT)
 		for(int pont=0;pont<CST.NB_PONTS;pont++) {
 			model.addNoOverlap(mvtsPonts.get(pont)); 
 		}
@@ -313,8 +331,8 @@ public class TecalOrdo {
 		if (status == CpSolverStatus.OPTIMAL || status == CpSolverStatus.FEASIBLE) {
 
 			for (int jobID = 0; jobID < allJobs.size(); ++jobID) {
-				allJobs.get(jobID).printZoneTimes(solver);
-				//allJobs.get(jobID).printMvtsPonts(solver);
+				if(CST.PrintZonesTime) allJobs.get(jobID).printZoneTimes(solver);
+				if(CST.PrintMvtsPont) allJobs.get(jobID).printMvtsPonts(solver);
 			}
 
 
@@ -393,19 +411,9 @@ public class TecalOrdo {
 			ganttTecalOR.setVisible(true);
 
 		});
-		/*
+		
 
-	SwingUtilities.invokeLater(() -> {  
-
-		 final GanttChart ganttTecal = new GanttChart(sqlCnx,"Gantt Chart prod du 02/11/2023");
-		 ganttTecal.prod_diag();
-		 ganttTecal.pack();
-		 ganttTecal.setSize(new java.awt.Dimension(1500, 870));
-	     RefineryUtilities.centerFrameOnScreen(ganttTecal);
-	     ganttTecal.setVisible(true);
-
-	});
-		 */
+		 
 
 	}
 }

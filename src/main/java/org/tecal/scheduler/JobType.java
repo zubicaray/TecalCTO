@@ -259,6 +259,8 @@ public class JobType {
 	
 	void ComputeZonesRegroupables(int jobID, Map<List<Integer>, TaskOrdo> allTasks) {
 
+		TaskOrdo taskAnod = allTasks.get(Arrays.asList(jobID, indexAnod));
+		
 		for (int pont = 0; pont < idRegroupeesPont.size(); pont++) {
 			// zones non chevauchables
 			for (int rincageID = 0; rincageID < idRegroupeesPont.get(pont).size(); ++rincageID) {
@@ -280,11 +282,21 @@ public class JobType {
 					if (i == idDebZone) {
 						mvts.get(pont).add(taskOrdo.deb);
 						start = taskOrdo.deb;
+						
 					}
 						
 					if (i == idFinZone) {
-						//mvts.get(pont).add(taskOrdo.arriveePont);
-						end = taskOrdo.fin;
+						
+						
+						//dernière zone avant l'anod, on ajoute un dernier mvt de pont pour y aller justement
+						if(idFinZone+1==indexAnod) {
+							IntVar anodStart= model.newIntVar(0, horizon, "startAnod" );   
+							model.newIntervalVar(anodStart,  LinearExpr.constant(CST.TEMPS_MVT_PONT_MIN),  taskAnod.deb, "");
+							end = anodStart;
+						}
+						else {
+							end = taskOrdo.fin;
+						}
 					}
 						
 				}
@@ -319,14 +331,21 @@ public class JobType {
 			
 
 		}
+		
+		
 
 	}
 	//TODO:
 	// ajout deb anodisation aux mvts du pont 1
 	// ajout fin anodisation aux mvts du pont 2
 	void ComputeZonesLongues(int jobID, Map<List<Integer>, TaskOrdo> allTasks) {
-
+		
+		
+		
+		
 		for (int pont = 0; pont < idRegroupeesPont.size(); pont++) {
+			
+			
 			
 			// zones chevauchables
 			for (int chevauID = 0; chevauID < idLonguePont.get(pont).size(); ++chevauID) {
@@ -381,7 +400,7 @@ public class JobType {
 
 	// le regroupement se fait
 	// par id
-	void addZones(List<GammeType> inzones) {
+	void addZonesBDD(List<GammeType> inzones) {
 
 		zones = inzones;
 		List<Task> lTasksJob =new ArrayList<Task>();
@@ -466,12 +485,15 @@ public class JobType {
 
 	// on ajoute les ID BDD pour les zones par poste et les zonesde rincage non
 	// chevauchable
-	void addZonesThanksTime(List<GammeType> inzones) {
+	void addZones(List<GammeType> inzones) {
 
 		List<Task> lTasksJob = new ArrayList<Task>();
 
 		boolean newZoneZincage[] = { false, false };
-
+		System.out.println("---------------------------------------");
+		System.out.println("---------------------------------------");
+		System.out.println("JOB: "+name);
+		
 		zones = inzones;
 
 		int debZone = -1;
@@ -479,26 +501,36 @@ public class JobType {
 		for (int i = 0; i < zones.size(); i++) {
 			GammeType gt = zones.get(i);
 			lTasksJob.add(new Task(gt.time, gt.numzone));
+			//System.out.println("debZone: "+gt.codezone);
 
 			int p = 0;
 			if (gt.numzone > CST.ANODISATION_NUMZONE)
 				p = 1;
+			
+			
+			if (gt.numzone == CST.ANODISATION_NUMZONE) {
+				indexAnod=i;
+			}
 
-			boolean zoneCumulOrFinChaine = ((// arret si p1 arrive en ano
+			boolean zoneCumulOrFinChaine = (// arret si p1 arrive en ano
 					(p == 0 && gt.numzone == CST.ANODISATION_NUMZONE) ||
 					// arret si P2 est au bout de ligne
-					(p == 1 && i == (zones.size() - 1))
+					(p == 1 && i == (zones.size() - 1) && gt.numzone == CST.COLMATAGE_NUMZONE))
 					// arret si zone de cumul
-					) || gt.cumul > 1);
+					 ;
 
 			if (!newZoneZincage[p] && (gt.time + gt.derive) < CST.TEMPS_ZONE_OVERLAP_MIN) {
 				debZone = i;
 				newZoneZincage[p] = true;
-				// System.out.println("debZone: "+gt.codezone);
+				System.out.println("---------------------------------------");
+				System.out.println("Zone regroupée deb: "+gt.codezone);
+				
 			}
 			else if ((gt.time + gt.derive >= CST.TEMPS_ZONE_OVERLAP_MIN && newZoneZincage[p])
 					|| zoneCumulOrFinChaine) {
 				finZone = i - 1;
+				System.out.println("Zone regroupée fin: "+zones.get(i-1).codezone);
+				System.out.println("---------------------------------------");
 				// TODO:
 				// CHECK PB SI debzone==finzone
 				int coord[] = { debZone, finZone };
@@ -506,7 +538,8 @@ public class JobType {
 
 				if (!zoneCumulOrFinChaine) {
 					// on est sur une zone chevauchable
-
+					System.out.println("---------------------------------------");
+					System.out.println("Zone grosse: "+zones.get(i).codezone);
 					int coord2[] = { i };
 					idLonguePont.get(p).add(coord2);
 				}
@@ -517,6 +550,8 @@ public class JobType {
 			else if (gt.time + gt.derive >= CST.TEMPS_ZONE_OVERLAP_MIN && !newZoneZincage[p]){
 				int coord2[] = { i };
 				idLonguePont.get(p).add(coord2);
+				System.out.println("---------------------------------------");
+				System.out.println("Zone grosse: "+zones.get(i).codezone);
 			}
 
 
