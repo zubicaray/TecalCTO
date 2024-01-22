@@ -12,6 +12,8 @@ public class CST {
 	//------------------------------------------------------------
 	// -----------------  TEMPS ----------------------------------
 	//------------------------------------------------------------
+	// pour affichage dans Gantt, peu importe le temps
+	public final static int TEMPS_DECHARGEMENT =60;	
 	// temps min du zone pour qu'on la considere overlapable
 	// ie qu'elle autorise d'aller d'autre mvt pendant son traitement
 	public final static int TEMPS_ZONE_OVERLAP_MIN=180;	
@@ -19,10 +21,10 @@ public class CST {
 	public final static int TEMPS_MVT_PONT_MIN = 20;
 	//temps entre les différentes "zones regroupées"	
 	public final static int GAP_ZONE_NOOVERLAP =TEMPS_MVT_PONT_MIN*2;
-	//
-	public final static int TEMPS_MVT_PONT =60;	
+	// temps autour d'une début de grosse zone
+	public final static int TEMPS_MVT_PONT =30;	
 	
-	public final static int TEMPS_DECHARGEMENT =120;	
+
 	
 	
 	
@@ -30,10 +32,10 @@ public class CST {
 	//------------ AFFICHAGE ---------------------------------------
 	//--------------------------------------------------------------
 	public final static boolean PrintTaskTime =false;
-	public final static boolean PRINT_PROD_DIAG =true;
-	public final static boolean PrintZonesTime=false;
+	public final static boolean PRINT_PROD_DIAG =false;
+	public final static boolean PrintZonesTime=true;
 	public final static boolean PrintMvtsPont=false;
-	public final static boolean PrintGroupementZones=true;
+	public final static boolean PrintGroupementZones=false;
 	
 	
 	//------------------------------------------------------------

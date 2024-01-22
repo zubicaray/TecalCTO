@@ -150,9 +150,7 @@ public class TecalOrdo {
 		}
 
 		for (int jobID = 0; jobID < allJobs.size(); ++jobID) {
-			
-			//allJobs.get(jobID).ComputeZonesRegroupables(jobID, allTasks);  
-			//allJobs.get(jobID).ComputeZonesLongues(jobID, allTasks);  
+
 			allJobs.get(jobID).ComputeZonesNoOverlap(jobID, allTasks);  
 			//allJobs.get(jobID).printNoOverlapZones();
 			
@@ -164,8 +162,6 @@ public class TecalOrdo {
 
 		// Create and add disjunctive constraints.		
 		for (int numzone : numzoneArr) {
-
-
 
 			if(  zoneToIntervals.containsKey(numzone)) {    	 
 				List<IntervalVar> intervalParZone = zoneToIntervals.get(numzone);  
@@ -183,99 +179,8 @@ public class TecalOrdo {
 				cumul.addDemands(listCumul.toArray(new IntervalVar[0]), zoneUsage);  	  
 			}
 
-
-
 		}
-		
-		ArrayListeZonePonts mvtsPonts =new ArrayListeZonePonts();
-			
-		for(int pont=0;pont<CST.NB_PONTS;pont++) {
-			mvtsPonts.add(new ListeZone());
-		}
-			
-		for (int jobID = 0; jobID < allJobs.size(); ++jobID) {
-			
-			ArrayListeZonePonts mvtsPontsJob=allJobs.get(jobID).mvtsToInterval();
-			for(int pont=0;pont<CST.NB_PONTS;pont++) {
-				mvtsPonts.get(pont).addAll(mvtsPontsJob.get(pont));
-			}
-		}
-		if(CST.CSTR_NOOVERLAP_MVTS_PONT)
-			for(int pont=0;pont<CST.NB_PONTS;pont++) {
-				model.addNoOverlap(mvtsPonts.get(pont)); 
-			}
-		
-		
-
-			
-		
-		
-		
-		//--------------------------------------------------------------------------------------------
-		// CONSTRAINTES SUR CHAQUE POSTE
-		//--------------------------------------------------------------------------------------------
-		// les zones de rincages ne doivent pas se croiser
-
-		ArrayList<ZonesIntervalVar> listZonesNoOverlapParPont  = new  ArrayList<ZonesIntervalVar>();  
-		listZonesNoOverlapParPont.add( new  ZonesIntervalVar()); // add zones pont 1
-		listZonesNoOverlapParPont.add( new  ZonesIntervalVar()); // add zones pont 2
-
-		ArrayList<ZonesIntervalVar> listZonesLonguesParPont  = new  ArrayList<ZonesIntervalVar>();  
-		listZonesLonguesParPont.add( new  ZonesIntervalVar()); // add zones pont 1
-		listZonesLonguesParPont.add( new  ZonesIntervalVar()); // add zones pont 2
-
-		
-		//---------------------------------------------------------------------------
-		// NOOVERLAP ZONES REGROUPEES -----------------------------------------------
-		for (JobType j  :allJobs) { 
-			int p=0;    	
-			for(ListeZone zonesRegroupeesP :j.tasksNoOverlapPont) {   
-				listZonesNoOverlapParPont.get(p).addAll(zonesRegroupeesP);   				 
-				p++;
-			}
-			p=0;
-		
-
-
-		}
-
-		if(CST.CSTR_NOOVERLAP_ZONES_GROUPEES)
-			for(ArrayList<IntervalVar> listZonesNoOverlap: listZonesNoOverlapParPont) {
-				model.addNoOverlap(listZonesNoOverlap);
-			}
-
 	
-		//---------------------------------------------------------------------------
-		//---------------------------------------------------------------------------
-		//ListeZone zonesLonguesOther=new ListeZone();
-		
-		for(int pont=0;pont<1;pont++) {
-			for(int j=0;j<allJobs.size();j++) {
-				JobType j1=allJobs.get(j);
-				
-		    	 ListeZone zonesLonguesOther=new ListeZone();
-		    
-		    	 zonesLonguesOther.addAll(j1.tasksNoOverlapPont.get(pont));   				 
-		    	 	
-		    	 
-		    	 for(int k=0;k<allJobs.size();k++) {
-		    		 if(k==j) continue;
-		
-		    		 zonesLonguesOther.addAll(allJobs.get(k).debutLonguesZonesPont.get(pont));
-		    		 
-		
-		    	 }
-				 
-		    	 model.addNoOverlap(zonesLonguesOther);
-				
-
-
-			}
-		}
-
-
-
-
 
 		//--------------------------------------------------------------------------------------------
 		// PRECEDENCES
@@ -298,7 +203,65 @@ public class TecalOrdo {
 
 		}
 
+		//--------------------------------------------------------------------------------------------
+		// CONSTRAINTES SUR CHAQUE POSTE
+		//--------------------------------------------------------------------------------------------
+		// les zones de rincages ne doivent pas se croiser
 
+		ArrayList<ZonesIntervalVar> listZonesNoOverlapParPont  = new  ArrayList<ZonesIntervalVar>();  
+		listZonesNoOverlapParPont.add( new  ZonesIntervalVar()); // add zones pont 1
+		listZonesNoOverlapParPont.add( new  ZonesIntervalVar()); // add zones pont 2
+
+		
+		//---------------------------------------------------------------------------
+		// NOOVERLAP ZONES REGROUPEES -----------------------------------------------
+		//---------------------------------------------------------------------------
+		
+		if(CST.CSTR_NOOVERLAP_ZONES_GROUPEES)
+		{
+			
+			//---------------------------------------------------------------------------
+			// le débuts des zones lognues des autres jobs 
+			// toutes les zones regroupées ne doivent pas se croiser
+			//---------------------------------------------------------------------------
+			for (JobType j  :allJobs) { 
+				int p=0;    	
+				for(ListeZone zonesRegroupeesP :j.tasksNoOverlapPont) {   
+					listZonesNoOverlapParPont.get(p).addAll(zonesRegroupeesP);   				 
+					p++;
+				}
+				p=0;
+
+			}
+			for(ArrayList<IntervalVar> listZonesNoOverlap: listZonesNoOverlapParPont) {
+				model.addNoOverlap(listZonesNoOverlap);
+			}
+			//---------------------------------------------------------------------------
+			//le débuts des zones lognues des autres jobs 
+			// ne doivent pas croiser les zones regroupées du job en cours
+			//---------------------------------------------------------------------------
+			for(int pont=0;pont<CST.NB_PONTS;pont++) {
+				for(int j=0;j<allJobs.size();j++) {
+					JobType j1=allJobs.get(j);
+					
+			    	 ListeZone zonesLonguesOther=new ListeZone();
+			    
+			    	 zonesLonguesOther.addAll(j1.tasksNoOverlapPont.get(pont));   							    	 	
+			    	 
+			    	 for(int k=0;k<allJobs.size();k++) {
+			    		 if(k==j) continue;			
+			    		 zonesLonguesOther.addAll(allJobs.get(k).debutLonguesZonesPont.get(pont));	
+			    	 }
+					 
+			    	 model.addNoOverlap(zonesLonguesOther);
+					
+
+
+				}
+			}
+			
+		}
+					
 		//--------------------------------------------------------------------------------------------
 		//--------------------------------------------------------------------------------------------
 
@@ -328,7 +291,7 @@ public class TecalOrdo {
 
 			for (int jobID = 0; jobID < allJobs.size(); ++jobID) {
 				if(CST.PrintZonesTime) allJobs.get(jobID).printZoneTimes(solver);
-				if(CST.PrintMvtsPont) allJobs.get(jobID).printMvtsPonts(solver);
+				
 			}
 
 

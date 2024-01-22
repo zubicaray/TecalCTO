@@ -39,10 +39,9 @@ class TaskOrdo {
 		
 		if(inderive+duration>=CST.TEMPS_ZONE_OVERLAP_MIN){
 			isOverlapable=true;
-		}
+		}		
 		
 		
-		//
 		inderive-=CST.TEMPS_MVT_PONT_MIN;
 		inderive=Math.max(CST.TEMPS_MVT_PONT_MIN,inderive);
 
