@@ -32,23 +32,23 @@ public class SQL_Anodisation {
 		
 		
 		mListeFiche="('00079250','00079251','00079252','00079253','00079254')";
-		mListeFiche="('00079255','00079256','00079257','00079258','00079259','00079260','00079261','00079262','00079263','00079264','00079265','00079266','00079267')";
+		mListeFiche="('00079255','00079256','00079257','00079258','00079259','00079260','00079261','00079262','00079263','00079264')";//,'00079265','00079266','00079267')";
 		
 		//'00079257','00079258','00079259','00079260','00079261',
 		//mListeFiche="('00079262','00079263','00079264','00079265','00079266','00079267')";
 		//mListeFiche="('00079262','00079263','00079264','00079265')";
 //		mListeFiche="('00079263','00079264','00079265')";
 //		mListeFiche="('00079261','00079262')";
-//		mListeFiche="('00079262','00079263')";
+		//mListeFiche="('00079262','00079263')";
 		//mListeFiche="('00079264','00079265')";
 		
 		// on élimine les postse de chargements /déchargements
-		mWHERE_CLAUSE="where DF.numposte not in (1,2,41,42) and DF.DateEntreePoste >=  '20231102' and DF.DateSortiePoste< '20231103'  and "
+		mWHERE_CLAUSE="where DF.numposte not in (1,2) and DF.DateEntreePoste >=  '20231102' and DF.DateSortiePoste< '20231103'  and "
 				+ "DF.numficheproduction in "+mListeFiche+" \r\n";
 		
 	
 		
-		mWHERE_NUMZONE=" Z.numzone not in (1,35) ";
+		mWHERE_NUMZONE=" Z.numzone not in (1) ";
 		try {
 			mConnection = DriverManager.getConnection(connectionUrl);
 			mStatement= mConnection.createStatement();
@@ -83,8 +83,8 @@ public HashMap<Integer,ZoneType> getZones() {
 	HashMap<Integer,ZoneType> res = new HashMap<Integer,ZoneType>();
     // Create and execute a SELECT SQL statement.
     String selectSql = "select Z.CodeZone,Z.numzone, Z.NumDernierPoste-Z.NumPremierPoste+1 as cumul,derive from  \r\n"
-    		+ "[Anodisation_secours].[dbo].ZONES Z\r\n"
-    		+ "where numzone not in (1,35)\r\n"
+    		+ "[Anodisation_secours].[dbo].ZONES Z WHERE\r\n"
+    		+ mWHERE_NUMZONE
     		+ " order by numzone";
     
     try {

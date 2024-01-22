@@ -18,6 +18,11 @@ import com.google.ortools.sat.LinearExpr;
 
 public class JobType {
 	List<Task> tasksJob;
+	
+	List<ListeZone> tasksNoOverlapPont;
+	List<ListeZone> debutLonguesZonesPont;
+	
+	List<List<int[]>> idZonesNoOverlapPont;
 
 	CpModel model;
 
@@ -25,13 +30,13 @@ public class JobType {
 
 	int jobId;
 	String name;
-	int indexAnod=-1;;
+	int indexAnod=-1;
 
 
 	// task qui permettent au pont se s'en aller ailleurs
 	// !!!!!!!!!!
 	// elles comprennent les zone slongues et des portions de zones regroupées "non overlapable"
-	List<ListeTaskOrdo> tasksOverlapablePont;
+	//List<ListeTaskOrdo> tasksOverlapablePont;
 
 	// dates d'entrée et de sortie du pont 1 sur toutes les zones avant anodisation
 	List<Coord> mvts;
@@ -65,13 +70,18 @@ public class JobType {
 		
 		
 		// dates d'entrée et de sortie du pont 2 sur toutes les zones après ANODISATION
-		tasksOverlapablePont =new ArrayList<ListeTaskOrdo>();		
+		//tasksOverlapablePont =new ArrayList<ListeTaskOrdo>();		
 
+		idZonesNoOverlapPont= new ArrayList<List<int[]>>();	
 		idRegroupeesPont = new ArrayList<List<int[]>>();		
 
 		idLonguePont = new ArrayList<List<int[]>>();				
 		
 		mvts = new ArrayList<Coord>();		
+		
+		
+		tasksNoOverlapPont = new ArrayList<ListeZone> ();
+		debutLonguesZonesPont = new ArrayList<ListeZone> ();
 		
 		coordsRegroupeesPonts = new ArrayCoordsRincagePonts();
 
@@ -82,8 +92,16 @@ public class JobType {
 		
 		for(int pont=0;pont< CST.NB_PONTS;pont++){
 			
-			ListeTaskOrdo tasksOverlapable= new ListeTaskOrdo();
-			tasksOverlapablePont.add(tasksOverlapable);
+			ListeZone tasksNoOverlapable= new ListeZone();
+			tasksNoOverlapPont.add(tasksNoOverlapable);
+			
+			ListeZone debutLongue= new ListeZone();		
+			debutLonguesZonesPont.add(debutLongue);
+			
+			
+			
+			ArrayList<int[]> idNoOverlap = new ArrayList<int[]>();
+			idZonesNoOverlapPont.add(idNoOverlap);
 			
 			ArrayList<int[]> idRegroupees = new ArrayList<int[]>();
 			idRegroupeesPont.add(idRegroupees);
@@ -278,9 +296,9 @@ public class JobType {
 					// on ajoute tous les mouvement du pont concerné
 					
 					
-
+					//mvts.get(pont).add(taskOrdo.deb);
 					if (i == idDebZone) {
-						mvts.get(pont).add(taskOrdo.deb);
+						//mvts.get(pont).add(taskOrdo.deb);
 						start = taskOrdo.deb;
 						
 					}
@@ -290,9 +308,11 @@ public class JobType {
 						
 						//dernière zone avant l'anod, on ajoute un dernier mvt de pont pour y aller justement
 						if(idFinZone+1==indexAnod) {
-							IntVar anodStart= model.newIntVar(0, horizon, "startAnod" );   
-							model.newIntervalVar(anodStart,  LinearExpr.constant(CST.TEMPS_MVT_PONT_MIN),  taskAnod.deb, "");
-							end = anodStart;
+							//IntVar anodStart= model.newIntVar(0, horizon, "startAnod" );   
+							//model.newIntervalVar(anodStart,  LinearExpr.constant(CST.TEMPS_MVT_PONT_MIN),  taskAnod.deb, "");
+							//mvts.get(pont).add(taskAnod.deb);
+							end = taskAnod.deb;
+						
 						}
 						else {
 							end = taskOrdo.fin;
@@ -307,23 +327,27 @@ public class JobType {
 				// aller ailleurs
 				coordsRegroupeesPonts.get(pont).add(coord);
 				
+				IntervalVar before = model.newIntervalVar(
+						model.newIntVar(0, horizon, ""),
+						LinearExpr.constant(CST.GAP_ZONE_NOOVERLAP)
+						, start,
+						"");
+				
 				IntervalVar inter = model.newIntervalVar(start,
-						model.newIntVar(0, horizon, "duree" + jobID + "_" + pont + "_" + rincageID), end,
-						"zone_rincage_" + jobID + "_" + pont + "_" + rincageID);
-
-				//zonesRegroupeesPonts.get(pont).add(inter);
+						model.newIntVar(0, horizon, ""), end,
+						"");
 				
 
 				IntervalVar interSafe=model.newIntervalVar(inter.getEndExpr(),
 						LinearExpr.constant(CST.GAP_ZONE_NOOVERLAP),
 						model.newIntVar(0,horizon,"endSafe"+jobID+"_"+pont+"_"+rincageID),
-						"zone_rincage_safe_"+jobID+"_"+pont+"_"+rincageID);
+						"");
 				
 				zonesRegroupeesPonts.get(pont).add(
-						model.newIntervalVar(start,
+						model.newIntervalVar(before.getStartExpr(),
 								model.newIntVar(0,horizon,""),
 								interSafe.getEndExpr(),
-								"zone_rincage_safe_"+jobID+"_"+pont+"_"+rincageID)
+								"")
 						);
 
 
@@ -340,11 +364,9 @@ public class JobType {
 	// ajout fin anodisation aux mvts du pont 2
 	void ComputeZonesLongues(int jobID, Map<List<Integer>, TaskOrdo> allTasks) {
 		
-		
-		
+			
 		
 		for (int pont = 0; pont < idRegroupeesPont.size(); pont++) {
-			
 			
 			
 			// zones chevauchables
@@ -365,31 +387,35 @@ public class JobType {
 
 				end = taskOrdo.fin;
 
-				/*
-				IntervalVar
-				aroundStartDeb=model.newIntervalVar(model.newIntVar(0,horizon,""),
-				LinearExpr.constant(CST.TEMPS_MVT_PONT_MIN), start, "");
-				zonesLonguesPonts.get(pont).add(aroundStartDeb);
-
-				IntervalVar aroundStartFin=model.newIntervalVar(start,
-				LinearExpr.constant(CST.TEMPS_MVT_PONT_MIN),
-				model.newIntVar(0,horizon,""), "");
-
-				zonesLonguesPonts.get(pont).add(aroundStartFin);
-
-				IntervalVar aroundEndDeb=model.newIntervalVar(model.newIntVar(0,horizon,""),
-				LinearExpr.constant(CST.TEMPS_MVT_PONT_MIN), end, "");
-				zonesLonguesPonts.get(pont).add(aroundEndDeb);
-
-				IntervalVar aroundEndFin=model.newIntervalVar(end,
-				LinearExpr.constant(CST.TEMPS_MVT_PONT_MIN),
-				model.newIntVar(0,horizon,""), "");
-				zonesLonguesPonts.get(pont).add(aroundEndFin);
-				 */
-
+			
 				IntervalVar aroundEndFin=model.newIntervalVar(start,						
 						model.newIntVar(0,horizon,""),end, "");
 				zonesLonguesPonts.get(pont).add(aroundEndFin);
+				
+				
+				IntervalVar before = model.newIntervalVar(
+						model.newIntVar(0, horizon, ""),
+						LinearExpr.constant(0)
+						, start,
+						"");
+				
+				IntervalVar inter = model.newIntervalVar(start,
+						model.newIntVar(0, horizon, ""), end,
+						"");
+				
+
+				IntervalVar interSafe=model.newIntervalVar(inter.getEndExpr(),
+						LinearExpr.constant(0),
+						model.newIntVar(0,horizon,""),
+						"");
+			
+				
+				zonesRegroupeesPonts.get(pont).add(
+						model.newIntervalVar(before.getStartExpr(),
+								model.newIntVar(0,horizon,""),
+								interSafe.getEndExpr(),
+								"")
+						);
 
 
 			}
@@ -460,6 +486,8 @@ public class JobType {
 			String suffix = "_" + jobID + "_" + taskID;
 
 			ZoneType  zt=zonesBDD.get(task.numzone);
+			if(task.numzone == CST.DECHARGEMENT_NUMZONE)
+					task.duration=CST.TEMPS_DECHARGEMENT;
 			TaskOrdo taskOrdo = new TaskOrdo(model,horizon,task.duration,zt.derive, suffix);     
 
 
@@ -490,9 +518,9 @@ public class JobType {
 		List<Task> lTasksJob = new ArrayList<Task>();
 
 		boolean newZoneZincage[] = { false, false };
-		System.out.println("---------------------------------------");
-		System.out.println("---------------------------------------");
-		System.out.println("JOB: "+name);
+		if(CST.PrintGroupementZones) System.out.println("---------------------------------------");
+		if(CST.PrintGroupementZones) System.out.println("---------------------------------------");
+		if(CST.PrintGroupementZones) System.out.println("JOB: "+name);
 		
 		zones = inzones;
 
@@ -522,41 +550,123 @@ public class JobType {
 			if (!newZoneZincage[p] && (gt.time + gt.derive) < CST.TEMPS_ZONE_OVERLAP_MIN) {
 				debZone = i;
 				newZoneZincage[p] = true;
-				System.out.println("---------------------------------------");
-				System.out.println("Zone regroupée deb: "+gt.codezone);
+				if(CST.PrintGroupementZones) System.out.println("---------------------------------------");
+				if(CST.PrintGroupementZones) System.out.println("Pont: "+p+", zone regroupée deb: "+gt.codezone);
 				
 			}
 			else if ((gt.time + gt.derive >= CST.TEMPS_ZONE_OVERLAP_MIN && newZoneZincage[p])
 					|| zoneCumulOrFinChaine) {
 				finZone = i - 1;
-				System.out.println("Zone regroupée fin: "+zones.get(i-1).codezone);
-				System.out.println("---------------------------------------");
+				if(CST.PrintGroupementZones) System.out.println("Pont: "+p+", zone regroupée fin: "+zones.get(i-1).codezone);
+				if(CST.PrintGroupementZones) System.out.println("---------------------------------------");
 				// TODO:
 				// CHECK PB SI debzone==finzone
 				int coord[] = { debZone, finZone };
 				idRegroupeesPont.get(p).add(coord);
+				idZonesNoOverlapPont.get(p).add(coord);
 
 				if (!zoneCumulOrFinChaine) {
 					// on est sur une zone chevauchable
-					System.out.println("---------------------------------------");
-					System.out.println("Zone grosse: "+zones.get(i).codezone);
-					int coord2[] = { i };
-					idLonguePont.get(p).add(coord2);
+					if(CST.PrintGroupementZones) System.out.println("---------------------------------------");
+					if(CST.PrintGroupementZones) System.out.println("Pont: "+p+", zone grosse: "+zones.get(i).codezone);
+					int coordBig[] = { i };
+					idLonguePont.get(p).add(coordBig);
+					idZonesNoOverlapPont.get(p).add(coordBig);
 				}
 
 				newZoneZincage[p] = false;
 
 			}
 			else if (gt.time + gt.derive >= CST.TEMPS_ZONE_OVERLAP_MIN && !newZoneZincage[p]){
-				int coord2[] = { i };
-				idLonguePont.get(p).add(coord2);
-				System.out.println("---------------------------------------");
-				System.out.println("Zone grosse: "+zones.get(i).codezone);
+				int coordBig[] = { i };
+				idLonguePont.get(p).add(coordBig);
+				idZonesNoOverlapPont.get(p).add(coordBig);
+				if(CST.PrintGroupementZones) if(CST.PrintGroupementZones) System.out.println("---------------------------------------");
+				if(CST.PrintGroupementZones) if(CST.PrintGroupementZones) System.out.println("Pont: "+p+", zone grosse: "+zones.get(i).codezone);
 			}
 
 
 		}
 		tasksJob = lTasksJob;
+
+	}
+	
+
+	void ComputeZonesNoOverlap(int jobID, Map<List<Integer>, TaskOrdo> allTasks) {
+
+		TaskOrdo taskAnod = allTasks.get(Arrays.asList(jobID, indexAnod));
+		
+		for (int pont = 0; pont < idZonesNoOverlapPont.size(); pont++) {
+			if(CST.PrintGroupementZones) {
+				System.out.println("----------------------------------------------");
+				System.out.println("Pont  "+pont);
+			}
+				
+			// zones non chevauchables
+			for (int zoneID = 0; zoneID < idZonesNoOverlapPont.get(pont).size(); ++zoneID) {
+
+				int ids []=idZonesNoOverlapPont.get(pont).get(zoneID);
+				if(CST.PrintGroupementZones) 
+					System.out.println("Zone  "+zoneID);
+				int idDebZone = ids[0];
+				int idFinZone =-1;
+				
+				boolean groupe=false;
+				if(ids.length==2) {			
+					//zone sregroupées 
+					idFinZone = ids[1];
+					groupe=true;
+				}
+				else {
+					idFinZone = idDebZone;
+				}
+				
+
+				IntVar start = null;
+				IntVar end = null;
+				
+
+				for (int i = idDebZone; i <= idFinZone; i++) {
+					List<Integer> key = Arrays.asList(jobID, i);
+					TaskOrdo taskOrdo = allTasks.get(key);
+
+					if (i == idDebZone) {						
+						start = taskOrdo.deb;					
+						if(groupe==false) debutLonguesZonesPont.get(pont).add(TaskOrdo.getMvt(model,start,horizon));					
+					}
+						
+					if (i == idFinZone) {
+						
+						
+						//dernière zone avant l'anod, on ajoute un dernier mvt de pont pour y aller justement
+						if(idFinZone+1==indexAnod) {
+							//IntVar anodStart= model.newIntVar(0, horizon, "startAnod" );   
+							//model.newIntervalVar(anodStart,  LinearExpr.constant(CST.TEMPS_MVT_PONT_MIN),  taskAnod.deb, "");
+							//mvts.get(pont).add(taskAnod.deb);
+							end = taskAnod.deb;
+							//tasksNoOverlapPont.get(pont).add(TaskOrdo.getMvt(model,end,horizon));
+							
+						
+						}
+						else {
+							end = taskOrdo.fin;
+						}
+						
+						if(groupe) {
+							tasksNoOverlapPont.get(pont).add(TaskOrdo.getMvt(model,start,end,horizon));
+						}
+						
+					}
+						
+				}
+
+
+			}
+			
+
+		}
+		
+		
 
 	}
 

@@ -41,6 +41,8 @@ class TaskOrdo {
 			isOverlapable=true;
 		}
 		
+		
+		//
 		inderive-=CST.TEMPS_MVT_PONT_MIN;
 		inderive=Math.max(CST.TEMPS_MVT_PONT_MIN,inderive);
 
@@ -71,6 +73,40 @@ class TaskOrdo {
 		
 
 
+	}
+	
+	static IntervalVar getMvt(CpModel model,IntVar mvtPont,int horizon){
+		
+		IntervalVar before = model.newIntervalVar(
+				model.newIntVar(0, horizon, ""),
+				LinearExpr.constant(CST.TEMPS_MVT_PONT)
+				, mvtPont,
+				"");
+		
+		IntervalVar after = model.newIntervalVar(mvtPont,
+				LinearExpr.constant(CST.TEMPS_MVT_PONT), 
+				model.newIntVar(0, horizon, ""),
+				"");
+		
+		return model.newIntervalVar(before.getStartExpr(),model.newIntVar(0, horizon,  ""),after.getEndExpr(),"");
+	
+	}
+	
+	static IntervalVar getMvt(CpModel model,IntVar mvtPontStart,IntVar mvtPontEnd,int horizon){
+		
+		IntervalVar before = model.newIntervalVar(
+				model.newIntVar(0, horizon, ""),
+				LinearExpr.constant(CST.TEMPS_MVT_PONT)
+				, mvtPontStart,
+				"");
+		
+		IntervalVar after = model.newIntervalVar(mvtPontEnd,
+				LinearExpr.constant(CST.TEMPS_MVT_PONT), 
+				model.newIntVar(0, horizon, ""),
+				"");
+		
+		return model.newIntervalVar(before.getStartExpr(),model.newIntVar(0, horizon,  ""),after.getEndExpr(),"");
+	
 	}
 
 

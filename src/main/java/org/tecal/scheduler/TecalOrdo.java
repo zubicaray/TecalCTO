@@ -140,7 +140,6 @@ public class TecalOrdo {
 
 		Map<List<Integer>, TaskOrdo> allTasks = new HashMap<>();
 		Map<Integer, List<IntervalVar>> zoneToIntervals = new HashMap<>();
-
 		Map<Integer, List<IntervalVar>> zoneCumulToIntervals = new HashMap<>();
 
 
@@ -152,9 +151,9 @@ public class TecalOrdo {
 
 		for (int jobID = 0; jobID < allJobs.size(); ++jobID) {
 			
-			allJobs.get(jobID).ComputeZonesRegroupables(jobID, allTasks);  
-			allJobs.get(jobID).ComputeZonesLongues(jobID, allTasks);  
-			
+			//allJobs.get(jobID).ComputeZonesRegroupables(jobID, allTasks);  
+			//allJobs.get(jobID).ComputeZonesLongues(jobID, allTasks);  
+			allJobs.get(jobID).ComputeZonesNoOverlap(jobID, allTasks);  
 			//allJobs.get(jobID).printNoOverlapZones();
 			
 		}
@@ -169,8 +168,8 @@ public class TecalOrdo {
 
 
 			if(  zoneToIntervals.containsKey(numzone)) {    	 
-				List<IntervalVar> list = zoneToIntervals.get(numzone);  
-				model.addNoOverlap(list);    	  
+				List<IntervalVar> intervalParZone = zoneToIntervals.get(numzone);  
+				model.addNoOverlap(intervalParZone);    	  
 			}
 			if(  zoneCumulToIntervals.containsKey(numzone)) {    	 
 				List<IntervalVar> listCumul = zoneCumulToIntervals.get(numzone);
@@ -201,10 +200,10 @@ public class TecalOrdo {
 				mvtsPonts.get(pont).addAll(mvtsPontsJob.get(pont));
 			}
 		}
-		if(CST.CSTR_MVTS_PONT)
-		for(int pont=0;pont<CST.NB_PONTS;pont++) {
-			model.addNoOverlap(mvtsPonts.get(pont)); 
-		}
+		if(CST.CSTR_NOOVERLAP_MVTS_PONT)
+			for(int pont=0;pont<CST.NB_PONTS;pont++) {
+				model.addNoOverlap(mvtsPonts.get(pont)); 
+			}
 		
 		
 
@@ -230,48 +229,45 @@ public class TecalOrdo {
 		// NOOVERLAP ZONES REGROUPEES -----------------------------------------------
 		for (JobType j  :allJobs) { 
 			int p=0;    	
-			for(ListeZone zonesRegroupeesP :j.zonesRegroupeesPonts) {   
-				listZonesNoOverlapParPont.get(p).addAll(zonesRegroupeesP);   
+			for(ListeZone zonesRegroupeesP :j.tasksNoOverlapPont) {   
+				listZonesNoOverlapParPont.get(p).addAll(zonesRegroupeesP);   				 
 				p++;
 			}
+			p=0;
+		
 
 
 		}
-		for(ArrayList<IntervalVar> z: listZonesNoOverlapParPont) {
-			model.addNoOverlap(z);
-		}
 
-		//---------------------------------------------------------------------------
-		// NOOVERLAP ZONES LONGUES -- -----------------------------------------------
-		for (JobType j  :allJobs) { 
-			int p=0;    	
-			for(ListeZone zonesLonguesP :j.zonesLonguesPonts) {   
-				listZonesLonguesParPont.get(p).addAll(zonesLonguesP);   
-				p++;
+		if(CST.CSTR_NOOVERLAP_ZONES_GROUPEES)
+			for(ArrayList<IntervalVar> listZonesNoOverlap: listZonesNoOverlapParPont) {
+				model.addNoOverlap(listZonesNoOverlap);
 			}
 
-
-		}
-		//for(ArrayList<IntervalVar> z: listZonesLonguesParPont) {	model.addNoOverlap(z);		}
-
+	
 		//---------------------------------------------------------------------------
 		//---------------------------------------------------------------------------
-		ListeZone zonesLonguesOther=new ListeZone();
-
+		//ListeZone zonesLonguesOther=new ListeZone();
+		
 		for(int pont=0;pont<1;pont++) {
 			for(int j=0;j<allJobs.size();j++) {
 				JobType j1=allJobs.get(j);
-				/*
-    	 ListeZone zonesLonguesOther=new ListeZone();
-    	 for(int k=0;k<allJobs.size();k++) {
-    		 if(k==j) continue;
-
-    		 zonesLonguesOther.addAll(allJobs.get(j).zonesLonguesPonts.get(pont));
-
-    	 }
-				 */
-				zonesLonguesOther.addAll(j1.zonesLonguesPonts.get(pont));
-				//model.addNoOverlap(zonesLonguesOther);
+				
+		    	 ListeZone zonesLonguesOther=new ListeZone();
+		    
+		    	 zonesLonguesOther.addAll(j1.tasksNoOverlapPont.get(pont));   				 
+		    	 	
+		    	 
+		    	 for(int k=0;k<allJobs.size();k++) {
+		    		 if(k==j) continue;
+		
+		    		 zonesLonguesOther.addAll(allJobs.get(k).debutLonguesZonesPont.get(pont));
+		    		 
+		
+		    	 }
+				 
+		    	 model.addNoOverlap(zonesLonguesOther);
+				
 
 
 			}
