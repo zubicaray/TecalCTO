@@ -10,7 +10,7 @@ class TaskOrdo {
 
 	IntVar startBDD;
 	IntVar endBDD;
-	IntVar derive;
+	//IntVar derive;
 	IntVar arriveePont;
 	//interval théorique
 	IntervalVar intervalBDD;
@@ -19,11 +19,12 @@ class TaskOrdo {
 	IntVar deb;
 	IntVar fin;
 	IntervalVar intervalReel;
+	IntervalVar finDerive;
 
 	//dérive aux postes entre deux task d'un même job
-	IntervalVar deriveInt;  
+	//IntervalVar deriveInt;  
 	// temps incompresible d'arrivée du pont
-	IntervalVar intArriveePont;
+	//IntervalVar intArriveePont;
 	
 	
 	boolean isOverlapable=false;
@@ -31,9 +32,9 @@ class TaskOrdo {
 
 	TaskOrdo(CpModel model,int horizon,int duration,int inderive,String suffix){
 		startBDD = model.newIntVar(0, horizon, "start" + suffix);        
-		endBDD = model.newIntVar(0, horizon, "end" + suffix);
-		derive = model.newIntVar(0, horizon,  "derive_" + suffix);
-		arriveePont = model.newIntVar(0, horizon,  "pontArrive_" + suffix);
+		endBDD = model.newIntVar(duration, horizon, "end" + suffix);
+		//derive = model.newIntVar(0, horizon,  "derive_" + suffix);
+		arriveePont = model.newIntVar(duration, horizon,  "pontArrive_" + suffix);
 		intervalBDD = model.newIntervalVar(startBDD, LinearExpr.constant(duration),endBDD, "interval" + suffix);
 
 		
@@ -42,18 +43,18 @@ class TaskOrdo {
 		}		
 		
 		
-		inderive-=CST.TEMPS_MVT_PONT_MIN;
-		inderive=Math.max(CST.TEMPS_MVT_PONT_MIN,inderive);
+		inderive-=CST.TEMPS_MVT_PONT_MIN_JOB;
+		inderive=Math.max(CST.TEMPS_MVT_PONT_MIN_JOB,inderive);
 
 		
-		intArriveePont = model.newIntervalVar(endBDD, LinearExpr.constant(CST.TEMPS_MVT_PONT_MIN), arriveePont, "intPontArrive" + suffix);
+		//intArriveePont = model.newIntervalVar(endBDD, LinearExpr.constant(CST.TEMPS_MVT_PONT_MIN), arriveePont, "intPontArrive" + suffix);
 		
 		
 		// !!!!!!!!!!!
 		// NE PAS ajouter cet interval à la méthode addNoOverlap
 		// il sera ajouter mais pourra être réduit à nul si besoin
 		// cf model.addLessOrEqual(allTasks.get(nextKey).deb, allTasks.get(prevKey).derive);
-		deriveInt = model.newIntervalVar(arriveePont, LinearExpr.constant(inderive), derive, "derive" + suffix);
+		//deriveInt = model.newIntervalVar(arriveePont, LinearExpr.constant(inderive), derive, "derive" + suffix);
 
 		
 		//  !!
@@ -64,11 +65,15 @@ class TaskOrdo {
 
 
 		deb=model.newIntVar(0, horizon, "deb_nooverlap");
-		fin=model.newIntVar(0, horizon, "fin_nooverlap");
+		fin=model.newIntVar(duration, horizon, "fin_nooverlap");
 
-		model.newIntervalVar(deb,LinearExpr.constant(CST.TEMPS_MVT_PONT_MIN),startBDD,"");             
-		model.newIntervalVar(endBDD,LinearExpr.constant(CST.TEMPS_MVT_PONT_MIN),fin,"");           
-		intervalReel=model.newIntervalVar(deb,model.newIntVar(0, horizon,  ""),derive,"");
+		model.newIntervalVar(deb,LinearExpr.constant(CST.TEMPS_MVT_PONT_MIN_JOB),startBDD,"");             
+		model.newIntervalVar(endBDD, LinearExpr.constant(CST.TEMPS_MVT_PONT_MIN_JOB), arriveePont, "");       
+		intervalReel=model.newIntervalVar(startBDD,model.newIntVar(CST.TEMPS_MVT_PONT_MIN_JOB+duration, CST.TEMPS_MVT_PONT_MIN_JOB+duration+inderive, ""),fin,"");
+		finDerive=model.newIntervalVar(
+				model.newIntVar(duration, horizon, ""),
+				LinearExpr.constant(CST.TEMPS_MVT_PONT_MIN_JOB),
+				fin,"");
 		
 
 

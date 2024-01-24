@@ -388,8 +388,15 @@ public class JobType {
 					List<Integer> key = Arrays.asList(jobID, i);
 					TaskOrdo taskOrdo = allTasks.get(key);
 
-					if (i == idDebZone ) {						
-						start = taskOrdo.deb;					
+					if (i == idDebZone ) {			
+						
+						if(idDebZone-1==indexAnod) {							
+							start = taskAnod.endBDD;						
+						}
+						else {
+							start = taskOrdo.fin;
+						}
+								
 						if(groupe==false) debutLonguesZonesPont.get(pont).add(TaskOrdo.getMvt(model,start,horizon));					
 					}
 						

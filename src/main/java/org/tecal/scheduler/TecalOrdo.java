@@ -5,6 +5,7 @@ import com.google.ortools.sat.CpModel;
 import com.google.ortools.sat.CpSolver;
 import com.google.ortools.sat.CpSolverStatus;
 import com.google.ortools.sat.CumulativeConstraint;
+import com.google.ortools.sat.DecisionStrategyProto;
 import com.google.ortools.sat.IntVar;
 import com.google.ortools.sat.IntervalVar;
 
@@ -193,11 +194,11 @@ public class TecalOrdo {
 				List<Integer> prevKey = Arrays.asList(jobID, taskID);
 				List<Integer> nextKey = Arrays.asList(jobID, taskID + 1);
 
-				model.addGreaterOrEqual(allTasks.get(nextKey).deb, allTasks.get(prevKey).fin);
+				model.addLessOrEqual(allTasks.get(nextKey).deb, allTasks.get(prevKey).fin);
 				
-				model.addLessOrEqual(allTasks.get(nextKey).deb, allTasks.get(prevKey).derive);
+				model.addGreaterOrEqual(allTasks.get(nextKey).deb, allTasks.get(prevKey).finDerive.getEndExpr());
 
-				model.addGreaterThan(allTasks.get(nextKey).deb, allTasks.get(prevKey).arriveePont);
+				//model.addGreaterThan(allTasks.get(nextKey).deb, allTasks.get(prevKey).arriveePont);
 
 			}
 
@@ -260,8 +261,7 @@ public class TecalOrdo {
 				}
 			}
 			
-		}
-					
+		}					
 		//--------------------------------------------------------------------------------------------
 		//--------------------------------------------------------------------------------------------
 
@@ -269,23 +269,36 @@ public class TecalOrdo {
 		// Makespan objective.
 		IntVar objVar = model.newIntVar(0, horizon, "makespan");
 		List<IntVar> ends = new ArrayList<>();
+		List<IntVar> starts = new ArrayList<>();
 		for (int jobID = 0; jobID < allJobs.size(); ++jobID) {
 			List<Task> job = allJobs.get(jobID).tasksJob;
 			List<Integer> key = Arrays.asList(jobID, job.size() - 1);
 			ends.add(allTasks.get(key).fin);
+			starts.add(allTasks.get(key).deb);
 		}
 
+		
+		
 		model.addMaxEquality(objVar, ends);
 		model.minimize(objVar);
-
+		/*
+		model.addDecisionStrategy(starts.toArray(new IntVar[0]), 
+				DecisionStrategyProto.VariableSelectionStrategy.CHOOSE_FIRST,
+				DecisionStrategyProto.DomainReductionStrategy.SELECT_MIN_VALUE);
+		 */
 		// Creates a solver and solves the model.
 		CpSolver solver = new CpSolver();
+		//solver.getParameters().setNumWorkers(1);
+		//solver.getParameters().setStopAfterFirstSolution(true);
+		//solver.getParameters().setStopAfterRootPropagation(true);
+		
+		
 
 
 		Map<Integer, List<AssignedTask>> assignedJobs = new HashMap<>();
 		CpSolverStatus status = solver.solve(model);
 
-
+		
 
 		if (status == CpSolverStatus.OPTIMAL || status == CpSolverStatus.FEASIBLE) {
 
@@ -303,10 +316,14 @@ public class TecalOrdo {
 				for (int taskID = 0; taskID < job.size(); ++taskID) {
 					Task task = job.get(taskID);
 					List<Integer> key = Arrays.asList(jobID, taskID);
+					
+					int debut=(int) solver.value(allTasks.get(key).startBDD);
+					int fin=(int) solver.value(allTasks.get(key).finDerive.getStartExpr());
+					
 					AssignedTask assignedTask = new AssignedTask(
 							jobID, taskID, task.numzone,
-							(int) solver.value(allTasks.get(key).deb), 
-							task.duration,(int) solver.value(allTasks.get(key).intervalReel.getEndExpr()));
+							debut, 
+							fin-debut,fin);
 					assignedJobs.computeIfAbsent(task.numzone, (Integer k) -> new ArrayList<>());
 					assignedJobs.get(task.numzone).add(assignedTask);
 				}
