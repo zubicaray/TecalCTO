@@ -50,12 +50,10 @@ public class JobType {
 	
 	
 
-	JobType(int jobid, String inname, CpModel inModel) {
-
-		model = inModel;
+	JobType(int jobid, String inname,CpModel inM) {
 		jobId = jobid;
 		name = inname;
-		
+		model=inM;
 		
 		// dates d'entrée et de sortie du pont 2 sur toutes les zones après ANODISATION
 		//tasksOverlapablePont =new ArrayList<ListeTaskOrdo>();		
@@ -232,6 +230,8 @@ public class JobType {
 	void addIntervalForModel(Map<List<Integer>, TaskOrdo> allTasks,Map<Integer, List<IntervalVar>> zoneToIntervals,Map<Integer, 
 			List<IntervalVar>> zoneCumulToIntervals,int jobID,HashMap<Integer,ZoneType>  zonesBDD) {
 
+		
+		int minDebut=0;
 		for (int taskID = 0; taskID < tasksJob.size(); ++taskID) {
 			Task task = tasksJob.get(taskID);
 			String suffix = "_" + jobID + "_" + taskID;
@@ -239,7 +239,8 @@ public class JobType {
 			ZoneType  zt=zonesBDD.get(task.numzone);
 			if(task.numzone == CST.DECHARGEMENT_NUMZONE)
 					task.duration=CST.TEMPS_DECHARGEMENT;
-			TaskOrdo taskOrdo = new TaskOrdo(model,horizon,task.duration,zt.derive, suffix);     
+			TaskOrdo taskOrdo = new TaskOrdo(model,horizon,task.duration,zt.derive, minDebut,suffix);   
+			minDebut+=task.duration;
 
 
 			if(zt.cumul>1) {
@@ -353,6 +354,8 @@ public class JobType {
 		TaskOrdo taskAnod = allTasks.get(Arrays.asList(jobID, indexAnod));
 		//TaskOrdo taskColmatage = allTasks.get(Arrays.asList(jobID, indexColmatage));
 		
+
+		
 		for (int pont = 0; pont < idZonesNoOverlapPont.size(); pont++) {
 			
 				
@@ -363,6 +366,7 @@ public class JobType {
 				
 				int idDebZone = ids[0];
 				int idFinZone =-1;
+			
 				
 				boolean groupe=false;
 				if(ids.length==2) {			
@@ -373,10 +377,7 @@ public class JobType {
 				else {
 					idFinZone = idDebZone;
 				}
-				if(jobID==1 && pont==1 && zoneID==2)
-					{
-					int a=2;
-					}
+				//if(jobID==1 && pont==1 && zoneID==2) {int a=2;}
 					
 					
 
@@ -394,10 +395,16 @@ public class JobType {
 							start = taskAnod.endBDD;						
 						}
 						else {
-							start = taskOrdo.fin;
+							start = taskOrdo.deb;
 						}
 								
-						if(groupe==false) debutLonguesZonesPont.get(pont).add(TaskOrdo.getMvt(model,start,horizon));					
+						if(groupe==false) {
+							if(i==0) {
+								debutLonguesZonesPont.get(pont).add(TaskOrdo.getMvt(model,taskOrdo.endBDD,horizon));
+							}
+							else 
+								debutLonguesZonesPont.get(pont).add(TaskOrdo.getMvt(model,start,horizon));					
+						}
 					}
 						
 					if (i == idFinZone ) {
@@ -411,9 +418,9 @@ public class JobType {
 							end = taskOrdo.fin;
 						}
 						
-						if(groupe) {
+						if(groupe) {						
 							// on ajoute la zone non chevauchable
-							tasksNoOverlapPont.get(pont).add(TaskOrdo.getMvt(model,start,end,horizon));
+							tasksNoOverlapPont.get(pont).add(TaskOrdo.getMvt(model,start,end,horizon));											
 						}
 						
 					}
