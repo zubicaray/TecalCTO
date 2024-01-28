@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.tecal.scheduler.SQL_Anodisation.ZoneType;
 
 import com.google.ortools.sat.CpModel;
 import com.google.ortools.sat.CpSolver;
@@ -22,6 +21,9 @@ public class JobType {
 	List<ListeZone> debutLonguesZonesPont;
 	
 	List<List<int[]>> idZonesNoOverlapPont;
+	
+	TaskOrdo taskAnod;
+	TaskOrdo taskColmatage;
 
 	CpModel model;
 
@@ -351,8 +353,8 @@ public class JobType {
 
 	void ComputeZonesNoOverlap(int jobID, Map<List<Integer>, TaskOrdo> allTasks) {
 
-		TaskOrdo taskAnod = allTasks.get(Arrays.asList(jobID, indexAnod));
-		//TaskOrdo taskColmatage = allTasks.get(Arrays.asList(jobID, indexColmatage));
+		taskAnod = allTasks.get(Arrays.asList(jobID, indexAnod));
+		taskColmatage = allTasks.get(Arrays.asList(jobID, indexColmatage));
 		
 
 		
@@ -400,10 +402,10 @@ public class JobType {
 								
 						if(groupe==false) {
 							if(i==0) {
-								debutLonguesZonesPont.get(pont).add(TaskOrdo.getMvt(model,taskOrdo.endBDD,horizon));
+								debutLonguesZonesPont.get(pont).add(TecalOrdo.getMvt(model,taskOrdo.endBDD,horizon));
 							}
 							else 
-								debutLonguesZonesPont.get(pont).add(TaskOrdo.getMvt(model,start,horizon));					
+								debutLonguesZonesPont.get(pont).add(TecalOrdo.getMvt(model,start,horizon));					
 						}
 					}
 						
@@ -420,7 +422,7 @@ public class JobType {
 						
 						if(groupe) {						
 							// on ajoute la zone non chevauchable
-							tasksNoOverlapPont.get(pont).add(TaskOrdo.getMvt(model,start,end,horizon));											
+							tasksNoOverlapPont.get(pont).add(TecalOrdo.getMvt(model,start,end,horizon));											
 						}
 						
 					}

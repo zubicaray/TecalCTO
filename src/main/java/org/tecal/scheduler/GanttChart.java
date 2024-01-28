@@ -11,13 +11,8 @@ import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYIntervalSeries;
 import org.jfree.data.xy.XYIntervalSeriesCollection;
 import org.jfree.ui.ApplicationFrame;
-
-
-import org.tecal.scheduler.SQL_Anodisation.PosteBDD;
-import org.tecal.scheduler.SQL_Anodisation.PosteProd;
-import org.tecal.scheduler.SQL_Anodisation.ZoneType;
-
-
+import org.tecal.scheduler.SQL_DATA.PosteBDD;
+import org.tecal.scheduler.SQL_DATA.PosteProd;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -39,13 +34,13 @@ public class GanttChart extends ApplicationFrame {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	private SQL_Anodisation mSqlCnx ;
+	private SQL_DATA mSqlCnx ;
 	
 
 	ArrayList<String[]>  labelsModel;
 	ArrayList<String[]> labels;
 
-	public GanttChart(SQL_Anodisation sqlCnx,final String title) {
+	public GanttChart(SQL_DATA sqlCnx,final String title) {
 
 		super(title);
 		mSqlCnx=sqlCnx;

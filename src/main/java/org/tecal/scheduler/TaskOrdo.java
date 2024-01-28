@@ -34,30 +34,47 @@ class TaskOrdo {
 	TaskOrdo(CpModel model,int horizon,int duration,int inderive,int minDebut,String suffix){
 	
 		
-		// 6 secondes , 15ks
+		// 6 secondes , 15ks => WEIRD ???
 		if(minDebut==0) {
 			startBDD = model.newIntVar(duration, horizon, "start" + suffix); 
 		}
 		else {
 			startBDD = model.newIntVar(duration, horizon, "start" + suffix); 
 		}
+		
 		//5 secondes , 15ks
 		if(minDebut==0) {
 			startBDD = model.newIntVar(0, horizon, "start" + suffix); 
 		}
 		else {
 			startBDD = model.newIntVar(duration, horizon, "start" + suffix); 
-		}
-		//75 secondes , 13.8ks
+		}	
+		
+
+		
+		//53 secondes , 13.8ks
 		if(minDebut==0) {
 			startBDD = model.newIntVar(0, horizon, "start" + suffix); 
 		}
 		else {
 			startBDD = model.newIntVar(minDebut, horizon, "start" + suffix); 
 		}
-			
+
+		//82 secondes , 13.8ks
+		/*
+		if(minDebut==0) {
+			startBDD = model.newIntVar(0, horizon, "start" + suffix); 
+		}
+		else {
+			startBDD = model.newIntVar(0, horizon, "start" + suffix); 
+		}
+		*/
+		
+		if(CST.MODE_FAST) {
+			startBDD = model.newIntVar(0, horizon, "start" + suffix); 
+		}
 	
-		  
+		
 		  
 		
 		     
@@ -108,39 +125,6 @@ class TaskOrdo {
 
 	}
 	
-	static IntervalVar getMvt(CpModel model,IntVar mvtPont,int horizon){
-		
-		IntervalVar before = model.newIntervalVar(
-				model.newIntVar(0, horizon, ""),
-				LinearExpr.constant(CST.TEMPS_MVT_PONT)
-				, mvtPont,
-				"");
-		
-		IntervalVar after = model.newIntervalVar(mvtPont,
-				LinearExpr.constant(CST.TEMPS_MVT_PONT), 
-				model.newIntVar(0, horizon, ""),
-				"");
-		
-		return model.newIntervalVar(before.getStartExpr(),model.newIntVar(0, horizon,  ""),after.getEndExpr(),"");
-	
-	}
-	
-	static IntervalVar getMvt(CpModel model,IntVar mvtPontStart,IntVar mvtPontEnd,int horizon){
-		
-		IntervalVar before = model.newIntervalVar(
-				model.newIntVar(0, horizon, ""),
-				LinearExpr.constant(CST.TEMPS_MVT_PONT)
-				, mvtPontStart,
-				"");
-		
-		IntervalVar after = model.newIntervalVar(mvtPontEnd,
-				LinearExpr.constant(CST.TEMPS_MVT_PONT), 
-				model.newIntVar(0, horizon, ""),
-				"");
-		
-		return model.newIntervalVar(before.getStartExpr(),model.newIntVar(0, horizon,  ""),after.getEndExpr(),"");
-	
-	}
 
 
 }

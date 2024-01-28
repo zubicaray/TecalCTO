@@ -8,7 +8,11 @@ import com.google.ortools.sat.CumulativeConstraint;
 //import com.google.ortools.sat.DecisionStrategyProto;
 import com.google.ortools.sat.IntVar;
 import com.google.ortools.sat.IntervalVar;
+import com.google.ortools.sat.LinearExpr;
+import com.opencsv.exceptions.CsvException;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -20,7 +24,7 @@ import java.util.Map;
 
 import javax.swing.SwingUtilities;  
 import org.jfree.ui.RefineryUtilities;
-import org.tecal.scheduler.SQL_Anodisation.ZoneType;
+
 
 class Coord 			        extends ArrayList<IntVar> 	{	private static final long serialVersionUID = 1L;}
 class CoordsRincage 			extends ArrayList<IntVar[]> 	{	private static final long serialVersionUID = 1L;}
@@ -81,12 +85,13 @@ class Task {
 public class TecalOrdo {
 	
 	
-	static SQL_Anodisation sqlCnx = new SQL_Anodisation();
-	static HashMap<String, ArrayList<GammeType> > gammeToZones=sqlCnx.getGammesZones();
 
-	static HashMap<Integer,ZoneType> zonesBDD=sqlCnx.getZones();
+	static HashMap<String, ArrayList<GammeType> > gammeToZones;
+	static SQL_DATA sqlCnx ;
+
+	static HashMap<Integer,ZoneType> zonesBDD;
 	// lien entre id de la table Zone et les zones de l'ordo
-	static Integer[] numzoneArr= zonesBDD.keySet().toArray(new Integer[0]);
+	static Integer[] numzoneArr;
 
 	// Creates the model.
 	static	List<JobType> allJobs= new ArrayList<JobType>();
@@ -97,7 +102,33 @@ public class TecalOrdo {
 	
 	
 	
-	public static void main(String[] args) {
+	@SuppressWarnings("unused")
+	public static void main(String[] args) throws IOException, CsvException, URISyntaxException {
+		sqlCnx = new SQL_DATA();
+		
+		
+		if(CST.DATA==CST.SQLSERVER) {			 
+			 gammeToZones=sqlCnx.getGammesZones();
+			 zonesBDD=sqlCnx.getZones();
+		}else {
+			 CSV_DATA csv ;
+			 csv = new CSV_DATA();
+			 
+			 HashMap<String, ArrayList<GammeType> > gammeToZonesAll=csv.getGammesZones();
+			 
+			 gammeToZones=new  HashMap<String, ArrayList<GammeType> >();
+			 String gammesTest[] ={"000021","000164","000601","000467","000347","000169"};
+			 int i=0;
+			 for(String gamme: gammesTest ) {
+				 i++;
+				 gammeToZones.put(i+"-"+gamme, gammeToZonesAll.get(gamme));
+				 
+			 }
+			 
+			 zonesBDD=csv.getZones();
+			
+		}
+		numzoneArr= zonesBDD.keySet().toArray(new Integer[0]);
 		
 		Loader.loadNativeLibraries();
 
@@ -105,7 +136,7 @@ public class TecalOrdo {
 		
 		prepareZones(model);
 		
-		if(CST.PRINT_PROD_DIAG)
+		if(CST.PRINT_PROD_DIAG && CST.DATA==CST.SQLSERVER)
 		SwingUtilities.invokeLater(() -> {  
 
 			 final GanttChart ganttTecal = new GanttChart(sqlCnx,"Gantt Chart prod du 02/11/2023");
@@ -157,7 +188,10 @@ public class TecalOrdo {
 		// Creates a solver and solves the model.
 		CpSolver solver = new CpSolver();
 		//solver.getParameters().setNumWorkers(1);
-		//solver.getParameters().setStopAfterFirstSolution(true);
+		if(CST.MODE_FAST) {
+			solver.getParameters().setStopAfterFirstSolution(true);	
+		}
+		
 		//solver.getParameters().setStopAfterRootPropagation(true);
 		
 		
@@ -264,6 +298,7 @@ public class TecalOrdo {
 	private static void prepareZones(CpModel model) {
 		
 		int cptJob=0;
+		
 		for (Map.Entry<String, ArrayList<GammeType> > entry : gammeToZones.entrySet()) {
 
 			JobType job = new JobType(cptJob, entry.getKey(),model);
@@ -281,6 +316,24 @@ public class TecalOrdo {
 				horizon += task.duration;
 			}
 		}
+		
+	
+		
+		if(CST.MODE_FAST) {
+			int max_time_job=0;
+			for (JobType job : allJobs) {
+				int t=0;
+				for (Task task : job.tasksJob) {
+					t += task.duration;
+				}
+				if(t>max_time_job) max_time_job=t;
+			}
+			
+			horizon=max_time_job+(max_time_job/CST.PORTION_HORIZON)*allJobs.size();
+			
+			
+		}
+		System.out.println("HORIZON=" + horizon);
 
 		for (JobType job : allJobs) job.horizon=horizon;
 		
@@ -406,5 +459,40 @@ public class TecalOrdo {
 					}
 					
 				}					
+	}
+	
+
+	static IntervalVar getMvt(CpModel model,IntVar mvtPont,int horizon){
+		
+		IntervalVar before = model.newIntervalVar(
+				model.newIntVar(0, horizon, ""),
+				LinearExpr.constant(CST.TEMPS_MVT_PONT)
+				, mvtPont,
+				"");
+		
+		IntervalVar after = model.newIntervalVar(mvtPont,
+				LinearExpr.constant(CST.TEMPS_MVT_PONT), 
+				model.newIntVar(0, horizon, ""),
+				"");
+		
+		return model.newIntervalVar(before.getStartExpr(),model.newIntVar(0, horizon,  ""),after.getEndExpr(),"");
+	
+	}
+	
+	static IntervalVar getMvt(CpModel model,IntVar mvtPontStart,IntVar mvtPontEnd,int horizon){
+		
+		IntervalVar before = model.newIntervalVar(
+				model.newIntVar(0, horizon, ""),
+				LinearExpr.constant(CST.TEMPS_MVT_PONT)
+				, mvtPontStart,
+				"");
+		
+		IntervalVar after = model.newIntervalVar(mvtPontEnd,
+				LinearExpr.constant(CST.TEMPS_MVT_PONT), 
+				model.newIntVar(0, horizon, ""),
+				"");
+		
+		return model.newIntervalVar(before.getStartExpr(),model.newIntVar(0, horizon,  ""),after.getEndExpr(),"");
+	
 	}
 }

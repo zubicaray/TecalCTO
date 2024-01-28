@@ -9,16 +9,63 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
+class ZoneType {
+	
+    String codezone;
+    int numzone;
+    int cumul;
+    int idzonebdd;
+    int derive;
+    ZoneType(int numzone,String codezone,int cumul,int derive,int idzone) {
+        this.codezone = codezone;
+        this.numzone = numzone;
+        this.cumul = cumul;
+        this.idzonebdd = idzone;
+        this.derive=derive;
+      }
+    
+  }
+
+class GammeType {
+    String numgamme;
+    String codezone;   
+    int numligne;
+    int numzone;
+    int idzonebdd;
+    int time;
+    int start;
+    int derive;   
+    int id_regroupement_bdd;
+   
+    GammeType(String numgamme,String codezone,int numligne,int numzone,
+    		int time,int idzone,int derive,   int id_regroupement_bdd) {
+        this.numgamme = numgamme;
+        this.codezone = codezone;
+        this.numligne = numligne;
+        this.numzone = numzone;        
+        this.time = time;
+        this.idzonebdd = idzone;
+        this.derive=derive;
+        this.id_regroupement_bdd=id_regroupement_bdd;
+        
+        
+      }
+  }
 
 
-public class SQL_Anodisation {
+public class SQL_DATA {
 	private Connection mConnection ;
 	private Statement mStatement;
+	
+	private HashMap<Integer,ZoneType>  zones;
+	private HashMap<String, ArrayList<GammeType> > gammes;
+		
+	
 	private String mWHERE_CLAUSE;
 
 	private String mWHERE_NUMZONE;
 	private String mListeFiche;
-	public  SQL_Anodisation()  {
+	public  SQL_DATA()  {
 		String connectionUrl =
                 "jdbc:sqlserver://ZUBI-STUDIO\\SQLEXPRESS:1433;"
                 + "database=ANODISATION_SECOURS;"
@@ -35,20 +82,24 @@ public class SQL_Anodisation {
 		mListeFiche="('00079255','00079256','00079257','00079258','00079259','00079260','00079261','00079262','00079263','00079264','00079265','00079266','00079267')";
 		
 		//'00079257','00079261',
-		mListeFiche="('00079258','00079259','00079260','00079261','00079262','00079263','00079264','00079265','00079266','00079267')";
+		mListeFiche="('00079254','00079255','00079256','00079257','00079258','00079259','00079260','00079261','00079262','00079263','00079264','00079265','00079266','00079267')";
+		//mListeFiche="('00079258','00079259','00079260','00079261','00079262','00079263','00079264','00079265','00079266','00079267')";
 		//mListeFiche="('00079261','00079262','00079263','00079264','00079265','00079266','00079267')";
-		mListeFiche="('00079262','00079263','00079264','00079265','00079266','00079267')";
+		
+		
+		
+		// test pour le 26/01/1979
 		mListeFiche="('00079261','00079262','00079263','00079264','00079265','00079266')";
-		//mListeFiche="('00079263','00079264','00079265','00079266','00079267')";		
+		
+		
+		//mListeFiche="('00079263','00079264','00079265','00079266','00079267')";	
 		//mListeFiche="('00079262','00079263','00079264','00079265')";
-		//mListeFiche="('00079261','00079262')";
-				
+		//mListeFiche="('00079261','00079262')";				
 		
 		// on élimine les postse de chargements /déchargements
 		mWHERE_CLAUSE="where DF.DateEntreePoste >=  '20231102' and DF.DateSortiePoste< '20231103'  and "
 				+ "DF.numficheproduction in "+mListeFiche+" \r\n";
-		
-	
+			
 		
 		mWHERE_NUMZONE=" Z.numzone not in (1998989898) ";
 		try {
@@ -59,32 +110,23 @@ public class SQL_Anodisation {
 			e.printStackTrace();
 		}
        
+		
+		setZones();
+		setGammes();
 	
 	}
 	
-class ZoneType {
-	
-    String codezone;
-    int numzone;
-    int cumul;
-    int idzonebdd;
-    int derive;
-    ZoneType(String codezone,int numzone,int cumul,int derive,int idzone) {
-        this.codezone = codezone;
-        this.numzone = numzone;
-        this.cumul = cumul;
-        this.idzonebdd = idzone;
-        this.derive=derive;
-      }
-    
-  }
 
 public HashMap<Integer,ZoneType> getZones() {
+
+	return zones;
+}
+private  void setZones() {
 		
 	ResultSet resultSet = null;        
-	HashMap<Integer,ZoneType> res = new HashMap<Integer,ZoneType>();
+	zones = new HashMap<Integer,ZoneType>();
     // Create and execute a SELECT SQL statement.
-    String selectSql = "select Z.CodeZone,Z.numzone, Z.NumDernierPoste-Z.NumPremierPoste+1 as cumul,derive from  \r\n"
+    String selectSql = "select Z.numzone,Z.CodeZone, Z.NumDernierPoste-Z.NumPremierPoste+1 as cumul,derive from  \r\n"
     		+ "[Anodisation_secours].[dbo].ZONES Z WHERE\r\n"
     		+ mWHERE_NUMZONE
     		+ " order by numzone";
@@ -95,8 +137,8 @@ public HashMap<Integer,ZoneType> getZones() {
 		// Print results from select statement
         while (resultSet.next()) {
             //System.out.println( resultSet.getString(1));
-            ZoneType z=new ZoneType(resultSet.getString(1),resultSet.getInt(2),resultSet.getInt(3),resultSet.getInt(4),idzone);
-            res.put(z.numzone,z);
+            ZoneType z=new ZoneType(resultSet.getInt(1),resultSet.getString(2),resultSet.getInt(3),resultSet.getInt(4),idzone);
+            zones.put(z.numzone,z);
             idzone++;
         }
 	} catch (SQLException e) {
@@ -104,7 +146,7 @@ public HashMap<Integer,ZoneType> getZones() {
 		e.printStackTrace();
 	}
 
-	return res;
+	
 }
 	
 class PosteBDD implements Comparable<PosteBDD> {
@@ -159,21 +201,23 @@ public HashMap<Integer,PosteBDD> getPostes() {
         
 		return res;
 	}
-	
-
-
-
 public HashMap<String, ArrayList<GammeType> >  getGammesZones() {
+	
+	return gammes;
+}
+
+private void  setGammes() {
 		
 		ResultSet resultSet = null;    
 		
-		HashMap<Integer,ZoneType> zones= getZones();
 		
-		HashMap<String,ArrayList<GammeType> > finalArray  = new HashMap<String, ArrayList<GammeType> >();
+		
+		gammes  = new HashMap<String, ArrayList<GammeType> >();
         // Create and execute a SELECT SQL statement.
         String selectSql = ""
         		+ "select \r\n"
-        		+ "	CONCAT(DC.NumBarre,'-',DC.NumGammeAnodisation),Z.CodeZone,numligne ,Z.numzone, TempsAuPosteSecondes+TempsEgouttageSecondes, \r\n"
+        		+ "	CONCAT(DC.NumBarre,'-',DC.NumGammeAnodisation),Z.CodeZone,numligne ,Z.numzone, "
+        		+ " TempsAuPosteSecondes+TempsEgouttageSecondes, \r\n"
         		+ " Z.ID_GROUPEMENT,Z.derive,Z.NumDernierPoste-Z.NumPremierPoste+1 as cumul  "
         		+ "from  \r\n"
         		+ "	[Anodisation_secours].[dbo].[DetailsGammesAnodisation]  DG\r\n"
@@ -202,22 +246,21 @@ public HashMap<String, ArrayList<GammeType> >  getGammesZones() {
 		            resultSet.getInt(5),
 		            zones.get(numzone).idzonebdd,
 		            resultSet.getInt(7),
-		            resultSet.getInt(6),
-		            resultSet.getInt(8));
+		            resultSet.getInt(6));
 	            
 	          
-	            if (!finalArray.containsKey(gt.numgamme)) {
-	            	finalArray.put(gt.numgamme, new ArrayList<GammeType>());
+	            if (!gammes.containsKey(gt.numgamme)) {
+	            	gammes.put(gt.numgamme, new ArrayList<GammeType>());
 	            }
 	            
-	            finalArray.get(gt.numgamme).add(gt);
+	            gammes.get(gt.numgamme).add(gt);
 	        }
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
-		return finalArray;
+		
 	}
 	
 	
