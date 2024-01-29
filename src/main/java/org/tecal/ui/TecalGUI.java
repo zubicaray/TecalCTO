@@ -1,40 +1,62 @@
 package org.tecal.ui;
 
-import org.tecal.scheduler.data.SQL_DATA;
-import org.tecal.scheduler.types.GammeType;
-
 import java.awt.EventQueue;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Vector;
 
-import javax.swing.JFrame;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
-import javax.swing.JTabbedPane;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.JLabel;
 import javax.swing.ListSelectionModel;
+import javax.swing.RowFilter;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
+
+import org.tecal.scheduler.data.SQL_DATA;
+import org.tecal.scheduler.types.GammeType;
+
+import com.formdev.flatlaf.FlatIntelliJLaf;
 
 public class TecalGUI {
 
 	private JFrame frame;
 	private JTable tableGammes;
+	private DefaultTableModel modelGammes ;
 	private JTable tableBarres;
-	private JTextField textField;
+	private DefaultTableModel modelBarres;
+	private JTextField textFiltre;
 	
 	private SQL_DATA sqlCnx ;
+	private int mNumBarre=0;
+	private JTextField textField;
+	
 	/**
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
+		
+		FlatIntelliJLaf.setup();
+		
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
@@ -98,28 +120,68 @@ public class TecalGUI {
 		
 		JScrollPane scrollPaneBarres = new JScrollPane();
 		
-		textField = new JTextField();
-		textField.setColumns(10);
+		textFiltre = new JTextField();
+		textFiltre.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(((DefaultTableModel) tableGammes.getModel())); 
+			    sorter.setRowFilter(RowFilter.regexFilter(textFiltre.getText()));
+
+			    tableGammes.setRowSorter(sorter);
+			}
+		});
+		textFiltre.setColumns(10);
 		
 		JLabel lblBarreLabel = new JLabel("barres:");
 		
 		JLabel lblGammes = new JLabel("gammes:");
+		
+		JButton btnUpButton = new JButton("up");
+		
+		JButton btnDownButton = new JButton("down");
+		
+		JRadioButton rdbtnFastModeRadioButton = new JRadioButton("mode rapide");
+		
+		JComboBox comboDifficult = new JComboBox();
+		
+		JLabel lblHardynessLabel = new JLabel("difficulté");
+		
+		JScrollPane scrollPaneMsg = new JScrollPane();
+		
+		JButton btnRun = new JButton("RUN");
 		GroupLayout gl_panel = new GroupLayout(panel);
 		gl_panel.setHorizontalGroup(
 			gl_panel.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_panel.createSequentialGroup()
 					.addContainerGap()
 					.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
-						.addComponent(scrollPane, GroupLayout.PREFERRED_SIZE, 302, GroupLayout.PREFERRED_SIZE)
 						.addGroup(gl_panel.createSequentialGroup()
-							.addComponent(textField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-							.addGap(26)
-							.addComponent(lblGammes, GroupLayout.PREFERRED_SIZE, 99, GroupLayout.PREFERRED_SIZE)))
-					.addPreferredGap(ComponentPlacement.RELATED, 136, Short.MAX_VALUE)
-					.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
-						.addComponent(scrollPaneBarres, GroupLayout.PREFERRED_SIZE, 135, GroupLayout.PREFERRED_SIZE)
-						.addComponent(lblBarreLabel, GroupLayout.PREFERRED_SIZE, 99, GroupLayout.PREFERRED_SIZE))
-					.addGap(98))
+							.addComponent(rdbtnFastModeRadioButton)
+							.addGap(137)
+							.addComponent(lblHardynessLabel, GroupLayout.PREFERRED_SIZE, 64, GroupLayout.PREFERRED_SIZE)
+							.addGap(18)
+							.addComponent(comboDifficult, GroupLayout.PREFERRED_SIZE, 56, GroupLayout.PREFERRED_SIZE)
+							.addContainerGap())
+						.addGroup(gl_panel.createSequentialGroup()
+							.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
+								.addGroup(gl_panel.createSequentialGroup()
+									.addComponent(textFiltre, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+									.addGap(26)
+									.addComponent(lblGammes, GroupLayout.PREFERRED_SIZE, 99, GroupLayout.PREFERRED_SIZE))
+								.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 420, Short.MAX_VALUE))
+							.addGap(18)
+							.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
+								.addGroup(gl_panel.createSequentialGroup()
+									.addComponent(scrollPaneBarres, GroupLayout.PREFERRED_SIZE, 135, GroupLayout.PREFERRED_SIZE)
+									.addPreferredGap(ComponentPlacement.RELATED)
+									.addGroup(gl_panel.createParallelGroup(Alignment.LEADING, false)
+										.addComponent(btnUpButton, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+										.addComponent(btnDownButton, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+										.addComponent(btnRun, GroupLayout.PREFERRED_SIZE, 59, GroupLayout.PREFERRED_SIZE)))
+								.addComponent(lblBarreLabel, GroupLayout.PREFERRED_SIZE, 99, GroupLayout.PREFERRED_SIZE))
+							.addGap(33))
+						.addGroup(gl_panel.createSequentialGroup()
+							.addComponent(scrollPaneMsg, GroupLayout.PREFERRED_SIZE, 558, GroupLayout.PREFERRED_SIZE)
+							.addContainerGap(113, Short.MAX_VALUE))))
 		);
 		gl_panel.setVerticalGroup(
 			gl_panel.createParallelGroup(Alignment.LEADING)
@@ -128,16 +190,62 @@ public class TecalGUI {
 					.addGroup(gl_panel.createParallelGroup(Alignment.LEADING, false)
 						.addComponent(lblBarreLabel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
 						.addGroup(gl_panel.createParallelGroup(Alignment.BASELINE)
-							.addComponent(textField)
+							.addComponent(textFiltre, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 							.addComponent(lblGammes, GroupLayout.PREFERRED_SIZE, 20, GroupLayout.PREFERRED_SIZE)))
 					.addPreferredGap(ComponentPlacement.UNRELATED)
 					.addGroup(gl_panel.createParallelGroup(Alignment.BASELINE)
-						.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE)
-						.addComponent(scrollPaneBarres, GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE))
-					.addGap(241))
+						.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 189, Short.MAX_VALUE)
+						.addComponent(scrollPaneBarres, GroupLayout.DEFAULT_SIZE, 189, Short.MAX_VALUE))
+					.addGap(18)
+					.addGroup(gl_panel.createParallelGroup(Alignment.BASELINE)
+						.addComponent(rdbtnFastModeRadioButton)
+						.addComponent(comboDifficult, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+						.addComponent(lblHardynessLabel))
+					.addGap(128)
+					.addComponent(scrollPaneMsg, GroupLayout.PREFERRED_SIZE, 65, GroupLayout.PREFERRED_SIZE)
+					.addContainerGap())
+				.addGroup(gl_panel.createSequentialGroup()
+					.addGap(105)
+					.addComponent(btnUpButton)
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addComponent(btnDownButton)
+					.addPreferredGap(ComponentPlacement.RELATED, 304, Short.MAX_VALUE)
+					.addComponent(btnRun)
+					.addGap(30))
 		);
 		
-		tableBarres = new JTable();
+		textField = new JTextField();
+		scrollPaneMsg.setViewportView(textField);
+		textField.setColumns(10);
+		
+		try {
+			
+			
+			buildTableModelBarre();
+			tableBarres = new JTable(modelBarres);
+			tableBarres.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+	    	TableColumnModel columnModel = tableBarres.getColumnModel();
+	        columnModel.getColumn(0).setPreferredWidth(40);
+	        columnModel.getColumn(0).setMaxWidth(40);	          	
+	        tableBarres.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+	        
+	        tableBarres.addMouseListener(new MouseAdapter() {
+	    	    public void mousePressed(MouseEvent mouseEvent) {
+	    	        JTable table =(JTable) mouseEvent.getSource();
+	    	        Point point = mouseEvent.getPoint();
+	    	        int row = table.rowAtPoint(point);
+	    	        if (mouseEvent.getClickCount() == 2 && table.getSelectedRow() != -1) {	    	        	
+	    	        	modelBarres.removeRow(row);	         	
+	    	        }
+	    	    }
+	    	});
+	        
+	        
+	        
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		scrollPaneBarres.setViewportView(tableBarres);
 		
 		
@@ -145,9 +253,34 @@ public class TecalGUI {
 
 	    // It creates and displays the table
 	    try {
-	    	tableGammes = new JTable(buildTableModel(rs));
+	    	buildTableModelGamme(rs);
+	    	tableGammes = new JTable(modelGammes);
+	    	
+	    	
+	    	
 	    	
 	    	tableGammes.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+	    	TableColumnModel columnModel = tableGammes.getColumnModel();
+	        columnModel.getColumn(0).setPreferredWidth(70);
+	        columnModel.getColumn(0).setMaxWidth(70);
+	          	
+	    	tableGammes.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+	    	
+	    	tableGammes.addMouseListener(new MouseAdapter() {
+	    	    public void mousePressed(MouseEvent mouseEvent) {
+	    	        JTable table =(JTable) mouseEvent.getSource();
+	    	        Point point = mouseEvent.getPoint();
+	    	        int row = table.rowAtPoint(point);
+	    	        row=table.convertRowIndexToModel(row); 	  
+	    	        if (mouseEvent.getClickCount() == 2 && table.getSelectedRow() != -1) {
+	    	        	String gamme=table.getModel().getValueAt(row, 0).toString();
+	    	        	mNumBarre++;
+	    	        	Object[] rowO = { mNumBarre, gamme };
+	    	        	modelBarres.addRow(rowO);
+	    	        	
+	    	        }
+	    	    }
+	    	});
 	    	
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -158,8 +291,39 @@ public class TecalGUI {
 		panel.setLayout(gl_panel);
 		frame.getContentPane().setLayout(groupLayout);
 	}
+
+	public void buildTableModelBarre()
+	        throws SQLException {
+
+	   
+
+	    // names of columns
+	    Vector<String> columnNames = new Vector<String>();
+	   
+	    columnNames.add("barre");
+	    columnNames.add("gamme");
+	    
+
+
+	    modelBarres= new DefaultTableModel(null, columnNames) {
+
+    	    /**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
+
+			@Override
+    	    public boolean isCellEditable(int row, int column) {
+    	       //all cells false
+    	       return false;
+    	    }
+    	};
+   
+
+
+	}
 	
-	public static DefaultTableModel buildTableModel(ResultSet rs)
+	public   void buildTableModelGamme(ResultSet rs)
 	        throws SQLException {
 
 	    ResultSetMetaData metaData = rs.getMetaData();
@@ -181,8 +345,7 @@ public class TecalGUI {
 	        data.add(vector);
 	    }
 	    
-
-    	DefaultTableModel tableModel = new DefaultTableModel(data, columnNames) {
+	    modelGammes = new DefaultTableModel(data, columnNames) {
 
     	    /**
 			 * 
@@ -196,8 +359,6 @@ public class TecalGUI {
     	    }
     	};
    
-
-	    return tableModel;
 
 	}
 }

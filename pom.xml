@@ -88,8 +88,7 @@
 	<dependency>
 		<groupId>com.formdev</groupId>
 		<artifactId>flatlaf</artifactId>
-		<version>3.3</version>
-		<scope>runtime</scope>
+		<version>3.3</version>		
 	</dependency>
   
   <dependency>
