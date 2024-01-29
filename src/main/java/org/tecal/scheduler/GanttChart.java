@@ -11,8 +11,12 @@ import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYIntervalSeries;
 import org.jfree.data.xy.XYIntervalSeriesCollection;
 import org.jfree.ui.ApplicationFrame;
-import org.tecal.scheduler.SQL_DATA.PosteBDD;
-import org.tecal.scheduler.SQL_DATA.PosteProd;
+import org.tecal.scheduler.data.SQL_DATA;
+import org.tecal.scheduler.data.SQL_DATA.PosteBDD;
+import org.tecal.scheduler.data.SQL_DATA.PosteProd;
+import org.tecal.scheduler.types.GammeType;
+import org.tecal.scheduler.types.ZoneType;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -126,7 +130,7 @@ public class GanttChart extends ApplicationFrame {
 		 int totalZoneCount =ficheToZones.size();		 		
 		
 		 //Create series. Start and end times are used as y intervals, and the room is represented by the x value
-		 XYIntervalSeries[] series = new XYIntervalSeries[totalZoneCount];
+		 XYIntervalSeries[]  series = new XYIntervalSeries[totalZoneCount];
 
 		 int jobID = 0;
 		 
@@ -164,11 +168,7 @@ public class GanttChart extends ApplicationFrame {
 				
 				tabAssignedJobsSorted.get(task.jobID).add(task);
 				
-				// TODO
-				// pour corriger le pb de superposition des zones de cumuls
-				//isoler les tasks concernées par zone, puis les triées chronologiquement
-				// pour pouvoir leur attribuer un id de cumul
-				
+							
 				//System.out.println("task.idzoneBDD="+task.idzoneBDD );
 				if(zonesCumul.containsKey(task.numzone)) {
 					 if(!cumulTask.containsKey(task.numzone)) {
@@ -241,12 +241,13 @@ public class GanttChart extends ApplicationFrame {
 		    	// car quant à lui,le taskid de google, est propre à l'ordres des zones d'une gamme
 		    	int posteEncours=df.get(at.taskID).idzonebdd;
 	      
-			    int[] dr={at.start,at.start+at.duration};		
+			    int[] dr={at.start,at.start+at.duration,at.start+at.duration+at.derive};		
 		
 			    //System.out.println("gamme:"+gamme+" "+df.get(at.taskID).codezone+" start:"+at.start+" numligne:"+df.get(at.taskID).numligne); 
 			    //System.out.println("at.duration="+at.duration );
 			      
 			    double incrementY=0.3;
+			   // boolean hasDerive=false;
 			    
 			    
 			    if(zonesCumul.containsKey(at.numzone)) {
@@ -260,11 +261,19 @@ public class GanttChart extends ApplicationFrame {
 			    else {
 			    	 series[idjob].add(posteEncours,posteEncours - 0.3,posteEncours +0.3, 
 			    			 dr[0],dr[0] ,dr[1] );
+			    	 
+			    	 if(dr[2]>0) {
+			    		 //hasDerive=true;
+						    
+			    		 //series[idjob].add(posteEncours,posteEncours - 0.3,posteEncours +0.3, dr[1],dr[1] ,dr[2] );
+			    	 }
 			    }
 		    
-			    labelsModel.get(idjob)[cpt1]="start:"+at.start+", durée:"+at.duration+"\n, fin:"+(at.duration+at.start)
-			    		+ " dérive: " +at.derive+ ", " +df.get(at.taskID).codezone;
+			    labelsModel.get(idjob)[cpt1]="start:"+at.start+", durée:"+at.duration+"\n, fin:"+(at.derive)
+			    		+ " dérive: " +(at.derive-dr[1])+ ", " +df.get(at.taskID).codezone;
 			    cpt1++;    
+			    
+			    
 			 
 			 };
 			
@@ -331,7 +340,7 @@ public class GanttChart extends ApplicationFrame {
 		String[] labelPosteAllOF=labelPosteAllOFTmp.toArray(new String[0]);
 		 
 		 //gamme par fiche production (on peut avoir une  même gamme pour deux fichesProd
-		 HashMap<String, String> ficheGamme=  mSqlCnx.getGammes();
+		 HashMap<String, String> ficheGamme=  mSqlCnx.getFicheGamme();
 		 
 		 String[] ficheToZones=ficheGamme.values().toArray(new String[0]);
 		 

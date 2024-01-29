@@ -24,6 +24,10 @@ import java.util.Map;
 
 import javax.swing.SwingUtilities;  
 import org.jfree.ui.RefineryUtilities;
+import org.tecal.scheduler.data.CSV_DATA;
+import org.tecal.scheduler.data.SQL_DATA;
+import org.tecal.scheduler.types.GammeType;
+import org.tecal.scheduler.types.ZoneType;
 
 
 class Coord 			        extends ArrayList<IntVar> 	{	private static final long serialVersionUID = 1L;}
@@ -104,30 +108,29 @@ public class TecalOrdo {
 	
 	@SuppressWarnings("unused")
 	public static void main(String[] args) throws IOException, CsvException, URISyntaxException {
-		sqlCnx = new SQL_DATA();
 		
+		gammeToZones=new  HashMap<String, ArrayList<GammeType> >();
+		HashMap<String, ArrayList<GammeType> > gammeToZonesAll;
 		
-		if(CST.DATA==CST.SQLSERVER) {			 
-			 gammeToZones=sqlCnx.getGammesZones();
-			 zonesBDD=sqlCnx.getZones();
+		if(CST.DATA != CST.CSV) {
+			sqlCnx = new SQL_DATA();
+			gammeToZonesAll=sqlCnx.getLignesGammesAll();
+			zonesBDD=sqlCnx.getZones();
 		}else {
-			 CSV_DATA csv ;
-			 csv = new CSV_DATA();
-			 
-			 HashMap<String, ArrayList<GammeType> > gammeToZonesAll=csv.getGammesZones();
-			 
-			 gammeToZones=new  HashMap<String, ArrayList<GammeType> >();
-			 String gammesTest[] ={"000021","000164","000601","000467","000347","000169"};
-			 int i=0;
-			 for(String gamme: gammesTest ) {
-				 i++;
-				 gammeToZones.put(i+"-"+gamme, gammeToZonesAll.get(gamme));
-				 
-			 }
-			 
-			 zonesBDD=csv.getZones();
+			CSV_DATA csv ;
+			csv = new CSV_DATA();			 
+			gammeToZonesAll=csv.getLignesGammesAll();				 
+			zonesBDD=csv.getZones();
 			
 		}
+		
+		 int i=0;
+		 for(String gamme: CST.gammesTest ) {
+			 i++;
+			 gammeToZones.put(i+"-"+gamme, gammeToZonesAll.get(gamme));
+			 
+		 }
+		
 		numzoneArr= zonesBDD.keySet().toArray(new Integer[0]);
 		
 		Loader.loadNativeLibraries();
@@ -220,12 +223,13 @@ public class TecalOrdo {
 					List<Integer> key = Arrays.asList(jobID, taskID);
 					
 					int debut=(int) solver.value(allTasks.get(key).startBDD);
-					int fin=(int) solver.value(allTasks.get(key).finDerive.getStartExpr());
+					int fin=(int) solver.value(allTasks.get(key).endBDD);
+					int derive=(int) solver.value(allTasks.get(key).finDerive.getStartExpr());
 					
 					AssignedTask assignedTask = new AssignedTask(
 							jobID, taskID, task.numzone,
 							debut, 
-							fin-debut,fin);
+							fin-debut,derive);
 					assignedJobs.computeIfAbsent(task.numzone, (Integer k) -> new ArrayList<>());
 					assignedJobs.get(task.numzone).add(assignedTask);
 				}

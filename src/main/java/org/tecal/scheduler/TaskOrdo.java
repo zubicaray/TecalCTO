@@ -115,7 +115,10 @@ class TaskOrdo {
 
 		model.newIntervalVar(deb,LinearExpr.constant(CST.TEMPS_MVT_PONT_MIN_JOB),startBDD,"");             
 		model.newIntervalVar(endBDD, LinearExpr.constant(CST.TEMPS_MVT_PONT_MIN_JOB), arriveePont, "");       
-		intervalReel=model.newIntervalVar(startBDD,model.newIntVar(CST.TEMPS_MVT_PONT_MIN_JOB+duration, CST.TEMPS_MVT_PONT_MIN_JOB+duration+inderive, ""),fin,"");
+		intervalReel=model.newIntervalVar(
+				startBDD,
+				model.newIntVar(CST.TEMPS_MVT_PONT_MIN_JOB+duration, CST.TEMPS_MVT_PONT_MIN_JOB+duration+inderive, ""),
+				fin,"");
 		finDerive=model.newIntervalVar(
 				model.newIntVar(minDebut+duration, horizon, ""),
 				LinearExpr.constant(CST.TEMPS_MVT_PONT_MIN_JOB),

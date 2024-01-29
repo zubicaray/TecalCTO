@@ -1,4 +1,4 @@
-package org.tecal.scheduler;
+package org.tecal.scheduler.data;
 
 import java.io.File;
 import java.io.FileReader;
@@ -11,6 +11,9 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
+import org.tecal.scheduler.types.GammeType;
+import org.tecal.scheduler.types.ZoneType;
 
 import com.opencsv.CSVParser;
 import com.opencsv.CSVParserBuilder;
@@ -89,7 +92,7 @@ public class CSV_DATA {
 
 		return zones;
 	}
-	public HashMap<String, ArrayList<GammeType> >  getGammesZones() {
+	public HashMap<String, ArrayList<GammeType> >  getLignesGammesAll() {
 		
 		return gammes;
 	}

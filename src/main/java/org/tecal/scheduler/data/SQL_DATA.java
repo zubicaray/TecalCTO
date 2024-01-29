@@ -1,4 +1,4 @@
-package org.tecal.scheduler;
+package org.tecal.scheduler.data;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -9,48 +9,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
-class ZoneType {
-	
-    String codezone;
-    int numzone;
-    int cumul;
-    int idzonebdd;
-    int derive;
-    ZoneType(int numzone,String codezone,int cumul,int derive,int idzone) {
-        this.codezone = codezone;
-        this.numzone = numzone;
-        this.cumul = cumul;
-        this.idzonebdd = idzone;
-        this.derive=derive;
-      }
-    
-  }
+import org.tecal.scheduler.types.GammeType;
+import org.tecal.scheduler.types.ZoneType;
 
-class GammeType {
-    String numgamme;
-    String codezone;   
-    int numligne;
-    int numzone;
-    int idzonebdd;
-    int time;
-    int start;
-    int derive;   
-    int id_regroupement_bdd;
-   
-    GammeType(String numgamme,String codezone,int numligne,int numzone,
-    		int time,int idzone,int derive,   int id_regroupement_bdd) {
-        this.numgamme = numgamme;
-        this.codezone = codezone;
-        this.numligne = numligne;
-        this.numzone = numzone;        
-        this.time = time;
-        this.idzonebdd = idzone;
-        this.derive=derive;
-        this.id_regroupement_bdd=id_regroupement_bdd;
-        
-        
-      }
-  }
+
 
 
 public class SQL_DATA {
@@ -112,7 +74,7 @@ public class SQL_DATA {
        
 		
 		setZones();
-		setGammes();
+		setLignesGammes();
 	
 	}
 	
@@ -149,10 +111,10 @@ private  void setZones() {
 	
 }
 	
-class PosteBDD implements Comparable<PosteBDD> {
+public class PosteBDD implements Comparable<PosteBDD> {
 	
-	int numligne;	
-	String nom;
+	public int numligne;	
+	public String nom;
 	
 	PosteBDD(int numligne, String nom) {
 	      this.numligne = numligne;	   
@@ -201,12 +163,12 @@ public HashMap<Integer,PosteBDD> getPostes() {
         
 		return res;
 	}
-public HashMap<String, ArrayList<GammeType> >  getGammesZones() {
+public HashMap<String, ArrayList<GammeType> >  getLignesGammesAll() {
 	
 	return gammes;
 }
 
-private void  setGammes() {
+private void  setLignesGammes() {
 		
 		ResultSet resultSet = null;    
 		
@@ -216,20 +178,14 @@ private void  setGammes() {
         // Create and execute a SELECT SQL statement.
         String selectSql = ""
         		+ "select \r\n"
-        		+ "	CONCAT(DC.NumBarre,'-',DC.NumGammeAnodisation),Z.CodeZone,numligne ,Z.numzone, "
+        		+ "	DG.NumGamme,Z.CodeZone,numligne ,Z.numzone, "
         		+ " TempsAuPosteSecondes+TempsEgouttageSecondes, \r\n"
         		+ " Z.ID_GROUPEMENT,Z.derive,Z.NumDernierPoste-Z.NumPremierPoste+1 as cumul  "
         		+ "from  \r\n"
         		+ "	[Anodisation_secours].[dbo].[DetailsGammesAnodisation]  DG\r\n"
         		+ "	INNER JOIN [Anodisation_secours].[dbo].ZONES Z\r\n"
-        		+ "	on Z.numzone=DG.numzone and  " +mWHERE_NUMZONE+"	INNER JOIN  (\r\n"
-        		+ "		select  distinct NumBarre,numficheproduction,NumGammeAnodisation,refGammeAnodisation\r\n"
-        		+ "		from [Anodisation_secours].[dbo].[DetailsChargesProduction] \r\n"
-        		+ "		where numficheproduction in "+mListeFiche +"\r\n"
-        		+ "		--order by NumBarre\r\n"
-        		+ "	) AS DC\r\n"
-        		+ "	ON DG.numgamme = DC.NumGammeAnodisation\r\n"
-        		+ "order by DC.NumBarre,NumGammeAnodisation,numligne "
+        		+ "	on Z.numzone=DG.numzone "
+        		+ "order by NumGamme,numligne "
         		;
         try {
 			resultSet = mStatement.executeQuery(selectSql);
@@ -262,10 +218,34 @@ private void  setGammes() {
 
 		
 	}
+public ResultSet getEnteteGammes() {
+	ResultSet resultSet = null;    
 	
 	
 	
-public HashMap<String, String>  getGammes() {
+	gammes  = new HashMap<String, ArrayList<GammeType> >();
+    // Create and execute a SELECT SQL statement.
+    String selectSql = ""
+    		+ "SELECT [NumGamme] as numero"
+    		+ ",[NomGamme] as designation "    	
+    		+ "  FROM [ANODISATION_SECOURS].[dbo].[GammesAnodisation] "
+    		+ "order by NumGamme "
+    		;
+    try {
+		resultSet = mStatement.executeQuery(selectSql);
+		// Print results from select statement
+    
+	} catch (SQLException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+
+	return resultSet;
+}
+	
+	
+	
+public HashMap<String, String>  getFicheGamme() {
 		
 		ResultSet resultSet = null;        
 		HashMap<String, String> res = new HashMap<>();
@@ -292,13 +272,13 @@ public HashMap<String, String>  getGammes() {
 		return res;
 	}
 
-	class PosteProd implements Comparable<PosteProd>{
-		int[] arrMinutes;
-		int numposte;
-		int numligneBDD;
-		int start;
-		int stop;
-		String nom;
+	public class PosteProd implements Comparable<PosteProd>{
+		public int[] arrMinutes;
+		public int numposte;
+		public int numligneBDD;
+		public int start;
+		public int stop;
+		public String nom;
 		
 		PosteProd(int numposte,int numligne, String nom,int start, int stop) {
 		      this.numposte = numposte;
