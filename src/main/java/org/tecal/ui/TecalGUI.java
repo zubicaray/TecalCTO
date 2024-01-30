@@ -10,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.Vector;
 
 import javax.swing.GroupLayout;
@@ -18,6 +19,7 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
@@ -32,10 +34,12 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
+import org.tecal.scheduler.CST;
+import org.tecal.scheduler.TecalOrdo;
 import org.tecal.scheduler.data.SQL_DATA;
 import org.tecal.scheduler.types.GammeType;
 
-import com.formdev.flatlaf.FlatDarculaLaf;
+import com.formdev.flatlaf.FlatLightLaf;
 
 public class TecalGUI {
 
@@ -45,17 +49,20 @@ public class TecalGUI {
 	private JTable tableBarres;
 	private DefaultTableModel modelBarres;
 	private JTextField textFiltre;
+	private JRadioButton rdbtnFastModeRadioButton;
+	private JComboBox<Integer> comboDifficult;
 	
 	private SQL_DATA sqlCnx ;
 	private int mNumBarre=0;
 	private JTextField textField;
+	private TecalOrdo mTecalOrdo;
 	
 	/**
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
 		
-		FlatDarculaLaf.setup();
+		FlatLightLaf.setup();
 		
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -77,6 +84,9 @@ public class TecalGUI {
 		sqlCnx = new SQL_DATA();
 		initialize();
 		
+		
+		mTecalOrdo=new TecalOrdo();
+		mTecalOrdo.setDataSource(CST.SQLSERVER);
 		
 		
 		
@@ -149,10 +159,10 @@ public class TecalGUI {
 			}
 		});
 		
-		JRadioButton rdbtnFastModeRadioButton = new JRadioButton("mode rapide");
+		rdbtnFastModeRadioButton = new JRadioButton("mode rapide");
 		
 		Integer [] comboVals= {3,4,5,6,7,8,9};
-		JComboBox<Integer> comboDifficult = new JComboBox<Integer>(comboVals);
+		comboDifficult = new JComboBox<Integer>(comboVals);
 		comboDifficult.setSelectedItem(7);
 		
 		JLabel lblHardynessLabel = new JLabel("difficulté");
@@ -160,6 +170,26 @@ public class TecalGUI {
 		JScrollPane scrollPaneMsg = new JScrollPane();
 		
 		JButton btnRun = new JButton("RUN");
+		btnRun.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				LinkedHashMap<Integer,String> gammes=new LinkedHashMap <Integer,String>();
+				if(tableBarres.getRowCount()<2) {
+					JOptionPane.showMessageDialog(frame, "Minimum deux barres requises !","Tecal CPO", JOptionPane.ERROR_MESSAGE);
+				}else {
+					
+					for (int count = 0; count < tableBarres.getRowCount(); count++){
+						gammes.put((int)tableBarres.getValueAt(count, 0),tableBarres.getValueAt(count, 1).toString());
+					}
+					
+					mTecalOrdo.setBarres(gammes);
+					mTecalOrdo.run(rdbtnFastModeRadioButton.isSelected(),(int)comboDifficult.getSelectedItem());	
+					textField.setText(mTecalOrdo.print());
+				}
+				
+				
+			}
+		});
 		GroupLayout gl_panel = new GroupLayout(panel);
 		gl_panel.setHorizontalGroup(
 			gl_panel.createParallelGroup(Alignment.LEADING)

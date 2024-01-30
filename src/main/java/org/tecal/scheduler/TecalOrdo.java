@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -89,8 +90,10 @@ class Task {
 public class TecalOrdo {
 	
 	
-
-	private HashMap<String, ArrayList<GammeType> > gammeToZones;
+	// map de toutes les gammes
+	HashMap<String, ArrayList<GammeType> > mGammes;
+	// map des barres associé à leut gamme
+	private HashMap<String, ArrayList<GammeType> > mBarres;
 	private SQL_DATA sqlCnx ;
 	private CSV_DATA csv ;
 
@@ -112,22 +115,20 @@ public class TecalOrdo {
 	private int mSource;
 	
 	public TecalOrdo() {
-		outputMsg=new StringBuilder();
-		gammeToZones=new  HashMap<String, ArrayList<GammeType> >();
 		
+		mBarres=new  HashMap<String, ArrayList<GammeType> >();		
 		
 		Loader.loadNativeLibraries();
-
 		model = new CpModel();
 	}
 	
 	public void  setDataSource(int source) {
 
-		mSource=source;
-		HashMap<String, ArrayList<GammeType> > gammeToZonesAll;
+		setSource(source);
+		
 		if(CST.SQLSERVER ==source) {
 			sqlCnx = new SQL_DATA();
-			gammeToZonesAll=sqlCnx.getLignesGammesAll();
+			mGammes=sqlCnx.getLignesGammesAll();
 			zonesBDD=sqlCnx.getZones();
 		}else {
 			
@@ -137,28 +138,43 @@ public class TecalOrdo {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}			 
-			gammeToZonesAll=csv.getLignesGammesAll();				 
+			mGammes=csv.getLignesGammesAll();				 
 			zonesBDD=csv.getZones();
 			
 		}
 		
-		 int i=0;
-		 for(String gamme: CST.gammesTest ) {
-			 i++;
-			 gammeToZones.put(i+"-"+gamme, gammeToZonesAll.get(gamme));
-			 
-		 }
+		
 		 
 		 numzoneArr= zonesBDD.keySet().toArray(new Integer[0]);
 		
 	}
+	public void setBarresTest() {
+	 int i=0;
+	 for(String gamme: CST.gammesTest ) {
+		 i++;
+		 mBarres.put(i+"-"+gamme, mGammes.get(gamme));
+		 
+	 }
+	};
 	
-	public void  run() {
+	public void setBarres(LinkedHashMap<Integer,String> inBarres) {
+		
+		for (Map.Entry<Integer,String > entry : inBarres.entrySet()) {
+			
+			int numbarre=entry.getKey();
+			String gamme=entry.getValue();
+			 mBarres.put(numbarre+"-"+gamme, mGammes.get(gamme));
+		
+		}
+		
+	}
+	
+	public void  run(boolean modeFast,int contrainteLEvel) {
 
+		outputMsg=new StringBuilder();
+		prepareZones(model,modeFast,contrainteLEvel);
 		
-		prepareZones(model);
-		
-		if(CST.PRINT_PROD_DIAG && mSource==CST.SQLSERVER)
+		if(CST.PRINT_PROD_DIAG )
 		SwingUtilities.invokeLater(() -> {  
 
 			 final GanttChart ganttTecal = new GanttChart(sqlCnx,"Gantt Chart prod du 02/11/2023");
@@ -210,7 +226,7 @@ public class TecalOrdo {
 		// Creates a solver and solves the model.
 		CpSolver solver = new CpSolver();
 		//solver.getParameters().setNumWorkers(1);
-		if(CST.MODE_FAST) {
+		if(modeFast) {
 			solver.getParameters().setStopAfterFirstSolution(true);	
 		}
 		
@@ -244,6 +260,10 @@ public class TecalOrdo {
 					int debut=(int) solver.value(allTasks.get(key).startBDD);
 					int fin=(int) solver.value(allTasks.get(key).endBDD);
 					int derive=(int) solver.value(allTasks.get(key).finDerive.getStartExpr());
+					
+					if( task.numzone == CST.CHARGEMENT_NUMZONE) {
+						fin=derive;
+					}
 					
 					AssignedTask assignedTask = new AssignedTask(
 							jobID, taskID, task.numzone,
@@ -305,7 +325,7 @@ public class TecalOrdo {
 		SwingUtilities.invokeLater(() -> {  
 
 			final GanttChart ganttTecalOR = new GanttChart(sqlCnx,"Gantt Chart idéal du 02/11/2023");
-			ganttTecalOR.model_diag(assignedJobs,zonesBDD, gammeToZones);
+			ganttTecalOR.model_diag(assignedJobs,zonesBDD, mBarres);
 			ganttTecalOR.pack();
 			ganttTecalOR.setSize(new java.awt.Dimension(1500, 870));
 			RefineryUtilities.centerFrameOnScreen(ganttTecalOR);
@@ -322,19 +342,21 @@ public class TecalOrdo {
 		
 		TecalOrdo tecalOrdo=new TecalOrdo();
 		
-		tecalOrdo.setDataSource(CST.SQLSERVER);		
+		tecalOrdo.setDataSource(CST.SQLSERVER);	
 		
-		tecalOrdo.run();		
+		tecalOrdo.setBarresTest();
+		
+		tecalOrdo.run(CST.MODE_FAST,CST.PORTION_HORIZON);		
 
 		System.out.printf(tecalOrdo.print());	
 
 	}
 	
-	private  void prepareZones(CpModel model) {
+	private  void prepareZones(CpModel model,boolean modeFast,int contrainteLEvel) {
 		
 		int cptJob=0;
 		
-		for (Map.Entry<String, ArrayList<GammeType> > entry : gammeToZones.entrySet()) {
+		for (Map.Entry<String, ArrayList<GammeType> > entry : mBarres.entrySet()) {
 
 			JobType job = new JobType(cptJob, entry.getKey(),model);
 			//String lgamme = entry.getKey();
@@ -354,7 +376,7 @@ public class TecalOrdo {
 		
 	
 		
-		if(CST.MODE_FAST) {
+		if(modeFast) {
 			int max_time_job=0;
 			for (JobType job : allJobs) {
 				int t=0;
@@ -364,7 +386,7 @@ public class TecalOrdo {
 				if(t>max_time_job) max_time_job=t;
 			}
 			
-			horizon=max_time_job+(max_time_job/CST.PORTION_HORIZON)*allJobs.size();
+			horizon=max_time_job+(max_time_job/contrainteLEvel)*allJobs.size();
 			
 			
 		}
@@ -529,5 +551,13 @@ public class TecalOrdo {
 		
 		return model.newIntervalVar(before.getStartExpr(),model.newIntVar(0, horizon,  ""),after.getEndExpr(),"");
 	
+	}
+
+	public int getSource() {
+		return mSource;
+	}
+
+	public void setSource(int mSource) {
+		this.mSource = mSource;
 	}
 }

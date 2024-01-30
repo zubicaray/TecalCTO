@@ -22,10 +22,8 @@ class TaskOrdo {
 	IntervalVar intervalReel;
 	IntervalVar finDerive;
 
-	//dérive aux postes entre deux task d'un même job
-	//IntervalVar deriveInt;  
-	// temps incompresible d'arrivée du pont
-	//IntervalVar intArriveePont;
+
+
 	
 
 	boolean isOverlapable=false;
