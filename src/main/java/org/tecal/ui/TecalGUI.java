@@ -35,7 +35,7 @@ import javax.swing.table.TableRowSorter;
 import org.tecal.scheduler.data.SQL_DATA;
 import org.tecal.scheduler.types.GammeType;
 
-import com.formdev.flatlaf.FlatIntelliJLaf;
+import com.formdev.flatlaf.FlatDarculaLaf;
 
 public class TecalGUI {
 
@@ -55,7 +55,7 @@ public class TecalGUI {
 	 */
 	public static void main(String[] args) {
 		
-		FlatIntelliJLaf.setup();
+		FlatDarculaLaf.setup();
 		
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -99,7 +99,7 @@ public class TecalGUI {
 		
 		
 		frame = new JFrame();
-		frame.setBounds(100, 100, 702, 581);
+		frame.setBounds(100, 100, 702, 661);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
@@ -136,12 +136,24 @@ public class TecalGUI {
 		JLabel lblGammes = new JLabel("gammes:");
 		
 		JButton btnUpButton = new JButton("up");
+		btnUpButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				moveRowBy(-1);
+			}
+		});
 		
 		JButton btnDownButton = new JButton("down");
+		btnDownButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				moveRowBy(1);
+			}
+		});
 		
 		JRadioButton rdbtnFastModeRadioButton = new JRadioButton("mode rapide");
 		
-		JComboBox comboDifficult = new JComboBox();
+		Integer [] comboVals= {3,4,5,6,7,8,9};
+		JComboBox<Integer> comboDifficult = new JComboBox<Integer>(comboVals);
+		comboDifficult.setSelectedItem(7);
 		
 		JLabel lblHardynessLabel = new JLabel("difficulté");
 		
@@ -155,11 +167,7 @@ public class TecalGUI {
 					.addContainerGap()
 					.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
 						.addGroup(gl_panel.createSequentialGroup()
-							.addComponent(rdbtnFastModeRadioButton)
-							.addGap(137)
-							.addComponent(lblHardynessLabel, GroupLayout.PREFERRED_SIZE, 64, GroupLayout.PREFERRED_SIZE)
-							.addGap(18)
-							.addComponent(comboDifficult, GroupLayout.PREFERRED_SIZE, 56, GroupLayout.PREFERRED_SIZE)
+							.addComponent(scrollPaneMsg, GroupLayout.DEFAULT_SIZE, 661, Short.MAX_VALUE)
 							.addContainerGap())
 						.addGroup(gl_panel.createSequentialGroup()
 							.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
@@ -167,8 +175,8 @@ public class TecalGUI {
 									.addComponent(textFiltre, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 									.addGap(26)
 									.addComponent(lblGammes, GroupLayout.PREFERRED_SIZE, 99, GroupLayout.PREFERRED_SIZE))
-								.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 420, Short.MAX_VALUE))
-							.addGap(18)
+								.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE))
+							.addPreferredGap(ComponentPlacement.RELATED)
 							.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
 								.addGroup(gl_panel.createSequentialGroup()
 									.addComponent(scrollPaneBarres, GroupLayout.PREFERRED_SIZE, 135, GroupLayout.PREFERRED_SIZE)
@@ -180,38 +188,43 @@ public class TecalGUI {
 								.addComponent(lblBarreLabel, GroupLayout.PREFERRED_SIZE, 99, GroupLayout.PREFERRED_SIZE))
 							.addGap(33))
 						.addGroup(gl_panel.createSequentialGroup()
-							.addComponent(scrollPaneMsg, GroupLayout.PREFERRED_SIZE, 558, GroupLayout.PREFERRED_SIZE)
-							.addContainerGap(113, Short.MAX_VALUE))))
+							.addComponent(rdbtnFastModeRadioButton)
+							.addGap(137)
+							.addComponent(lblHardynessLabel, GroupLayout.PREFERRED_SIZE, 64, GroupLayout.PREFERRED_SIZE)
+							.addGap(18)
+							.addComponent(comboDifficult, GroupLayout.PREFERRED_SIZE, 56, GroupLayout.PREFERRED_SIZE)
+							.addContainerGap(311, Short.MAX_VALUE))))
 		);
 		gl_panel.setVerticalGroup(
 			gl_panel.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_panel.createSequentialGroup()
-					.addGap(49)
-					.addGroup(gl_panel.createParallelGroup(Alignment.LEADING, false)
-						.addComponent(lblBarreLabel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-						.addGroup(gl_panel.createParallelGroup(Alignment.BASELINE)
-							.addComponent(textFiltre, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-							.addComponent(lblGammes, GroupLayout.PREFERRED_SIZE, 20, GroupLayout.PREFERRED_SIZE)))
+					.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
+						.addGroup(gl_panel.createSequentialGroup()
+							.addGap(105)
+							.addComponent(btnUpButton)
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addComponent(btnDownButton)
+							.addGap(200))
+						.addGroup(gl_panel.createSequentialGroup()
+							.addGap(49)
+							.addGroup(gl_panel.createParallelGroup(Alignment.LEADING, false)
+								.addComponent(lblBarreLabel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+								.addGroup(gl_panel.createParallelGroup(Alignment.BASELINE)
+									.addComponent(textFiltre, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+									.addComponent(lblGammes, GroupLayout.PREFERRED_SIZE, 20, GroupLayout.PREFERRED_SIZE)))
+							.addPreferredGap(ComponentPlacement.UNRELATED)
+							.addGroup(gl_panel.createParallelGroup(Alignment.BASELINE)
+								.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 289, Short.MAX_VALUE)
+								.addComponent(scrollPaneBarres, GroupLayout.DEFAULT_SIZE, 289, Short.MAX_VALUE))))
 					.addPreferredGap(ComponentPlacement.UNRELATED)
-					.addGroup(gl_panel.createParallelGroup(Alignment.BASELINE)
-						.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 189, Short.MAX_VALUE)
-						.addComponent(scrollPaneBarres, GroupLayout.DEFAULT_SIZE, 189, Short.MAX_VALUE))
-					.addGap(18)
 					.addGroup(gl_panel.createParallelGroup(Alignment.BASELINE)
 						.addComponent(rdbtnFastModeRadioButton)
 						.addComponent(comboDifficult, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-						.addComponent(lblHardynessLabel))
-					.addGap(128)
-					.addComponent(scrollPaneMsg, GroupLayout.PREFERRED_SIZE, 65, GroupLayout.PREFERRED_SIZE)
-					.addContainerGap())
-				.addGroup(gl_panel.createSequentialGroup()
-					.addGap(105)
-					.addComponent(btnUpButton)
-					.addPreferredGap(ComponentPlacement.RELATED)
-					.addComponent(btnDownButton)
-					.addPreferredGap(ComponentPlacement.RELATED, 304, Short.MAX_VALUE)
-					.addComponent(btnRun)
-					.addGap(30))
+						.addComponent(lblHardynessLabel)
+						.addComponent(btnRun))
+					.addGap(18)
+					.addComponent(scrollPaneMsg, GroupLayout.PREFERRED_SIZE, 149, GroupLayout.PREFERRED_SIZE)
+					.addGap(24))
 		);
 		
 		textField = new JTextField();
@@ -262,7 +275,7 @@ public class TecalGUI {
 	    	tableGammes.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 	    	TableColumnModel columnModel = tableGammes.getColumnModel();
 	        columnModel.getColumn(0).setPreferredWidth(70);
-	        columnModel.getColumn(0).setMaxWidth(70);
+	        columnModel.getColumn(0).setMaxWidth(400);
 	          	
 	    	tableGammes.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
 	    	
@@ -361,4 +374,21 @@ public class TecalGUI {
    
 
 	}
+	
+	private void moveRowBy(int by)
+	{
+	    DefaultTableModel model = (DefaultTableModel) tableBarres.getModel();
+	    int[] rows = tableBarres.getSelectedRows();
+	    int destination = rows[0] + by;
+	    int rowCount = model.getRowCount();
+
+	    if (destination < 0 || destination >= rowCount)
+	    {
+	        return;
+	    }
+
+	    model.moveRow(rows[0], rows[rows.length - 1], destination);
+	    tableBarres.setRowSelectionInterval(rows[0] + by, rows[rows.length - 1] + by);
+	}
+	
 }

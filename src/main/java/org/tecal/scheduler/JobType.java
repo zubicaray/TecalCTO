@@ -10,7 +10,7 @@ import java.util.Map;
 
 import org.tecal.scheduler.types.GammeType;
 import org.tecal.scheduler.types.ZoneType;
-import org.tecal.scheduler.TaskOrdo;
+
 
 import com.google.ortools.sat.CpModel;
 import com.google.ortools.sat.CpSolver;

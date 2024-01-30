@@ -90,35 +90,53 @@ public class TecalOrdo {
 	
 	
 
-	static HashMap<String, ArrayList<GammeType> > gammeToZones;
-	static SQL_DATA sqlCnx ;
+	private HashMap<String, ArrayList<GammeType> > gammeToZones;
+	private SQL_DATA sqlCnx ;
+	private CSV_DATA csv ;
 
-	static HashMap<Integer,ZoneType> zonesBDD;
+	private HashMap<Integer,ZoneType> zonesBDD;
 	// lien entre id de la table Zone et les zones de l'ordo
-	static Integer[] numzoneArr;
+	private Integer[] numzoneArr;
 
 	// Creates the model.
-	static	List<JobType> allJobs= new ArrayList<JobType>();
-	static	Map<List<Integer>, TaskOrdo> allTasks = new HashMap<>();
-	static	Map<Integer, List<IntervalVar>> zoneToIntervals = new HashMap<>();
-	static	Map<Integer, List<IntervalVar>> zoneCumulToIntervals = new HashMap<>();
+	private	List<JobType> allJobs= new ArrayList<JobType>();
+	private	Map<List<Integer>, TaskOrdo> allTasks = new HashMap<>();
+	private	Map<Integer, List<IntervalVar>> zoneToIntervals = new HashMap<>();
+	private	Map<Integer, List<IntervalVar>> zoneCumulToIntervals = new HashMap<>();
+	
+	private CpModel model;
+	
 	static int horizon = 0;
 	
+	private StringBuilder outputMsg;
+	private int mSource;
 	
-	
-	@SuppressWarnings("unused")
-	public static void main(String[] args) throws IOException, CsvException, URISyntaxException {
-		
+	public TecalOrdo() {
+		outputMsg=new StringBuilder();
 		gammeToZones=new  HashMap<String, ArrayList<GammeType> >();
-		HashMap<String, ArrayList<GammeType> > gammeToZonesAll;
 		
-		if(CST.DATA != CST.CSV) {
+		
+		Loader.loadNativeLibraries();
+
+		model = new CpModel();
+	}
+	
+	public void  setDataSource(int source) {
+
+		mSource=source;
+		HashMap<String, ArrayList<GammeType> > gammeToZonesAll;
+		if(CST.SQLSERVER ==source) {
 			sqlCnx = new SQL_DATA();
 			gammeToZonesAll=sqlCnx.getLignesGammesAll();
 			zonesBDD=sqlCnx.getZones();
 		}else {
-			CSV_DATA csv ;
-			csv = new CSV_DATA();			 
+			
+			try {
+				csv = new CSV_DATA();
+			} catch (IOException | CsvException | URISyntaxException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}			 
 			gammeToZonesAll=csv.getLignesGammesAll();				 
 			zonesBDD=csv.getZones();
 			
@@ -130,16 +148,17 @@ public class TecalOrdo {
 			 gammeToZones.put(i+"-"+gamme, gammeToZonesAll.get(gamme));
 			 
 		 }
+		 
+		 numzoneArr= zonesBDD.keySet().toArray(new Integer[0]);
 		
-		numzoneArr= zonesBDD.keySet().toArray(new Integer[0]);
-		
-		Loader.loadNativeLibraries();
+	}
+	
+	public void  run() {
 
-		CpModel model = new CpModel();
 		
 		prepareZones(model);
 		
-		if(CST.PRINT_PROD_DIAG && CST.DATA==CST.SQLSERVER)
+		if(CST.PRINT_PROD_DIAG && mSource==CST.SQLSERVER)
 		SwingUtilities.invokeLater(() -> {  
 
 			 final GanttChart ganttTecal = new GanttChart(sqlCnx,"Gantt Chart prod du 02/11/2023");
@@ -213,7 +232,7 @@ public class TecalOrdo {
 			}
 
 
-			System.out.println("Solution:");
+			outputMsg.append("Solution:");
 			// Create one list of assigned tasks per Zone.
 
 			for (int jobID = 0; jobID < allJobs.size(); ++jobID) {
@@ -259,24 +278,24 @@ public class TecalOrdo {
 					output += solLineTasks + "%n";
 					output += solLine + "%n";
 				}
-				System.out.printf("Optimal Schedule Length: %f%n", solver.objectiveValue());
-				System.out.printf(output);
+				outputMsg.append(String.format("Optimal Schedule Length: %f%n", solver.objectiveValue()));
+				outputMsg.append(output);
 			}
 
 
 
 		} else {
-			System.out.println("No solution found.");
+			outputMsg.append("No solution found.");
 			return;
 		}
 
 
 		// Statistics.
-		System.out.println("\n/////////////////////////////////////////////////////////\n");
-		System.out.println("Statistics");
-		System.out.printf("  conflicts: %d%n", solver.numConflicts());
-		System.out.printf("  branches : %d%n", solver.numBranches());
-		System.out.printf("  wall time: %f s%n", solver.wallTime());
+		//outputMsg.append("\n/////////////////////////////////////////////////////////\n");
+		outputMsg.append("Statisticques:");
+		outputMsg.append(String.format("  conflits: %d%n", solver.numConflicts()));
+		outputMsg.append(String.format("  branches : %d%n", solver.numBranches()));
+		outputMsg.append(String.format("  temps %f s%n", solver.wallTime()));
 
 
 
@@ -294,12 +313,24 @@ public class TecalOrdo {
 
 		});
 		
+	}
+	
+	public String  print() {
+		return outputMsg.toString();
+	}
+	public static void main(String[] args) throws IOException, CsvException, URISyntaxException {
+		
+		TecalOrdo tecalOrdo=new TecalOrdo();
+		
+		tecalOrdo.setDataSource(CST.SQLSERVER);		
+		
+		tecalOrdo.run();		
 
-		 
+		System.out.printf(tecalOrdo.print());	
 
 	}
 	
-	private static void prepareZones(CpModel model) {
+	private  void prepareZones(CpModel model) {
 		
 		int cptJob=0;
 		
@@ -359,7 +390,7 @@ public class TecalOrdo {
 	
 	}
 	
-	private static void jobConstraints(CpModel model) {
+	private  void jobConstraints(CpModel model) {
 		// Create and add disjunctive constraints.		
 		for (int numzone : numzoneArr) {
 
@@ -382,7 +413,7 @@ public class TecalOrdo {
 		}
 	}
 	
-	private static void jobsPrecedence (CpModel model) {
+	private  void jobsPrecedence (CpModel model) {
 
 		// Precedences inside a job.
 		for (int jobID = 0; jobID < allJobs.size(); ++jobID) {
@@ -403,7 +434,7 @@ public class TecalOrdo {
 
 	}
 	
-	private static void machineConstraints(CpModel model) {
+	private  void machineConstraints(CpModel model) {
 		// les zones de rincages ne doivent pas se croiser
 
 				ArrayList<ZonesIntervalVar> listZonesNoOverlapParPont  = new  ArrayList<ZonesIntervalVar>();  

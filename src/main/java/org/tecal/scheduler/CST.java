@@ -11,7 +11,6 @@ public class CST {
 	//------------------------------------------------------------
 	public final static int SQLSERVER =1;
 	public final static int CSV =2;
-	public final static int DATA =SQLSERVER;
 	//------------------------------------------------------------
 	// -----------------  CONSTRAINTES ---------------------------
 	//------------------------------------------------------------
