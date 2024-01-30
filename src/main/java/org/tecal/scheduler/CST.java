@@ -41,7 +41,7 @@ public class CST {
 	//--------------------------------------------------------------
 	//------------ AFFICHAGE ---------------------------------------
 	//--------------------------------------------------------------
-	public final static boolean PRINT_PROD_DIAG =false;
+	public final static boolean PRINT_PROD_DIAG =true;
 	public final static boolean PrintTaskTime =false;
 	public final static boolean PrintZonesTime=false;
 	public final static boolean PrintMvtsPont=false;

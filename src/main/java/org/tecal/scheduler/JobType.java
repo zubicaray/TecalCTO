@@ -410,8 +410,8 @@ public class JobType {
 						}
 								
 						if(groupe==false) {
-							if(i==0) {
-								debutLonguesZonesPont.get(pont).add(TecalOrdo.getMvt(model,taskOrdo.endBDD,horizon));
+							if(i==1) {
+								debutLonguesZonesPont.get(pont).add(TecalOrdo.getMvt(model,start,horizon,30));
 							}
 							else 
 								debutLonguesZonesPont.get(pont).add(TecalOrdo.getMvt(model,start,horizon));					

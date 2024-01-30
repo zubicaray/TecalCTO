@@ -61,7 +61,7 @@
 
 <properties>
   <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  <exec.mainClass>org.tecal.scheduler.TecalOrdro</exec.mainClass>
+  <exec.mainClass>org.tecal.ui.TecalGUI</exec.mainClass>
   <maven.compiler.source>1.8</maven.compiler.source>
   <maven.compiler.target>1.8</maven.compiler.target>
 </properties>

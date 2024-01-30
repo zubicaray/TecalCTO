@@ -1,20 +1,28 @@
 package org.tecal.ui;
 
+import java.awt.Cursor;
 import java.awt.EventQueue;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Paths;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Vector;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -40,10 +48,13 @@ import org.tecal.scheduler.data.SQL_DATA;
 import org.tecal.scheduler.types.GammeType;
 
 import com.formdev.flatlaf.FlatLightLaf;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 public class TecalGUI {
 
-	private JFrame frame;
+	private JFrame frmTecalOrdonnanceur;
+	private JFrame gantFrame;
 	private JTable tableGammes;
 	private DefaultTableModel modelGammes ;
 	private JTable tableBarres;
@@ -51,6 +62,7 @@ public class TecalGUI {
 	private JTextField textFiltre;
 	private JRadioButton rdbtnFastModeRadioButton;
 	private JComboBox<Integer> comboDifficult;
+	private ImageIcon img;
 	
 	private SQL_DATA sqlCnx ;
 	private int mNumBarre=0;
@@ -68,7 +80,7 @@ public class TecalGUI {
 			public void run() {
 				try {
 					TecalGUI window = new TecalGUI();
-					window.frame.setVisible(true);
+					window.frmTecalOrdonnanceur.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -108,12 +120,38 @@ public class TecalGUI {
 		
 		
 		
-		frame = new JFrame();
-		frame.setBounds(100, 100, 702, 661);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frmTecalOrdonnanceur = new JFrame();
+		frmTecalOrdonnanceur.setTitle("Tecal Ordonnanceur");
+		URL res = getClass().getClassLoader().getResource("gantt-chart 16.png");
+		File file;
+		String absolutePath="";
+		List<Image> icons = new ArrayList<Image>();
+		try {
+			file = Paths.get(res.toURI()).toFile();
+			absolutePath = file.getAbsolutePath();
+			img = new ImageIcon(absolutePath);
+			icons.add(img.getImage());
+			res = getClass().getClassLoader().getResource("gantt-chart 32.png");
+			file = Paths.get(res.toURI()).toFile();
+			absolutePath = file.getAbsolutePath();
+			img = new ImageIcon(absolutePath);
+			icons.add(img.getImage());
+			
+			
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		frmTecalOrdonnanceur.setIconImages(icons); 
+		
+		gantFrame = new JFrame();
+		gantFrame.setIconImages(icons); 
+		frmTecalOrdonnanceur.setBounds(100, 100, 702, 661);
+		frmTecalOrdonnanceur.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-		GroupLayout groupLayout = new GroupLayout(frame.getContentPane());
+		GroupLayout groupLayout = new GroupLayout(frmTecalOrdonnanceur.getContentPane());
 		groupLayout.setHorizontalGroup(
 			groupLayout.createParallelGroup(Alignment.LEADING)
 				.addComponent(tabbedPane, GroupLayout.DEFAULT_SIZE, 686, Short.MAX_VALUE)
@@ -131,12 +169,18 @@ public class TecalGUI {
 		JScrollPane scrollPaneBarres = new JScrollPane();
 		
 		textFiltre = new JTextField();
-		textFiltre.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+		textFiltre.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyReleased(KeyEvent e) {
 				TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(((DefaultTableModel) tableGammes.getModel())); 
 			    sorter.setRowFilter(RowFilter.regexFilter(textFiltre.getText()));
 
 			    tableGammes.setRowSorter(sorter);
+			}
+		});
+		textFiltre.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
 			}
 		});
 		textFiltre.setColumns(10);
@@ -175,16 +219,21 @@ public class TecalGUI {
 				
 				LinkedHashMap<Integer,String> gammes=new LinkedHashMap <Integer,String>();
 				if(tableBarres.getRowCount()<2) {
-					JOptionPane.showMessageDialog(frame, "Minimum deux barres requises !","Tecal CPO", JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(frmTecalOrdonnanceur, "Minimum deux barres requises !","Tecal CPO", JOptionPane.ERROR_MESSAGE);
 				}else {
 					
+					gammes.clear();
 					for (int count = 0; count < tableBarres.getRowCount(); count++){
 						gammes.put((int)tableBarres.getValueAt(count, 0),tableBarres.getValueAt(count, 1).toString());
 					}
 					
 					mTecalOrdo.setBarres(gammes);
-					mTecalOrdo.run(rdbtnFastModeRadioButton.isSelected(),(int)comboDifficult.getSelectedItem());	
+					gantFrame.getContentPane().removeAll();
+					frmTecalOrdonnanceur.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+					mTecalOrdo.run(rdbtnFastModeRadioButton.isSelected(),(int)comboDifficult.getSelectedItem(),gantFrame);	
+					frmTecalOrdonnanceur.setCursor(Cursor.getDefaultCursor());
 					textField.setText(mTecalOrdo.print());
+					
 				}
 				
 				
@@ -201,11 +250,11 @@ public class TecalGUI {
 							.addContainerGap())
 						.addGroup(gl_panel.createSequentialGroup()
 							.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
+								.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE)
 								.addGroup(gl_panel.createSequentialGroup()
-									.addComponent(textFiltre, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-									.addGap(26)
-									.addComponent(lblGammes, GroupLayout.PREFERRED_SIZE, 99, GroupLayout.PREFERRED_SIZE))
-								.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE))
+									.addComponent(lblGammes, GroupLayout.PREFERRED_SIZE, 67, GroupLayout.PREFERRED_SIZE)
+									.addPreferredGap(ComponentPlacement.RELATED)
+									.addComponent(textFiltre, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
 							.addPreferredGap(ComponentPlacement.RELATED)
 							.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
 								.addGroup(gl_panel.createSequentialGroup()
@@ -230,22 +279,24 @@ public class TecalGUI {
 				.addGroup(gl_panel.createSequentialGroup()
 					.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
 						.addGroup(gl_panel.createSequentialGroup()
-							.addGap(105)
+							.addGap(49)
+							.addComponent(lblBarreLabel))
+						.addGroup(gl_panel.createSequentialGroup()
+							.addGap(50)
+							.addGroup(gl_panel.createParallelGroup(Alignment.BASELINE)
+								.addComponent(lblGammes, GroupLayout.PREFERRED_SIZE, 20, GroupLayout.PREFERRED_SIZE)
+								.addComponent(textFiltre, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))))
+					.addPreferredGap(ComponentPlacement.UNRELATED)
+					.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
+						.addGroup(gl_panel.createParallelGroup(Alignment.BASELINE)
+							.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
+							.addComponent(scrollPaneBarres, GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE))
+						.addGroup(gl_panel.createSequentialGroup()
+							.addGap(35)
 							.addComponent(btnUpButton)
 							.addPreferredGap(ComponentPlacement.RELATED)
 							.addComponent(btnDownButton)
-							.addGap(200))
-						.addGroup(gl_panel.createSequentialGroup()
-							.addGap(49)
-							.addGroup(gl_panel.createParallelGroup(Alignment.LEADING, false)
-								.addComponent(lblBarreLabel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-								.addGroup(gl_panel.createParallelGroup(Alignment.BASELINE)
-									.addComponent(textFiltre, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-									.addComponent(lblGammes, GroupLayout.PREFERRED_SIZE, 20, GroupLayout.PREFERRED_SIZE)))
-							.addPreferredGap(ComponentPlacement.UNRELATED)
-							.addGroup(gl_panel.createParallelGroup(Alignment.BASELINE)
-								.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 289, Short.MAX_VALUE)
-								.addComponent(scrollPaneBarres, GroupLayout.DEFAULT_SIZE, 289, Short.MAX_VALUE))))
+							.addGap(200)))
 					.addPreferredGap(ComponentPlacement.UNRELATED)
 					.addGroup(gl_panel.createParallelGroup(Alignment.BASELINE)
 						.addComponent(rdbtnFastModeRadioButton)
@@ -332,7 +383,7 @@ public class TecalGUI {
 		
 		scrollPane.setViewportView(tableGammes);
 		panel.setLayout(gl_panel);
-		frame.getContentPane().setLayout(groupLayout);
+		frmTecalOrdonnanceur.getContentPane().setLayout(groupLayout);
 	}
 
 	public void buildTableModelBarre()

@@ -102,7 +102,7 @@ public class GanttChart extends ApplicationFrame {
 	
 	
 	
-	public void model_diag(
+	public JFreeChart model_diag(
 			Map<Integer, List<AssignedTask>> assignedJobs ,HashMap<Integer,ZoneType> inZonesBDD, 
 			HashMap<String, ArrayList<GammeType> > ficheToZones) {
 		
@@ -312,8 +312,8 @@ public class GanttChart extends ApplicationFrame {
 		 XYPlot plot = new XYPlot(dataset, new SymbolAxis("zones", zonesAllGamme), new NumberAxis(), renderer);
 	     plot.setOrientation(PlotOrientation.HORIZONTAL);
 	    
-	     JFreeChart chart = new JFreeChart(plot);
-	     getContentPane().add(new ChartPanel(chart));
+	     return   new JFreeChart(plot);
+	     //getContentPane().add(new ChartPanel(chart));
 		
 	
 	}

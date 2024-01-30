@@ -15,7 +15,7 @@ class TaskOrdo {
 	IntVar arriveePont;
 	//interval théorique
 	IntervalVar intervalBDD;
-	
+		
 	//réel , qui intègre les contraintes du pont
 	IntVar deb;
 	IntVar fin;
@@ -79,6 +79,7 @@ class TaskOrdo {
 		endBDD = model.newIntVar(minDebut+duration, horizon, "end" + suffix);
 		//derive = model.newIntVar(0, horizon,  "derive_" + suffix);
 		arriveePont = model.newIntVar(minDebut+duration, horizon,  "pontArrive_" + suffix);
+
 		intervalBDD = model.newIntervalVar(startBDD, LinearExpr.constant(duration),endBDD, "interval" + suffix);
 
 		
@@ -117,10 +118,19 @@ class TaskOrdo {
 				startBDD,
 				model.newIntVar(CST.TEMPS_MVT_PONT_MIN_JOB+duration, CST.TEMPS_MVT_PONT_MIN_JOB+duration+inderive, ""),
 				fin,"");
+		
+		
+		//arriveePontDerive= model.newIntVar(0, horizon, "");
+		//model.newIntervalVar(arriveePontDerive,				LinearExpr.constant(CST.TEMPS_MVT_PONT_MIN_JOB+10),				fin,"");
+		
 		finDerive=model.newIntervalVar(
 				model.newIntVar(minDebut+duration, horizon, ""),
 				LinearExpr.constant(CST.TEMPS_MVT_PONT_MIN_JOB),
 				fin,"");
+		
+		
+		
+		
 		
 
 

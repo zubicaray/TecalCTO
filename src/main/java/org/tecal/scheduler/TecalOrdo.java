@@ -22,8 +22,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 
-import javax.swing.SwingUtilities;  
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
 import org.jfree.ui.RefineryUtilities;
 import org.tecal.scheduler.data.CSV_DATA;
 import org.tecal.scheduler.data.SQL_DATA;
@@ -95,6 +98,14 @@ public class TecalOrdo {
 	// map des barres associé à leut gamme
 	private HashMap<String, ArrayList<GammeType> > mBarres;
 	private SQL_DATA sqlCnx ;
+	public SQL_DATA getSqlCnx() {
+		return sqlCnx;
+	}
+
+	public void setSqlCnx(SQL_DATA sqlCnx) {
+		this.sqlCnx = sqlCnx;
+	}
+
 	private CSV_DATA csv ;
 
 	private HashMap<Integer,ZoneType> zonesBDD;
@@ -159,6 +170,7 @@ public class TecalOrdo {
 	
 	public void setBarres(LinkedHashMap<Integer,String> inBarres) {
 		
+		mBarres.clear();
 		for (Map.Entry<Integer,String > entry : inBarres.entrySet()) {
 			
 			int numbarre=entry.getKey();
@@ -169,22 +181,12 @@ public class TecalOrdo {
 		
 	}
 	
-	public void  run(boolean modeFast,int contrainteLEvel) {
+	public void  run(boolean modeFast,int contrainteLEvel,JFrame ganttFrame) {
 
 		outputMsg=new StringBuilder();
 		prepareZones(model,modeFast,contrainteLEvel);
 		
-		if(CST.PRINT_PROD_DIAG )
-		SwingUtilities.invokeLater(() -> {  
-
-			 final GanttChart ganttTecal = new GanttChart(sqlCnx,"Gantt Chart prod du 02/11/2023");
-			 ganttTecal.prod_diag();
-			 ganttTecal.pack();
-			 ganttTecal.setSize(new java.awt.Dimension(1500, 870));
-		     RefineryUtilities.centerFrameOnScreen(ganttTecal);
-		     ganttTecal.setVisible(true);
-
-		});
+		
 		
 
 		//--------------------------------------------------------------------------------------------
@@ -312,7 +314,7 @@ public class TecalOrdo {
 
 		// Statistics.
 		//outputMsg.append("\n/////////////////////////////////////////////////////////\n");
-		outputMsg.append("Statisticques:");
+		outputMsg.append("Statistiques:\n");
 		outputMsg.append(String.format("  conflits: %d%n", solver.numConflicts()));
 		outputMsg.append(String.format("  branches : %d%n", solver.numBranches()));
 		outputMsg.append(String.format("  temps %f s%n", solver.wallTime()));
@@ -322,16 +324,21 @@ public class TecalOrdo {
 
 
 
-		SwingUtilities.invokeLater(() -> {  
+		
 
-			final GanttChart ganttTecalOR = new GanttChart(sqlCnx,"Gantt Chart idéal du 02/11/2023");
-			ganttTecalOR.model_diag(assignedJobs,zonesBDD, mBarres);
-			ganttTecalOR.pack();
-			ganttTecalOR.setSize(new java.awt.Dimension(1500, 870));
-			RefineryUtilities.centerFrameOnScreen(ganttTecalOR);
-			ganttTecalOR.setVisible(true);
+		final GanttChart ganttTecalOR = new GanttChart(sqlCnx,"Gantt Chart idéal du 02/11/2023");
+		JFreeChart chart=ganttTecalOR.model_diag(assignedJobs,zonesBDD, mBarres);
+		
+		ChartPanel cp = new ChartPanel(chart);
+		
+		ganttFrame.add(cp);
+		
+		ganttFrame.pack();
+		ganttFrame.setSize(new java.awt.Dimension(1500, 870));
+		RefineryUtilities.centerFrameOnScreen(ganttFrame);
+		ganttFrame.setVisible(true);
 
-		});
+		
 		
 	}
 	
@@ -346,7 +353,20 @@ public class TecalOrdo {
 		
 		tecalOrdo.setBarresTest();
 		
-		tecalOrdo.run(CST.MODE_FAST,CST.PORTION_HORIZON);		
+		JFrame frame=new JFrame();
+		
+		tecalOrdo.run(CST.MODE_FAST,CST.PORTION_HORIZON,frame);		
+		if(CST.PRINT_PROD_DIAG )
+			SwingUtilities.invokeLater(() -> {  
+
+				 final GanttChart ganttTecal = new GanttChart(tecalOrdo.getSqlCnx(),"Gantt Chart prod du 02/11/2023");
+				 ganttTecal.prod_diag();
+				 ganttTecal.pack();
+				 ganttTecal.setSize(new java.awt.Dimension(1500, 870));
+			     RefineryUtilities.centerFrameOnScreen(ganttTecal);
+			     ganttTecal.setVisible(true);
+
+			});
 
 		System.out.printf(tecalOrdo.print());	
 
@@ -355,7 +375,8 @@ public class TecalOrdo {
 	private  void prepareZones(CpModel model,boolean modeFast,int contrainteLEvel) {
 		
 		int cptJob=0;
-		
+		allJobs.clear();
+		allTasks.clear();
 		for (Map.Entry<String, ArrayList<GammeType> > entry : mBarres.entrySet()) {
 
 			JobType job = new JobType(cptJob, entry.getKey(),model);
@@ -367,7 +388,7 @@ public class TecalOrdo {
 		}
 
 		// Computes horizon dynamically as the sum of all durations.
-		
+		horizon=0;
 		for (JobType job : allJobs) {
 			for (Task task : job.tasksJob) {
 				horizon += task.duration;
@@ -395,7 +416,8 @@ public class TecalOrdo {
 		for (JobType job : allJobs) job.horizon=horizon;
 		
 
-
+		zoneToIntervals.clear();
+		zoneCumulToIntervals.clear();
 		for (int jobID = 0; jobID < allJobs.size(); ++jobID) {
 			JobType job = allJobs.get(jobID);
 			job.addIntervalForModel(allTasks,zoneToIntervals,zoneCumulToIntervals,jobID,zonesBDD);
@@ -518,6 +540,23 @@ public class TecalOrdo {
 				}					
 	}
 	
+	
+static IntervalVar getMvt(CpModel model,IntVar mvtPont,int horizon,int left){
+		
+		IntervalVar before = model.newIntervalVar(
+				model.newIntVar(0, horizon, ""),
+				LinearExpr.constant(CST.TEMPS_MVT_PONT*2)
+				, mvtPont,
+				"");
+		
+		IntervalVar after = model.newIntervalVar(mvtPont,
+				LinearExpr.constant(CST.TEMPS_MVT_PONT), 
+				model.newIntVar(0, horizon, ""),
+				"");
+		
+		return model.newIntervalVar(before.getStartExpr(),model.newIntVar(0, horizon,  ""),after.getEndExpr(),"");
+	
+	}
 
 	static IntervalVar getMvt(CpModel model,IntVar mvtPont,int horizon){
 		
