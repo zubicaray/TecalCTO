@@ -272,9 +272,11 @@ public HashMap<String, String>  getFicheGamme() {
 
         HashMap<Integer,PosteBDD> postes= getPostes();
 
-        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        // tri par DF.Numposte,DG.NumLigne
-        // car c l'ordre d'affichage des cases de la gamme dans jfreechart
+        /**
+         * tri par DF.Numposte,DG.NumLigne
+         * car c l'ordre d'affichage des cases de la gamme dans jfreechart
+         */
+        
         String selectSql = "select DG.numficheproduction,P.Nomposte +' - ' + P.LibellePoste,  \r\n"
         		+ "DATEDIFF(SECOND, DATEADD(DAY, DATEDIFF(DAY, 0, DF.DateEntreePoste), 0),DF.DateEntreePoste),\r\n"
         		+ "DATEDIFF(SECOND, DATEADD(DAY, DATEDIFF(DAY, 0, DF.DateSortiePoste), 0),DF.DateSortiePoste)	,DF.NumLigne, DF.Numposte  from  \r\n"

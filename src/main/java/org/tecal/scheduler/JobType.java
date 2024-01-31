@@ -402,7 +402,7 @@ public class JobType {
 
 					if (i == idDebZone ) {			
 						//TODO fixe bug 
-						if(idDebZone-1==indexAnod ) {							
+						if(indexAnod >0 && idDebZone-1==indexAnod ) {							
 							start = taskAnod.endBDD;						
 						}
 						else {
@@ -422,7 +422,7 @@ public class JobType {
 						
 						
 						//dernière zone avant l'anod, on ajoute un dernier mvt de pont pour y aller justement
-						if(idFinZone+1==indexAnod) {							
+						if(indexAnod >0 && idFinZone+1==indexAnod) {							
 							end = taskAnod.deb;						
 						}
 						else {

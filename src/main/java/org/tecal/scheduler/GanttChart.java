@@ -92,12 +92,12 @@ public class GanttChart extends ApplicationFrame {
 	    	  
 	      }
 	    }
-	 /*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	 /**
 	 * 
 	 * AssignedTask.idtask  = id machine/zone GOOGLE.OR pour toutes les gammes 
 	 * task.idzone  = id de la zone propre à la gamme
 	 * 
-	 * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	 * 
 	 */
 	
 	
@@ -208,9 +208,12 @@ public class GanttChart extends ApplicationFrame {
 		 );
 		 
 		 
-		 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-		 //on trie les zones de chaque job par date
-		 // pour que jfreechart les ajoute dans l'ordre pour qu'on puisse rtrouver les bons tooltip
+		 
+		 /** 
+		  * on trie les zones de chaque job par date
+		  * pour que jfreechart les ajoute dans l'ordre pour qu'on puisse rtrouver les bons tooltip
+		  */
+		  
 		 tabAssignedJobsSorted.forEach((idjob, value) -> {	 
 			Collections.sort(value,new Comparator<AssignedTask>() {
 			        public int compare(AssignedTask a1, AssignedTask a2) {

@@ -4,7 +4,8 @@ package org.tecal.scheduler;
 public class CST {
 	
 	
-	public final static String gammesTest[] ={"000021","000164","000601","000467","000347","000169"};
+	//public final static String gammesTest[] ={"000022","000210"};
+	public final static String gammesTest[] ={"000022","000210","000021","000164","000601","000467","000347","000169"};
 	
 	//------------------------------------------------------------
 	// -----------------  DATA ---------------------------
@@ -16,8 +17,8 @@ public class CST {
 	//------------------------------------------------------------
 	public final static boolean CSTR_NOOVERLAP_MVTS_PONT =false;
 	public final static boolean CSTR_NOOVERLAP_ZONES_GROUPEES = true ;
-	public final static boolean MODE_FAST = false ;
-	public final static int PORTION_HORIZON = 7 ;
+	public final static boolean MODE_FAST = true ;
+	public final static int 	PORTION_HORIZON = 7 ;
 	
 	//------------------------------------------------------------
 	// -----------------  TEMPS ----------------------------------
@@ -41,18 +42,18 @@ public class CST {
 	//--------------------------------------------------------------
 	//------------ AFFICHAGE ---------------------------------------
 	//--------------------------------------------------------------
-	public final static boolean PRINT_PROD_DIAG =false;
-	public final static boolean PrintTaskTime =false;
-	public final static boolean PrintZonesTime=false;
-	public final static boolean PrintMvtsPont=false;
+	public final static boolean PRINT_PROD_DIAG 	=false;
+	public final static boolean PrintTaskTime 		=false;
+	public final static boolean PrintZonesTime		=false;
+	public final static boolean PrintMvtsPont		=false;
 	public final static boolean PrintGroupementZones=false;
 	
 	
 	//------------------------------------------------------------
-	public final static int ANODISATION_NUMZONE =15;
-	public final static int COLMATAGE_NUMZONE =32;
-	public final static int DECHARGEMENT_NUMZONE =35;
-	public final static int CHARGEMENT_NUMZONE =1;
-	public final static int NB_PONTS =2;
+	public final static int ANODISATION_NUMZONE 	=15;
+	public final static int COLMATAGE_NUMZONE 		=32;
+	public final static int DECHARGEMENT_NUMZONE 	=35;
+	public final static int CHARGEMENT_NUMZONE 		=1;
+	public final static int NB_PONTS 				=2;
 	
 }

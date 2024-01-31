@@ -11,7 +11,7 @@
 <packaging>jar</packaging>
 
 <name>${project.groupId}:${project.artifactId}</name>
-<description>Sample using Google OR-Tools.</description>
+<description>Ordonnancement de la prod Tecal</description>
 <url>https://github.com/or-tools/maven_or-tools</url>
 
 <licenses>
@@ -21,20 +21,6 @@
   </license>
 </licenses>
 
-<developers>
-  <developer>
-    <name>Corentin "Mizux" Le Molgat</name>
-    <email>corentinl@google.com</email>
-    <organization>Google LLC</organization>
-    <organizationUrl>http://www.google.com</organizationUrl>
-  </developer>
-  <developer>
-    <name>Laurent Perron</name>
-    <email>lperron@google.com</email>
-    <organization>Google LLC</organization>
-    <organizationUrl>http://www.google.com</organizationUrl>
-  </developer>
-</developers>
 
 <scm>
   <connection>scm:git:git://github.com/or-tools/java_or-tools.git</connection>

@@ -54,11 +54,13 @@ import java.awt.event.KeyEvent;
 import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
+import java.awt.Font;
 
 public class TecalGUI {
 
 	private JFrame frmTecalOrdonnanceur;
-	private JFrame gantFrame;
+	//private JFrame gantFrame;
+	private CPO   gantFrame;
 	private JTable tableGammes;
 	private DefaultTableModel modelGammes ;
 	private JTable tableBarres;
@@ -86,6 +88,8 @@ public class TecalGUI {
 		UIManager.put( "TextArea.background", back );
 		UIManager.put( "TextArea.foreground", fore );
 		UIManager.put( "TextField.background", back );
+		UIManager.put( "ComboBox.foreground", fore );
+		UIManager.put( "ComboBox.background", back );
 		UIManager.put( "TextField.foreground", fore );
 		UIManager.put( "Table.foreground", fore );
 		UIManager.put( "Button.arc", 999 );
@@ -160,8 +164,8 @@ public class TecalGUI {
 		
 		frmTecalOrdonnanceur.setIconImages(icons); 
 		
-		gantFrame = new JFrame();
-		gantFrame.setIconImages(icons); 
+		//gantFrame = new CPO(icons);
+		
 		frmTecalOrdonnanceur.setBounds(100, 100, 729, 661);
 		frmTecalOrdonnanceur.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
@@ -201,8 +205,10 @@ public class TecalGUI {
 		textFiltre.setColumns(10);
 		
 		JLabel lblBarreLabel = new JLabel("barres:");
+		lblBarreLabel.setFont(new Font("Tahoma", Font.PLAIN, 13));
 		
 		JLabel lblGammes = new JLabel("gammes:");
+		lblGammes.setFont(new Font("Tahoma", Font.PLAIN, 13));
 		
 		JButton btnUpButton = new JButton("haut");
 		btnUpButton.setHorizontalAlignment(SwingConstants.LEFT);
@@ -225,7 +231,7 @@ public class TecalGUI {
 		
 	
 		
-		rdbtnFastModeRadioButton = new JRadioButton("mode rapide");
+		rdbtnFastModeRadioButton = new JRadioButton("mode approx.");
 		
 		Integer [] comboVals= {3,4,5,6,7,8,9};
 		comboDifficult = new JComboBox<Integer>(comboVals);
@@ -253,7 +259,7 @@ public class TecalGUI {
 					}
 					
 					mTecalOrdo.setBarres(gammes);
-					gantFrame.getContentPane().removeAll();
+					gantFrame=new CPO(icons);
 					frmTecalOrdonnanceur.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					mTecalOrdo.run(rdbtnFastModeRadioButton.isSelected(),(int)comboDifficult.getSelectedItem(),gantFrame);	
 					frmTecalOrdonnanceur.setCursor(Cursor.getDefaultCursor());
@@ -275,21 +281,18 @@ public class TecalGUI {
 							.addContainerGap())
 						.addGroup(gl_panel.createSequentialGroup()
 							.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
+								.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 443, Short.MAX_VALUE)
 								.addGroup(gl_panel.createSequentialGroup()
-									.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
-										.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 443, Short.MAX_VALUE)
-										.addGroup(gl_panel.createSequentialGroup()
-											.addComponent(lblGammes, GroupLayout.PREFERRED_SIZE, 67, GroupLayout.PREFERRED_SIZE)
-											.addGap(111)
-											.addComponent(textFiltre, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
-									.addPreferredGap(ComponentPlacement.RELATED))
+									.addComponent(lblGammes, GroupLayout.PREFERRED_SIZE, 67, GroupLayout.PREFERRED_SIZE)
+									.addGap(111)
+									.addComponent(textFiltre, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
 								.addGroup(gl_panel.createSequentialGroup()
 									.addComponent(rdbtnFastModeRadioButton)
 									.addGap(34)
 									.addComponent(lblHardynessLabel, GroupLayout.PREFERRED_SIZE, 64, GroupLayout.PREFERRED_SIZE)
-									.addGap(18)
-									.addComponent(comboDifficult, GroupLayout.PREFERRED_SIZE, 56, GroupLayout.PREFERRED_SIZE)
-									.addGap(187)))
+									.addPreferredGap(ComponentPlacement.RELATED)
+									.addComponent(comboDifficult, GroupLayout.PREFERRED_SIZE, 56, GroupLayout.PREFERRED_SIZE)))
+							.addPreferredGap(ComponentPlacement.RELATED)
 							.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
 								.addGroup(gl_panel.createSequentialGroup()
 									.addComponent(scrollPaneBarres, GroupLayout.PREFERRED_SIZE, 135, GroupLayout.PREFERRED_SIZE)
@@ -300,7 +303,7 @@ public class TecalGUI {
 										.addGroup(gl_panel.createSequentialGroup()
 											.addGap(18)
 											.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
-												.addComponent(btnRun, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 81, Short.MAX_VALUE)
+												.addComponent(btnRun, GroupLayout.DEFAULT_SIZE, 81, Short.MAX_VALUE)
 												.addComponent(btnDownButton, GroupLayout.DEFAULT_SIZE, 81, Short.MAX_VALUE)))))
 								.addComponent(lblBarreLabel, GroupLayout.PREFERRED_SIZE, 99, GroupLayout.PREFERRED_SIZE))
 							.addGap(15))))
@@ -320,19 +323,20 @@ public class TecalGUI {
 					.addPreferredGap(ComponentPlacement.UNRELATED)
 					.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
 						.addGroup(gl_panel.createParallelGroup(Alignment.BASELINE)
-							.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
-							.addComponent(scrollPaneBarres, GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE))
+							.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 287, Short.MAX_VALUE)
+							.addComponent(scrollPaneBarres, GroupLayout.DEFAULT_SIZE, 287, Short.MAX_VALUE))
 						.addGroup(gl_panel.createSequentialGroup()
 							.addGap(35)
 							.addComponent(btnUpButton)
 							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(btnDownButton)))
+							.addComponent(btnDownButton)
+							.addPreferredGap(ComponentPlacement.RELATED, 175, Short.MAX_VALUE)
+							.addComponent(btnRun)))
 					.addPreferredGap(ComponentPlacement.UNRELATED)
 					.addGroup(gl_panel.createParallelGroup(Alignment.BASELINE)
 						.addComponent(rdbtnFastModeRadioButton)
 						.addComponent(lblHardynessLabel)
-						.addComponent(comboDifficult, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-						.addComponent(btnRun))
+						.addComponent(comboDifficult, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
 					.addGap(18)
 					.addComponent(scrollPaneMsg, GroupLayout.PREFERRED_SIZE, 149, GroupLayout.PREFERRED_SIZE)
 					.addGap(24))

@@ -92,22 +92,6 @@ class TaskOrdo {
 		inderive=Math.max(CST.TEMPS_MVT_PONT_MIN_JOB,inderive);
 
 		
-		//intArriveePont = model.newIntervalVar(endBDD, LinearExpr.constant(CST.TEMPS_MVT_PONT_MIN), arriveePont, "intPontArrive" + suffix);
-		
-		
-		// !!!!!!!!!!!
-		// NE PAS ajouter cet interval à la méthode addNoOverlap
-		// il sera ajouter mais pourra être réduit à nul si besoin
-		// cf model.addLessOrEqual(allTasks.get(nextKey).deb, allTasks.get(prevKey).derive);
-		//deriveInt = model.newIntervalVar(arriveePont, LinearExpr.constant(inderive), derive, "derive" + suffix);
-
-		
-		//  !!
-		// avec un temps d'arrivée au pont de 15 secondes
-		// et une dérive théorique 15 secondes minimum
-		// cela fait une dérive réelle de 15 secondes au minimum 
-		// et une dérive réelle de 30 secondes max pour une dérive théorique nullu
-
 
 		deb=model.newIntVar(minDebut, horizon, "deb_nooverlap");
 		fin=model.newIntVar(minDebut+duration, horizon, "fin_nooverlap");

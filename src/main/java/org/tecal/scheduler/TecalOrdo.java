@@ -32,6 +32,7 @@ import org.tecal.scheduler.data.CSV_DATA;
 import org.tecal.scheduler.data.SQL_DATA;
 import org.tecal.scheduler.types.GammeType;
 import org.tecal.scheduler.types.ZoneType;
+import org.tecal.ui.CPO;
 
 
 class Coord 			        extends ArrayList<IntVar> 	{	private static final long serialVersionUID = 1L;}
@@ -185,7 +186,7 @@ public class TecalOrdo {
 		
 	}
 	
-	public void  run(boolean modeFast,int contrainteLEvel,JFrame ganttFrame) {
+	public void  run(boolean modeFast,int contrainteLEvel,CPO ganttFrame) {
 
 		
 		prepareZones(model,modeFast,contrainteLEvel);
@@ -335,12 +336,12 @@ public class TecalOrdo {
 
 		
 
-		final GanttChart ganttTecalOR = new GanttChart(sqlCnx,"Gantt Chart idéal du 02/11/2023");
+		GanttChart ganttTecalOR = new GanttChart(sqlCnx,"Gantt Chart idéal du 02/11/2023");
 		JFreeChart chart=ganttTecalOR.model_diag(assignedJobs,zonesBDD, mBarres);
 		
 		ChartPanel cp = new ChartPanel(chart);
 		
-		ganttFrame.add(cp);
+		ganttFrame.addGantt(cp);
 		
 		ganttFrame.pack();
 		ganttFrame.setSize(new java.awt.Dimension(1500, 870));
@@ -356,12 +357,11 @@ public class TecalOrdo {
 	}
 	public static void main(String[] args) throws IOException, CsvException, URISyntaxException {
 		
-		TecalOrdo tecalOrdo=new TecalOrdo(CST.SQLSERVER);
-		
+		TecalOrdo tecalOrdo=new TecalOrdo(CST.SQLSERVER);		
 			
 		tecalOrdo.setBarresTest();
 		
-		JFrame frame=new JFrame();
+		CPO frame=new CPO(null);
 		
 		tecalOrdo.run(CST.MODE_FAST,CST.PORTION_HORIZON,frame);		
 		if(CST.PRINT_PROD_DIAG )
@@ -385,6 +385,8 @@ public class TecalOrdo {
 		int cptJob=0;
 		allJobs.clear();
 		allTasks.clear();
+		zoneToIntervals.clear();
+		zoneCumulToIntervals.clear();
 		for (Map.Entry<String, ArrayList<GammeType> > entry : mBarres.entrySet()) {
 
 			JobType job = new JobType(cptJob, entry.getKey(),model);
@@ -424,8 +426,7 @@ public class TecalOrdo {
 		for (JobType job : allJobs) job.horizon=horizon;
 		
 
-		zoneToIntervals.clear();
-		zoneCumulToIntervals.clear();
+		
 		for (int jobID = 0; jobID < allJobs.size(); ++jobID) {
 			JobType job = allJobs.get(jobID);
 			job.addIntervalForModel(allTasks,zoneToIntervals,zoneCumulToIntervals,jobID,zonesBDD);
@@ -441,7 +442,10 @@ public class TecalOrdo {
 
 	
 	}
-	
+	/**
+	 * certaines zones peuvent avoir plusieurs barres en même temps
+	 * @param model
+	 */
 	private  void jobConstraints(CpModel model) {
 		// Create and add disjunctive constraints.		
 		for (int numzone : numzoneArr) {
@@ -464,7 +468,13 @@ public class TecalOrdo {
 
 		}
 	}
-	
+	/**
+	 * 
+	 * au sein d'un même job, le début de la zone suivante
+	 * se situe à 2*CST.TEMPS_MVT_PONT_MIN_JOB de la fin de l'autre au minimum
+	 * et plus à la dérive précédente + 2*CST.TEMPS_MVT_PONT_MIN_JOB
+	 * @param model
+	 */
 	private  void jobsPrecedence (CpModel model) {
 
 		// Precedences inside a job.
@@ -485,7 +495,27 @@ public class TecalOrdo {
 		}
 
 	}
-	
+	/**
+	 * zone regroupée: ensemble de zone dont la durée est inférieure à TEMPS_ZONE_OVERLAP_MIN=180
+	 * voici l'algo principale
+	 * 1/les zones regroupées ne doivent pas se chevaucher entre job, la marge de sécurité à gauhe et à droite est CST.GAP_ZONE_NOOVERLAP = 90 
+	 * 2/ chaque début de zones longues ne doit pas chevauché le début d'une zone longue d'un autre job
+	 * 3/ une zone regroupée du job ne doit pas chevauché le début d'une zone longue d'un autre job
+	 * 
+	 * partucilarités:
+	 * 1/la zone juste après le chargement est élargie sur sa gauche de 30 secondes
+	 * pour tenir compte du temps à venir chercher la chage au chargement
+	 * car le début de la zone de chargement n'est pas à considérer pour les mvts du pont
+	 * 
+	 * TODO: check si cette zone est une zone groupée
+	 * 
+	 * comme la zone d'ano est commune au deux pont
+	 * on élargie la fin de la dernière zone groupéé pour qu'elle corresponde à l'arrivée du pont 1 en ano
+	 * 
+	 * 
+	 * TODO: check quoi si cette zone est une zone longue ??
+	 * @param model
+	 */
 	private  void machineConstraints(CpModel model) {
 		// les zones de rincages ne doivent pas se croiser
 
@@ -525,20 +555,20 @@ public class TecalOrdo {
 						for(int j=0;j<allJobs.size();j++) {
 							JobType j1=allJobs.get(j);
 							
-					    	 ListeZone zonesLonguesOther=new ListeZone();
-					    	 ListeZone zonesLonguesOther2=new ListeZone();
+					    	 ListeZone zonesGroupeesWithAllOthers=new ListeZone();
+					    	 ListeZone zonesLonguesWithAllOthers=new ListeZone();
 					    
-					    	 zonesLonguesOther.addAll(j1.tasksNoOverlapPont.get(pont));   
-					    	 zonesLonguesOther2.addAll(j1.debutLonguesZonesPont.get(pont));   
+					    	 zonesGroupeesWithAllOthers.addAll(j1.tasksNoOverlapPont.get(pont));   
+					    	 zonesLonguesWithAllOthers.addAll(j1.debutLonguesZonesPont.get(pont));   
 					    	 
 					    	 for(int k=0;k<allJobs.size();k++) {
 					    		 if(k==j) continue;			
-					    		 zonesLonguesOther.addAll(allJobs.get(k).debutLonguesZonesPont.get(pont));	
-					    		 zonesLonguesOther2.addAll(allJobs.get(k).debutLonguesZonesPont.get(pont));
+					    		 zonesGroupeesWithAllOthers.addAll(allJobs.get(k).debutLonguesZonesPont.get(pont));	
+					    		 zonesLonguesWithAllOthers.addAll(allJobs.get(k).debutLonguesZonesPont.get(pont));
 					    	 }
 							 
-					    	 model.addNoOverlap(zonesLonguesOther);
-					    	 model.addNoOverlap(zonesLonguesOther2);
+					    	 model.addNoOverlap(zonesGroupeesWithAllOthers);
+					    	 model.addNoOverlap(zonesLonguesWithAllOthers);
 							
 
 
