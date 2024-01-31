@@ -125,12 +125,16 @@ public class TecalOrdo {
 	private StringBuilder outputMsg;
 	private int mSource;
 	
-	public TecalOrdo() {
+	public TecalOrdo(int source) {
 		
 		mBarres=new  HashMap<String, ArrayList<GammeType> >();		
 		
 		Loader.loadNativeLibraries();
 		model = new CpModel();
+		outputMsg=new StringBuilder();
+		
+		setDataSource(source);
+		
 	}
 	
 	public void  setDataSource(int source) {
@@ -183,7 +187,7 @@ public class TecalOrdo {
 	
 	public void  run(boolean modeFast,int contrainteLEvel,JFrame ganttFrame) {
 
-		outputMsg=new StringBuilder();
+		
 		prepareZones(model,modeFast,contrainteLEvel);
 		
 		
@@ -249,8 +253,10 @@ public class TecalOrdo {
 				
 			}
 
-
+			outputMsg.append("-----------------------------------------------------------------.");
+			outputMsg.append(System.getProperty("line.separator"));
 			outputMsg.append("Solution:");
+			outputMsg.append(System.getProperty("line.separator"));
 			// Create one list of assigned tasks per Zone.
 
 			for (int jobID = 0; jobID < allJobs.size(); ++jobID) {
@@ -301,13 +307,16 @@ public class TecalOrdo {
 					output += solLine + "%n";
 				}
 				outputMsg.append(String.format("Optimal Schedule Length: %f%n", solver.objectiveValue()));
+				outputMsg.append(System.getProperty("line.separator"));
 				outputMsg.append(output);
+				outputMsg.append(System.getProperty("line.separator"));
 			}
 
 
 
 		} else {
 			outputMsg.append("No solution found.");
+			outputMsg.append(System.getProperty("line.separator"));
 			return;
 		}
 
@@ -347,10 +356,9 @@ public class TecalOrdo {
 	}
 	public static void main(String[] args) throws IOException, CsvException, URISyntaxException {
 		
-		TecalOrdo tecalOrdo=new TecalOrdo();
+		TecalOrdo tecalOrdo=new TecalOrdo(CST.SQLSERVER);
 		
-		tecalOrdo.setDataSource(CST.SQLSERVER);	
-		
+			
 		tecalOrdo.setBarresTest();
 		
 		JFrame frame=new JFrame();

@@ -16,7 +16,7 @@ public class CST {
 	//------------------------------------------------------------
 	public final static boolean CSTR_NOOVERLAP_MVTS_PONT =false;
 	public final static boolean CSTR_NOOVERLAP_ZONES_GROUPEES = true ;
-	public final static boolean MODE_FAST = true ;
+	public final static boolean MODE_FAST = false ;
 	public final static int PORTION_HORIZON = 7 ;
 	
 	//------------------------------------------------------------
@@ -41,7 +41,7 @@ public class CST {
 	//--------------------------------------------------------------
 	//------------ AFFICHAGE ---------------------------------------
 	//--------------------------------------------------------------
-	public final static boolean PRINT_PROD_DIAG =true;
+	public final static boolean PRINT_PROD_DIAG =false;
 	public final static boolean PrintTaskTime =false;
 	public final static boolean PrintZonesTime=false;
 	public final static boolean PrintMvtsPont=false;

@@ -1,5 +1,6 @@
 package org.tecal.ui;
 
+import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.EventQueue;
 import java.awt.Image;
@@ -47,9 +48,12 @@ import org.tecal.scheduler.TecalOrdo;
 import org.tecal.scheduler.data.SQL_DATA;
 import org.tecal.scheduler.types.GammeType;
 
-import com.formdev.flatlaf.FlatLightLaf;
+import com.formdev.flatlaf.FlatDarkLaf;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import javax.swing.JTextArea;
+import javax.swing.SwingConstants;
+import javax.swing.UIManager;
 
 public class TecalGUI {
 
@@ -60,13 +64,13 @@ public class TecalGUI {
 	private JTable tableBarres;
 	private DefaultTableModel modelBarres;
 	private JTextField textFiltre;
+	private JTextArea textArea;
 	private JRadioButton rdbtnFastModeRadioButton;
 	private JComboBox<Integer> comboDifficult;
 	private ImageIcon img;
 	
 	private SQL_DATA sqlCnx ;
 	private int mNumBarre=0;
-	private JTextField textField;
 	private TecalOrdo mTecalOrdo;
 	
 	/**
@@ -74,7 +78,20 @@ public class TecalGUI {
 	 */
 	public static void main(String[] args) {
 		
-		FlatLightLaf.setup();
+		FlatDarkLaf.setup();
+		
+		Color back=new Color(255, 248, 223);
+		Color fore=new Color(1,1,1);
+		UIManager.put( "Table.background", back );
+		UIManager.put( "TextArea.background", back );
+		UIManager.put( "TextArea.foreground", fore );
+		UIManager.put( "TextField.background", back );
+		UIManager.put( "TextField.foreground", fore );
+		UIManager.put( "Table.foreground", fore );
+		UIManager.put( "Button.arc", 999 );
+		UIManager.put( "Component.arc", 999 );
+		UIManager.put( "ProgressBar.arc", 999 );
+		UIManager.put( "TextComponent.arc", 999 );
 		
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -97,9 +114,7 @@ public class TecalGUI {
 		initialize();
 		
 		
-		mTecalOrdo=new TecalOrdo();
-		mTecalOrdo.setDataSource(CST.SQLSERVER);
-		
+		mTecalOrdo=new TecalOrdo(CST.SQLSERVER);
 		
 		
 	}
@@ -119,14 +134,14 @@ public class TecalGUI {
 	private void initialize() {
 		
 		
-		
 		frmTecalOrdonnanceur = new JFrame();
 		frmTecalOrdonnanceur.setTitle("Tecal Ordonnanceur");
-		URL res = getClass().getClassLoader().getResource("gantt-chart 16.png");
-		File file;
-		String absolutePath="";
+		
 		List<Image> icons = new ArrayList<Image>();
 		try {
+			URL res = getClass().getClassLoader().getResource("gantt-chart 16.png");
+			File file;
+			String absolutePath="";
 			file = Paths.get(res.toURI()).toFile();
 			absolutePath = file.getAbsolutePath();
 			img = new ImageIcon(absolutePath);
@@ -147,7 +162,7 @@ public class TecalGUI {
 		
 		gantFrame = new JFrame();
 		gantFrame.setIconImages(icons); 
-		frmTecalOrdonnanceur.setBounds(100, 100, 702, 661);
+		frmTecalOrdonnanceur.setBounds(100, 100, 729, 661);
 		frmTecalOrdonnanceur.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
@@ -189,19 +204,26 @@ public class TecalGUI {
 		
 		JLabel lblGammes = new JLabel("gammes:");
 		
-		JButton btnUpButton = new JButton("up");
+		JButton btnUpButton = new JButton("haut");
+		btnUpButton.setHorizontalAlignment(SwingConstants.LEFT);
 		btnUpButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				moveRowBy(-1);
 			}
 		});
-		
-		JButton btnDownButton = new JButton("down");
+		JButton btnDownButton = new JButton("bas");
+		btnDownButton.setHorizontalAlignment(SwingConstants.LEFT);
 		btnDownButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				moveRowBy(1);
 			}
 		});
+		
+		setIconButton(btnUpButton,"icons8-up-16.png");
+		setIconButton(btnDownButton,"icons8-down-16.png");
+		
+		
+	
 		
 		rdbtnFastModeRadioButton = new JRadioButton("mode rapide");
 		
@@ -213,7 +235,10 @@ public class TecalGUI {
 		
 		JScrollPane scrollPaneMsg = new JScrollPane();
 		
-		JButton btnRun = new JButton("RUN");
+		JButton btnRun = new JButton("lancer");
+		btnRun.setHorizontalAlignment(SwingConstants.LEFT);
+		setIconButton(btnRun,"icons8-play-16.png");
+		
 		btnRun.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				
@@ -232,7 +257,7 @@ public class TecalGUI {
 					frmTecalOrdonnanceur.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					mTecalOrdo.run(rdbtnFastModeRadioButton.isSelected(),(int)comboDifficult.getSelectedItem(),gantFrame);	
 					frmTecalOrdonnanceur.setCursor(Cursor.getDefaultCursor());
-					textField.setText(mTecalOrdo.print());
+					textArea.setText(mTecalOrdo.print());
 					
 				}
 				
@@ -246,33 +271,39 @@ public class TecalGUI {
 					.addContainerGap()
 					.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
 						.addGroup(gl_panel.createSequentialGroup()
-							.addComponent(scrollPaneMsg, GroupLayout.DEFAULT_SIZE, 661, Short.MAX_VALUE)
+							.addComponent(scrollPaneMsg, GroupLayout.DEFAULT_SIZE, 688, Short.MAX_VALUE)
 							.addContainerGap())
 						.addGroup(gl_panel.createSequentialGroup()
 							.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
-								.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE)
 								.addGroup(gl_panel.createSequentialGroup()
-									.addComponent(lblGammes, GroupLayout.PREFERRED_SIZE, 67, GroupLayout.PREFERRED_SIZE)
-									.addPreferredGap(ComponentPlacement.RELATED)
-									.addComponent(textFiltre, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
-							.addPreferredGap(ComponentPlacement.RELATED)
+									.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
+										.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 443, Short.MAX_VALUE)
+										.addGroup(gl_panel.createSequentialGroup()
+											.addComponent(lblGammes, GroupLayout.PREFERRED_SIZE, 67, GroupLayout.PREFERRED_SIZE)
+											.addGap(111)
+											.addComponent(textFiltre, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+									.addPreferredGap(ComponentPlacement.RELATED))
+								.addGroup(gl_panel.createSequentialGroup()
+									.addComponent(rdbtnFastModeRadioButton)
+									.addGap(34)
+									.addComponent(lblHardynessLabel, GroupLayout.PREFERRED_SIZE, 64, GroupLayout.PREFERRED_SIZE)
+									.addGap(18)
+									.addComponent(comboDifficult, GroupLayout.PREFERRED_SIZE, 56, GroupLayout.PREFERRED_SIZE)
+									.addGap(187)))
 							.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
 								.addGroup(gl_panel.createSequentialGroup()
 									.addComponent(scrollPaneBarres, GroupLayout.PREFERRED_SIZE, 135, GroupLayout.PREFERRED_SIZE)
-									.addPreferredGap(ComponentPlacement.RELATED)
-									.addGroup(gl_panel.createParallelGroup(Alignment.LEADING, false)
-										.addComponent(btnUpButton, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-										.addComponent(btnDownButton, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-										.addComponent(btnRun, GroupLayout.PREFERRED_SIZE, 59, GroupLayout.PREFERRED_SIZE)))
+									.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
+										.addGroup(gl_panel.createSequentialGroup()
+											.addGap(19)
+											.addComponent(btnUpButton, GroupLayout.DEFAULT_SIZE, 80, Short.MAX_VALUE))
+										.addGroup(gl_panel.createSequentialGroup()
+											.addGap(18)
+											.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
+												.addComponent(btnRun, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 81, Short.MAX_VALUE)
+												.addComponent(btnDownButton, GroupLayout.DEFAULT_SIZE, 81, Short.MAX_VALUE)))))
 								.addComponent(lblBarreLabel, GroupLayout.PREFERRED_SIZE, 99, GroupLayout.PREFERRED_SIZE))
-							.addGap(33))
-						.addGroup(gl_panel.createSequentialGroup()
-							.addComponent(rdbtnFastModeRadioButton)
-							.addGap(137)
-							.addComponent(lblHardynessLabel, GroupLayout.PREFERRED_SIZE, 64, GroupLayout.PREFERRED_SIZE)
-							.addGap(18)
-							.addComponent(comboDifficult, GroupLayout.PREFERRED_SIZE, 56, GroupLayout.PREFERRED_SIZE)
-							.addContainerGap(311, Short.MAX_VALUE))))
+							.addGap(15))))
 		);
 		gl_panel.setVerticalGroup(
 			gl_panel.createParallelGroup(Alignment.LEADING)
@@ -295,22 +326,20 @@ public class TecalGUI {
 							.addGap(35)
 							.addComponent(btnUpButton)
 							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(btnDownButton)
-							.addGap(200)))
+							.addComponent(btnDownButton)))
 					.addPreferredGap(ComponentPlacement.UNRELATED)
 					.addGroup(gl_panel.createParallelGroup(Alignment.BASELINE)
 						.addComponent(rdbtnFastModeRadioButton)
-						.addComponent(comboDifficult, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 						.addComponent(lblHardynessLabel)
+						.addComponent(comboDifficult, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 						.addComponent(btnRun))
 					.addGap(18)
 					.addComponent(scrollPaneMsg, GroupLayout.PREFERRED_SIZE, 149, GroupLayout.PREFERRED_SIZE)
 					.addGap(24))
 		);
 		
-		textField = new JTextField();
-		scrollPaneMsg.setViewportView(textField);
-		textField.setColumns(10);
+		textArea = new JTextArea();
+		scrollPaneMsg.setViewportView(textArea);
 		
 		try {
 			
@@ -383,7 +412,25 @@ public class TecalGUI {
 		
 		scrollPane.setViewportView(tableGammes);
 		panel.setLayout(gl_panel);
+		
+		JPanel panel_derive = new JPanel();
+		tabbedPane.addTab("Paramètres", null, panel_derive, null);
 		frmTecalOrdonnanceur.getContentPane().setLayout(groupLayout);
+	}
+
+	private void setIconButton(JButton btnButton,String fileName) {
+		try {
+				    
+			URL res = getClass().getClassLoader().getResource(fileName);
+			File file;
+			String absolutePath="";
+			file = Paths.get(res.toURI()).toFile();
+			absolutePath = file.getAbsolutePath();
+		    
+		    btnButton.setIcon( new ImageIcon(absolutePath));
+		  } catch (Exception ex) {
+		    System.out.println(ex);
+		  }
 	}
 
 	public void buildTableModelBarre()
@@ -471,5 +518,4 @@ public class TecalGUI {
 	    model.moveRow(rows[0], rows[rows.length - 1], destination);
 	    tableBarres.setRowSelectionInterval(rows[0] + by, rows[rows.length - 1] + by);
 	}
-	
 }

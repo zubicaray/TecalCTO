@@ -401,7 +401,7 @@ public class JobType {
 					TaskOrdo taskOrdo = allTasks.get(key);
 
 					if (i == idDebZone ) {			
-						
+						//TODO fixe bug 
 						if(idDebZone-1==indexAnod ) {							
 							start = taskAnod.endBDD;						
 						}
