@@ -11,12 +11,14 @@ import javax.swing.border.EmptyBorder;
 import org.jfree.chart.ChartPanel;
 
 import javax.swing.JTabbedPane;
+import javax.swing.UIManager;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
-import javax.swing.LayoutStyle.ComponentPlacement;
 
 public class CPO extends JFrame {
 
@@ -35,6 +37,7 @@ public class CPO extends JFrame {
 			public void run() {
 				try {
 					CPO frame = new CPO(null);
+					//frame.addGantt(null) ;
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -66,6 +69,7 @@ public class CPO extends JFrame {
 		tabbedPane.addTab("Dérives", null, panelDerives, null);
 		
 		gl_panelGantt = new GroupLayout(panelGantt);
+		UIManager.put( "Panel.foreground", new Color(255,255,255) );
 		
 		
 		
@@ -73,6 +77,7 @@ public class CPO extends JFrame {
 	
 	public void  addGantt(ChartPanel  cp) {
 		JButton btnNewButton = new JButton("New button");
+		cp.setForeground(new Color(255,255,255));
 		
 		gl_panelGantt.setHorizontalGroup(
 			gl_panelGantt.createParallelGroup(Alignment.TRAILING)

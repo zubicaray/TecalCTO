@@ -200,7 +200,7 @@ public class JobType {
 			if(task.numzone==CST.ANODISATION_NUMZONE) 
 				continue;
 			int pont=1;
-			if(task.numzone<CST.ANODISATION_NUMZONE) 
+			if(task.numzone<CST.NUMZONE_DEBUT_PONT_2) 
 				pont=0;
 			int idgroupe=zones.get(i).id_regroupement_bdd;
 			if(idgroupe!=0) {
@@ -295,7 +295,7 @@ public class JobType {
 			//System.out.println("debZone: "+gt.codezone);
 
 			int p = 0;
-			if (gt.numzone > CST.ANODISATION_NUMZONE)
+			if (gt.numzone > CST.NUMZONE_DEBUT_PONT_2)
 				p = 1;
 			
 			

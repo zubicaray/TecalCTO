@@ -55,6 +55,7 @@ import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import java.awt.Font;
+import java.awt.Component;
 
 public class TecalGUI {
 
@@ -74,6 +75,12 @@ public class TecalGUI {
 	private SQL_DATA sqlCnx ;
 	private int mNumBarre=0;
 	private TecalOrdo mTecalOrdo;
+	private JTextField textTEMPS_ZONE_OVERLAP_MIN;
+	private JTextField textGAP_ZONE_NOOVERLAP;
+	private JTextField textTEMPS_MVT_PONT_MIN_JOB;
+	private JTextField textTEMPS_MVT_PONT;
+	private JTextField textTEMPS_ANO_ENTRE_P1_P2;
+	private JTextField textNUMZONE_DEBUT_PONT_2;
 	
 	/**
 	 * Launch the application.
@@ -232,8 +239,9 @@ public class TecalGUI {
 	
 		
 		rdbtnFastModeRadioButton = new JRadioButton("mode approx.");
+		rdbtnFastModeRadioButton.setSelected(CST.MODE_FAST);
 		
-		Integer [] comboVals= {3,4,5,6,7,8,9};
+		Integer [] comboVals= {3,4,5,6,7,8,9,10,11,12,13};
 		comboDifficult = new JComboBox<Integer>(comboVals);
 		comboDifficult.setSelectedItem(7);
 		
@@ -241,35 +249,11 @@ public class TecalGUI {
 		
 		JScrollPane scrollPaneMsg = new JScrollPane();
 		
-		JButton btnRun = new JButton("lancer");
+		JButton btnRun = new JButton("GO");
 		btnRun.setHorizontalAlignment(SwingConstants.LEFT);
 		setIconButton(btnRun,"icons8-play-16.png");
 		
-		btnRun.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				
-				LinkedHashMap<Integer,String> gammes=new LinkedHashMap <Integer,String>();
-				if(tableBarres.getRowCount()<2) {
-					JOptionPane.showMessageDialog(frmTecalOrdonnanceur, "Minimum deux barres requises !","Tecal CPO", JOptionPane.ERROR_MESSAGE);
-				}else {
-					
-					gammes.clear();
-					for (int count = 0; count < tableBarres.getRowCount(); count++){
-						gammes.put((int)tableBarres.getValueAt(count, 0),tableBarres.getValueAt(count, 1).toString());
-					}
-					
-					mTecalOrdo.setBarres(gammes);
-					gantFrame=new CPO(icons);
-					frmTecalOrdonnanceur.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-					mTecalOrdo.run(rdbtnFastModeRadioButton.isSelected(),(int)comboDifficult.getSelectedItem(),gantFrame);	
-					frmTecalOrdonnanceur.setCursor(Cursor.getDefaultCursor());
-					textArea.setText(mTecalOrdo.print());
-					
-				}
-				
-				
-			}
-		});
+		
 		GroupLayout gl_panel = new GroupLayout(panel);
 		gl_panel.setHorizontalGroup(
 			gl_panel.createParallelGroup(Alignment.LEADING)
@@ -293,18 +277,18 @@ public class TecalGUI {
 									.addPreferredGap(ComponentPlacement.RELATED)
 									.addComponent(comboDifficult, GroupLayout.PREFERRED_SIZE, 56, GroupLayout.PREFERRED_SIZE)))
 							.addPreferredGap(ComponentPlacement.RELATED)
-							.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
+							.addGroup(gl_panel.createParallelGroup(Alignment.LEADING, false)
 								.addGroup(gl_panel.createSequentialGroup()
 									.addComponent(scrollPaneBarres, GroupLayout.PREFERRED_SIZE, 135, GroupLayout.PREFERRED_SIZE)
-									.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
+									.addGroup(gl_panel.createParallelGroup(Alignment.LEADING, false)
 										.addGroup(gl_panel.createSequentialGroup()
-											.addGap(19)
-											.addComponent(btnUpButton, GroupLayout.DEFAULT_SIZE, 80, Short.MAX_VALUE))
-										.addGroup(gl_panel.createSequentialGroup()
+											.addPreferredGap(ComponentPlacement.RELATED, 19, Short.MAX_VALUE)
+											.addComponent(btnUpButton, GroupLayout.PREFERRED_SIZE, 80, GroupLayout.PREFERRED_SIZE))
+										.addGroup(Alignment.TRAILING, gl_panel.createSequentialGroup()
 											.addGap(18)
-											.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
-												.addComponent(btnRun, GroupLayout.DEFAULT_SIZE, 81, Short.MAX_VALUE)
-												.addComponent(btnDownButton, GroupLayout.DEFAULT_SIZE, 81, Short.MAX_VALUE)))))
+											.addGroup(gl_panel.createParallelGroup(Alignment.LEADING, false)
+												.addComponent(btnRun, Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 81, GroupLayout.PREFERRED_SIZE)
+												.addComponent(btnDownButton, GroupLayout.PREFERRED_SIZE, 81, GroupLayout.PREFERRED_SIZE)))))
 								.addComponent(lblBarreLabel, GroupLayout.PREFERRED_SIZE, 99, GroupLayout.PREFERRED_SIZE))
 							.addGap(15))))
 		);
@@ -323,14 +307,14 @@ public class TecalGUI {
 					.addPreferredGap(ComponentPlacement.UNRELATED)
 					.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
 						.addGroup(gl_panel.createParallelGroup(Alignment.BASELINE)
-							.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 287, Short.MAX_VALUE)
-							.addComponent(scrollPaneBarres, GroupLayout.DEFAULT_SIZE, 287, Short.MAX_VALUE))
+							.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
+							.addComponent(scrollPaneBarres, GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE))
 						.addGroup(gl_panel.createSequentialGroup()
 							.addGap(35)
 							.addComponent(btnUpButton)
 							.addPreferredGap(ComponentPlacement.RELATED)
 							.addComponent(btnDownButton)
-							.addPreferredGap(ComponentPlacement.RELATED, 175, Short.MAX_VALUE)
+							.addPreferredGap(ComponentPlacement.RELATED, 176, Short.MAX_VALUE)
 							.addComponent(btnRun)))
 					.addPreferredGap(ComponentPlacement.UNRELATED)
 					.addGroup(gl_panel.createParallelGroup(Alignment.BASELINE)
@@ -341,6 +325,42 @@ public class TecalGUI {
 					.addComponent(scrollPaneMsg, GroupLayout.PREFERRED_SIZE, 149, GroupLayout.PREFERRED_SIZE)
 					.addGap(24))
 		);
+		
+		
+		btnRun.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				LinkedHashMap<Integer,String> gammes=new LinkedHashMap <Integer,String>();
+				if(tableBarres.getRowCount()<2) {
+					JOptionPane.showMessageDialog(frmTecalOrdonnanceur, "Minimum deux barres requises !","Tecal CPO", JOptionPane.ERROR_MESSAGE);
+				}else {
+					
+					gammes.clear();
+					for (int count = 0; count < tableBarres.getRowCount(); count++){
+						gammes.put((int)tableBarres.getValueAt(count, 0),tableBarres.getValueAt(count, 1).toString());
+					}
+					
+					mTecalOrdo.setParams(
+							Integer.valueOf(textTEMPS_ZONE_OVERLAP_MIN.getText()),
+							Integer.valueOf(textTEMPS_MVT_PONT_MIN_JOB.getText()),
+							Integer.valueOf(textGAP_ZONE_NOOVERLAP.getText()),
+							Integer.valueOf(textTEMPS_MVT_PONT.getText()),
+							Integer.valueOf(textTEMPS_ANO_ENTRE_P1_P2.getText()));
+					
+					mTecalOrdo.setBarres(gammes);
+					gantFrame=new CPO(icons);
+					frmTecalOrdonnanceur.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+					mTecalOrdo.run(rdbtnFastModeRadioButton.isSelected(),(int)comboDifficult.getSelectedItem(),gantFrame);	
+					frmTecalOrdonnanceur.setCursor(Cursor.getDefaultCursor());
+					textArea.setText(mTecalOrdo.print());
+					
+					
+					
+				}
+				
+				
+			}
+		});
 		
 		textArea = new JTextArea();
 		scrollPaneMsg.setViewportView(textArea);
@@ -417,9 +437,110 @@ public class TecalGUI {
 		scrollPane.setViewportView(tableGammes);
 		panel.setLayout(gl_panel);
 		
-		JPanel panel_derive = new JPanel();
-		tabbedPane.addTab("Paramètres", null, panel_derive, null);
+		buildParamsTab(tabbedPane);
 		frmTecalOrdonnanceur.getContentPane().setLayout(groupLayout);
+	}
+
+	private void buildParamsTab(JTabbedPane tabbedPane) {
+		JPanel panel_param = new JPanel();
+		tabbedPane.addTab("Paramètres", null, panel_param, null);
+		
+		JLabel lblTailleZone = new JLabel("TEMPS_ZONE_OVERLAP_MIN");
+		
+		textTEMPS_ZONE_OVERLAP_MIN = new JTextField();
+		textTEMPS_ZONE_OVERLAP_MIN.setHorizontalAlignment(SwingConstants.RIGHT);
+		textTEMPS_ZONE_OVERLAP_MIN.setColumns(10);
+		textTEMPS_ZONE_OVERLAP_MIN.setText(Integer.toString(CST.TEMPS_ZONE_OVERLAP_MIN));
+		
+		JLabel lblScuritEntreZones = new JLabel("GAP_ZONE_NOOVERLAP");
+		
+		textGAP_ZONE_NOOVERLAP = new JTextField();
+		textGAP_ZONE_NOOVERLAP.setHorizontalAlignment(SwingConstants.RIGHT);
+		textGAP_ZONE_NOOVERLAP.setColumns(10);
+		textGAP_ZONE_NOOVERLAP.setText(Integer.toString(CST.GAP_ZONE_NOOVERLAP));
+		
+		JLabel lblcartGroupes = new JLabel("TEMPS_MVT_PONT_MIN_JOB");
+		
+		textTEMPS_MVT_PONT_MIN_JOB = new JTextField();
+		textTEMPS_MVT_PONT_MIN_JOB.setHorizontalAlignment(SwingConstants.RIGHT);
+		textTEMPS_MVT_PONT_MIN_JOB.setColumns(10);
+		textTEMPS_MVT_PONT_MIN_JOB.setText(Integer.toString(CST.TEMPS_MVT_PONT_MIN_JOB));
+		
+		JLabel lblNewLabel = new JLabel("TEMPS_MVT_PONT");
+		
+		JLabel lblNewLabel_1 = new JLabel("TEMPS_ANO_ENTRE_P1_P2");
+		
+		textTEMPS_MVT_PONT = new JTextField();
+		textTEMPS_MVT_PONT.setHorizontalAlignment(SwingConstants.RIGHT);
+		textTEMPS_MVT_PONT.setColumns(10);
+		textTEMPS_MVT_PONT.setText(Integer.toString(CST.TEMPS_MVT_PONT));
+		
+		textTEMPS_ANO_ENTRE_P1_P2 = new JTextField();
+		textTEMPS_ANO_ENTRE_P1_P2.setHorizontalAlignment(SwingConstants.RIGHT);
+		textTEMPS_ANO_ENTRE_P1_P2.setColumns(10);
+		textTEMPS_ANO_ENTRE_P1_P2.setText(Integer.toString(CST.TEMPS_ANO_ENTRE_P1_P2));
+		
+		JLabel lblNewLabel_2 = new JLabel("NUMZONE_DEBUT_PONT_2");
+		
+		textNUMZONE_DEBUT_PONT_2 = new JTextField();
+		textNUMZONE_DEBUT_PONT_2.setColumns(10);
+		textNUMZONE_DEBUT_PONT_2.setText(Integer.toString(CST.NUMZONE_DEBUT_PONT_2));
+		
+		GroupLayout gl_panel_param = new GroupLayout(panel_param);
+		gl_panel_param.setHorizontalGroup(
+			gl_panel_param.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_panel_param.createSequentialGroup()
+					.addContainerGap()
+					.addGroup(gl_panel_param.createParallelGroup(Alignment.LEADING)
+						.addGroup(gl_panel_param.createParallelGroup(Alignment.LEADING, false)
+							.addComponent(lblTailleZone, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+							.addComponent(lblScuritEntreZones, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+						.addComponent(lblNewLabel)
+						.addComponent(lblcartGroupes, GroupLayout.PREFERRED_SIZE, 175, GroupLayout.PREFERRED_SIZE)
+						.addComponent(lblNewLabel_1)
+						.addComponent(lblNewLabel_2))
+					.addGap(31)
+					.addGroup(gl_panel_param.createParallelGroup(Alignment.LEADING, false)
+						.addComponent(textNUMZONE_DEBUT_PONT_2, 0, 0, Short.MAX_VALUE)
+						.addComponent(textTEMPS_ANO_ENTRE_P1_P2, 0, 0, Short.MAX_VALUE)
+						.addComponent(textTEMPS_MVT_PONT_MIN_JOB, 0, 0, Short.MAX_VALUE)
+						.addComponent(textTEMPS_MVT_PONT, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 45, Short.MAX_VALUE)
+						.addComponent(textGAP_ZONE_NOOVERLAP, Alignment.TRAILING, 0, 0, Short.MAX_VALUE)
+						.addComponent(textTEMPS_ZONE_OVERLAP_MIN, Alignment.TRAILING, 0, 0, Short.MAX_VALUE))
+					.addContainerGap(447, Short.MAX_VALUE))
+		);
+		gl_panel_param.setVerticalGroup(
+			gl_panel_param.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_panel_param.createSequentialGroup()
+					.addGap(25)
+					.addGroup(gl_panel_param.createParallelGroup(Alignment.BASELINE)
+						.addComponent(lblTailleZone)
+						.addComponent(textTEMPS_ZONE_OVERLAP_MIN, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+					.addGap(18)
+					.addGroup(gl_panel_param.createParallelGroup(Alignment.BASELINE)
+						.addComponent(lblScuritEntreZones)
+						.addComponent(textGAP_ZONE_NOOVERLAP, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+					.addGap(18)
+					.addGroup(gl_panel_param.createParallelGroup(Alignment.BASELINE)
+						.addComponent(lblcartGroupes)
+						.addComponent(textTEMPS_MVT_PONT_MIN_JOB, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+					.addGap(18)
+					.addGroup(gl_panel_param.createParallelGroup(Alignment.BASELINE)
+						.addComponent(lblNewLabel)
+						.addComponent(textTEMPS_MVT_PONT, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+					.addGap(18)
+					.addGroup(gl_panel_param.createParallelGroup(Alignment.BASELINE)
+						.addComponent(lblNewLabel_1)
+						.addComponent(textTEMPS_ANO_ENTRE_P1_P2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+					.addGap(18)
+					.addGroup(gl_panel_param.createParallelGroup(Alignment.BASELINE)
+						.addComponent(lblNewLabel_2)
+						.addComponent(textNUMZONE_DEBUT_PONT_2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+					.addContainerGap(365, Short.MAX_VALUE))
+		);
+		gl_panel_param.linkSize(SwingConstants.VERTICAL, new Component[] {lblTailleZone, lblScuritEntreZones, lblcartGroupes, lblNewLabel, lblNewLabel_1});
+		gl_panel_param.linkSize(SwingConstants.HORIZONTAL, new Component[] {lblTailleZone, lblScuritEntreZones, lblcartGroupes, lblNewLabel, lblNewLabel_1});
+		panel_param.setLayout(gl_panel_param);
 	}
 
 	private void setIconButton(JButton btnButton,String fileName) {

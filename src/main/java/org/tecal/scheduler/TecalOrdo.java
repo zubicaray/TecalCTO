@@ -22,7 +22,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
 import org.jfree.chart.ChartPanel;
@@ -126,16 +125,47 @@ public class TecalOrdo {
 	private StringBuilder outputMsg;
 	private int mSource;
 	
+	@SuppressWarnings("unused")
+	private int mTEMPS_ZONE_OVERLAP_MIN=0;	
+	// temps incompresible d'un mouvement d epoint
+	@SuppressWarnings("unused")
+	private int mTEMPS_MVT_PONT_MIN_JOB=0;
+	@SuppressWarnings("unused")
+	private	 int mGAP_ZONE_NOOVERLAP=0 ;
+	// temps autour d'un début de grosse zone
+	@SuppressWarnings("unused")
+	private int mTEMPS_MVT_PONT=0 ;		
+	// temps de sécurité entre deux gammes différentes sur un même poste d'ano
+	@SuppressWarnings("unused")
+	private int mTEMPS_ANO_ENTRE_P1_P2=0;
+	
 	public TecalOrdo(int source) {
 		
 		mBarres=new  HashMap<String, ArrayList<GammeType> >();		
 		
 		Loader.loadNativeLibraries();
-		model = new CpModel();
+		//model = new CpModel();
+		
 		outputMsg=new StringBuilder();
 		
 		setDataSource(source);
 		
+	}
+	
+	public void  setParams(int inTEMPS_ZONE_OVERLAP_MIN,int inTEMPS_MVT_PONT_MIN_JOB,int inGAP_ZONE_NOOVERLAP,
+			int inTEMPS_MVT_PONT,int inTEMPS_ANO_ENTRE_P1_P2
+			
+			) {
+		
+		mTEMPS_ZONE_OVERLAP_MIN=inTEMPS_ZONE_OVERLAP_MIN;	
+		// temps incompresible d'un mouvement d epoint
+		mTEMPS_MVT_PONT_MIN_JOB =inTEMPS_MVT_PONT_MIN_JOB;
+		//temps entre les différentes "zones regroupées"	
+		mGAP_ZONE_NOOVERLAP =inGAP_ZONE_NOOVERLAP;//TEMPS_MVT_PONT_MIN_JOB*5; //90
+		// temps autour d'un début de grosse zone
+		mTEMPS_MVT_PONT =inTEMPS_MVT_PONT;		
+		// temps de sécurité entre deux gammes différentes sur un même poste d'ano
+		mTEMPS_ANO_ENTRE_P1_P2=inTEMPS_ANO_ENTRE_P1_P2;	
 	}
 	
 	public void  setDataSource(int source) {
@@ -189,7 +219,9 @@ public class TecalOrdo {
 	public void  run(boolean modeFast,int contrainteLEvel,CPO ganttFrame) {
 
 		
-		prepareZones(model,modeFast,contrainteLEvel);
+		
+		model=new CpModel();
+		prepareZones(modeFast,contrainteLEvel);
 		
 		
 		
@@ -197,15 +229,15 @@ public class TecalOrdo {
 		//--------------------------------------------------------------------------------------------
 		// CONSTRAINTES SUR CHAQUE JOB
 		//--------------------------------------------------------------------------------------------
-		jobConstraints(model);	
+		jobConstraints();	
 		//--------------------------------------------------------------------------------------------
 		// PRECEDENCES
 		//--------------------------------------------------------------------------------------------
-		jobsPrecedence(model);
+		jobsPrecedence();
 		//--------------------------------------------------------------------------------------------
 		// CONSTRAINTES SUR CHAQUE POSTE
 		//--------------------------------------------------------------------------------------------
-		machineConstraints(model);
+		machineConstraints();
 		//--------------------------------------------------------------------------------------------
 		//--------------------------------------------------------------------------------------------
 
@@ -358,7 +390,11 @@ public class TecalOrdo {
 	public static void main(String[] args) throws IOException, CsvException, URISyntaxException {
 		
 		TecalOrdo tecalOrdo=new TecalOrdo(CST.SQLSERVER);		
-			
+		
+		tecalOrdo.setParams(CST.TEMPS_ZONE_OVERLAP_MIN,
+				CST.TEMPS_MVT_PONT_MIN_JOB,
+				CST.GAP_ZONE_NOOVERLAP,
+			CST.TEMPS_MVT_PONT,CST.TEMPS_ANO_ENTRE_P1_P2);
 		tecalOrdo.setBarresTest();
 		
 		CPO frame=new CPO(null);
@@ -380,7 +416,7 @@ public class TecalOrdo {
 
 	}
 	
-	private  void prepareZones(CpModel model,boolean modeFast,int contrainteLEvel) {
+	private  void prepareZones(boolean modeFast,int contrainteLEvel) {
 		
 		int cptJob=0;
 		allJobs.clear();
@@ -446,7 +482,7 @@ public class TecalOrdo {
 	 * certaines zones peuvent avoir plusieurs barres en même temps
 	 * @param model
 	 */
-	private  void jobConstraints(CpModel model) {
+	private  void jobConstraints() {
 		// Create and add disjunctive constraints.		
 		for (int numzone : numzoneArr) {
 
@@ -475,7 +511,7 @@ public class TecalOrdo {
 	 * et plus à la dérive précédente + 2*CST.TEMPS_MVT_PONT_MIN_JOB
 	 * @param model
 	 */
-	private  void jobsPrecedence (CpModel model) {
+	private  void jobsPrecedence () {
 
 		// Precedences inside a job.
 		for (int jobID = 0; jobID < allJobs.size(); ++jobID) {
@@ -516,7 +552,7 @@ public class TecalOrdo {
 	 * TODO: check quoi si cette zone est une zone longue ??
 	 * @param model
 	 */
-	private  void machineConstraints(CpModel model) {
+	private  void machineConstraints() {
 		// les zones de rincages ne doivent pas se croiser
 
 				ArrayList<ZonesIntervalVar> listZonesNoOverlapParPont  = new  ArrayList<ZonesIntervalVar>();  

@@ -4,8 +4,9 @@ package org.tecal.scheduler;
 public class CST {
 	
 	
-	//public final static String gammesTest[] ={"000022","000210"};
-	public final static String gammesTest[] ={"000022","000210","000021","000164","000601","000467","000347","000169"};
+	public final static String gammesTest[] ={"000007","000005","000009","000010"};
+	//public final static String gammesTest[] ={"000022","000210","000021","000164","000601","000467","000347","000169"};
+	//public final static String gammesTest[] ={"000022","000210","000021","000164","000601","000467"};
 	
 	//------------------------------------------------------------
 	// -----------------  DATA ---------------------------
@@ -33,10 +34,10 @@ public class CST {
 	public final static int TEMPS_MVT_PONT_MIN_JOB = 23;
 	//temps entre les différentes "zones regroupées"	
 	public final static int GAP_ZONE_NOOVERLAP =90;//TEMPS_MVT_PONT_MIN_JOB*5; //90
-	// temps autour d'une début de grosse zone
+	// temps autour d'un début de grosse zone
 	public final static int TEMPS_MVT_PONT =40;		
 	// temps de sécurité entre deux gammes différentes sur un même poste d'ano
-	public final static int TEMPS_ENTRE_P1_P2 = 60;	
+	public final static int TEMPS_ANO_ENTRE_P1_P2 = 60;	
 	
 	
 	//--------------------------------------------------------------
@@ -50,6 +51,7 @@ public class CST {
 	
 	
 	//------------------------------------------------------------
+	public final static int NUMZONE_DEBUT_PONT_2 	=15;
 	public final static int ANODISATION_NUMZONE 	=15;
 	public final static int COLMATAGE_NUMZONE 		=32;
 	public final static int DECHARGEMENT_NUMZONE 	=35;
