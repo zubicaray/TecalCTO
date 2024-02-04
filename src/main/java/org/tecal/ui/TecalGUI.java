@@ -9,20 +9,31 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystemNotFoundException;
+import java.nio.file.FileSystems;
 import java.nio.file.Paths;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
+import javax.imageio.ImageIO;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -139,6 +150,20 @@ public class TecalGUI {
 		     table.setModel(model);
 		}
 
+	
+	private FileSystem initFileSystem(URI uri) throws IOException
+	{
+	    try
+	    {
+	        return FileSystems.getFileSystem(uri);
+	    }
+	    catch( FileSystemNotFoundException e )
+	    {
+	        Map<String, String> env = new HashMap<>();
+	        env.put("create", "true");
+	        return FileSystems.newFileSystem(uri, env);
+	    }
+	}
 	/**
 	 * Initialize the contents of the frame.
 	 */
@@ -150,24 +175,23 @@ public class TecalGUI {
 		
 		List<Image> icons = new ArrayList<Image>();
 		try {
-			URL res = getClass().getClassLoader().getResource("gantt-chart 16.png");
-			File file;
-			String absolutePath="";
-			file = Paths.get(res.toURI()).toFile();
-			absolutePath = file.getAbsolutePath();
-			img = new ImageIcon(absolutePath);
+			
+			InputStream in = getClass().getResourceAsStream("/gantt-chart 16.png") ;					
+			BufferedImage someImage = ImageIO.read(in);
+			img = new ImageIcon(someImage);
 			icons.add(img.getImage());
-			res = getClass().getClassLoader().getResource("gantt-chart 32.png");
-			file = Paths.get(res.toURI()).toFile();
-			absolutePath = file.getAbsolutePath();
-			img = new ImageIcon(absolutePath);
+			in = getClass().getResourceAsStream("/gantt-chart 32.png") ;
+			someImage = ImageIO.read(in);
+			img = new ImageIcon(someImage);			
 			icons.add(img.getImage());
 			
 			
-		} catch (URISyntaxException e) {
+		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		} // usable in Java 9+
+	   
+		
 		
 		frmTecalOrdonnanceur.setIconImages(icons); 
 		
@@ -254,77 +278,8 @@ public class TecalGUI {
 		setIconButton(btnRun,"icons8-play-16.png");
 		
 		
-		GroupLayout gl_panel = new GroupLayout(panel);
-		gl_panel.setHorizontalGroup(
-			gl_panel.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_panel.createSequentialGroup()
-					.addContainerGap()
-					.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
-						.addGroup(gl_panel.createSequentialGroup()
-							.addComponent(scrollPaneMsg, GroupLayout.DEFAULT_SIZE, 688, Short.MAX_VALUE)
-							.addContainerGap())
-						.addGroup(gl_panel.createSequentialGroup()
-							.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
-								.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 443, Short.MAX_VALUE)
-								.addGroup(gl_panel.createSequentialGroup()
-									.addComponent(lblGammes, GroupLayout.PREFERRED_SIZE, 67, GroupLayout.PREFERRED_SIZE)
-									.addGap(111)
-									.addComponent(textFiltre, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-								.addGroup(gl_panel.createSequentialGroup()
-									.addComponent(rdbtnFastModeRadioButton)
-									.addGap(34)
-									.addComponent(lblHardynessLabel, GroupLayout.PREFERRED_SIZE, 64, GroupLayout.PREFERRED_SIZE)
-									.addPreferredGap(ComponentPlacement.RELATED)
-									.addComponent(comboDifficult, GroupLayout.PREFERRED_SIZE, 56, GroupLayout.PREFERRED_SIZE)))
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addGroup(gl_panel.createParallelGroup(Alignment.LEADING, false)
-								.addGroup(gl_panel.createSequentialGroup()
-									.addComponent(scrollPaneBarres, GroupLayout.PREFERRED_SIZE, 135, GroupLayout.PREFERRED_SIZE)
-									.addGroup(gl_panel.createParallelGroup(Alignment.LEADING, false)
-										.addGroup(gl_panel.createSequentialGroup()
-											.addPreferredGap(ComponentPlacement.RELATED, 19, Short.MAX_VALUE)
-											.addComponent(btnUpButton, GroupLayout.PREFERRED_SIZE, 80, GroupLayout.PREFERRED_SIZE))
-										.addGroup(Alignment.TRAILING, gl_panel.createSequentialGroup()
-											.addGap(18)
-											.addGroup(gl_panel.createParallelGroup(Alignment.LEADING, false)
-												.addComponent(btnRun, Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 81, GroupLayout.PREFERRED_SIZE)
-												.addComponent(btnDownButton, GroupLayout.PREFERRED_SIZE, 81, GroupLayout.PREFERRED_SIZE)))))
-								.addComponent(lblBarreLabel, GroupLayout.PREFERRED_SIZE, 99, GroupLayout.PREFERRED_SIZE))
-							.addGap(15))))
-		);
-		gl_panel.setVerticalGroup(
-			gl_panel.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_panel.createSequentialGroup()
-					.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
-						.addGroup(gl_panel.createSequentialGroup()
-							.addGap(49)
-							.addComponent(lblBarreLabel))
-						.addGroup(gl_panel.createSequentialGroup()
-							.addGap(50)
-							.addGroup(gl_panel.createParallelGroup(Alignment.BASELINE)
-								.addComponent(lblGammes, GroupLayout.PREFERRED_SIZE, 20, GroupLayout.PREFERRED_SIZE)
-								.addComponent(textFiltre, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))))
-					.addPreferredGap(ComponentPlacement.UNRELATED)
-					.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
-						.addGroup(gl_panel.createParallelGroup(Alignment.BASELINE)
-							.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
-							.addComponent(scrollPaneBarres, GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE))
-						.addGroup(gl_panel.createSequentialGroup()
-							.addGap(35)
-							.addComponent(btnUpButton)
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(btnDownButton)
-							.addPreferredGap(ComponentPlacement.RELATED, 176, Short.MAX_VALUE)
-							.addComponent(btnRun)))
-					.addPreferredGap(ComponentPlacement.UNRELATED)
-					.addGroup(gl_panel.createParallelGroup(Alignment.BASELINE)
-						.addComponent(rdbtnFastModeRadioButton)
-						.addComponent(lblHardynessLabel)
-						.addComponent(comboDifficult, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-					.addGap(18)
-					.addComponent(scrollPaneMsg, GroupLayout.PREFERRED_SIZE, 149, GroupLayout.PREFERRED_SIZE)
-					.addGap(24))
-		);
+		GroupLayout gl_panel = mainGuiGrouping(panel, scrollPane, scrollPaneBarres, lblBarreLabel, lblGammes,
+				btnUpButton, btnDownButton, lblHardynessLabel, scrollPaneMsg, btnRun);
 		
 		
 		btnRun.addActionListener(new ActionListener() {
@@ -441,6 +396,83 @@ public class TecalGUI {
 		frmTecalOrdonnanceur.getContentPane().setLayout(groupLayout);
 	}
 
+	private GroupLayout mainGuiGrouping(JPanel panel, JScrollPane scrollPane, JScrollPane scrollPaneBarres,
+			JLabel lblBarreLabel, JLabel lblGammes, JButton btnUpButton, JButton btnDownButton,
+			JLabel lblHardynessLabel, JScrollPane scrollPaneMsg, JButton btnRun) {
+		GroupLayout gl_panel = new GroupLayout(panel);
+		gl_panel.setHorizontalGroup(
+			gl_panel.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_panel.createSequentialGroup()
+					.addContainerGap()
+					.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
+						.addGroup(gl_panel.createSequentialGroup()
+							.addComponent(scrollPaneMsg, GroupLayout.DEFAULT_SIZE, 688, Short.MAX_VALUE)
+							.addContainerGap())
+						.addGroup(gl_panel.createSequentialGroup()
+							.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
+								.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 443, Short.MAX_VALUE)
+								.addGroup(gl_panel.createSequentialGroup()
+									.addComponent(lblGammes, GroupLayout.PREFERRED_SIZE, 67, GroupLayout.PREFERRED_SIZE)
+									.addGap(111)
+									.addComponent(textFiltre, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+								.addGroup(gl_panel.createSequentialGroup()
+									.addComponent(rdbtnFastModeRadioButton)
+									.addGap(34)
+									.addComponent(lblHardynessLabel, GroupLayout.PREFERRED_SIZE, 64, GroupLayout.PREFERRED_SIZE)
+									.addPreferredGap(ComponentPlacement.RELATED)
+									.addComponent(comboDifficult, GroupLayout.PREFERRED_SIZE, 56, GroupLayout.PREFERRED_SIZE)))
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addGroup(gl_panel.createParallelGroup(Alignment.LEADING, false)
+								.addGroup(gl_panel.createSequentialGroup()
+									.addComponent(scrollPaneBarres, GroupLayout.PREFERRED_SIZE, 135, GroupLayout.PREFERRED_SIZE)
+									.addGroup(gl_panel.createParallelGroup(Alignment.LEADING, false)
+										.addGroup(gl_panel.createSequentialGroup()
+											.addPreferredGap(ComponentPlacement.RELATED, 19, Short.MAX_VALUE)
+											.addComponent(btnUpButton, GroupLayout.PREFERRED_SIZE, 80, GroupLayout.PREFERRED_SIZE))
+										.addGroup(Alignment.TRAILING, gl_panel.createSequentialGroup()
+											.addGap(18)
+											.addGroup(gl_panel.createParallelGroup(Alignment.LEADING, false)
+												.addComponent(btnRun, Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 81, GroupLayout.PREFERRED_SIZE)
+												.addComponent(btnDownButton, GroupLayout.PREFERRED_SIZE, 81, GroupLayout.PREFERRED_SIZE)))))
+								.addComponent(lblBarreLabel, GroupLayout.PREFERRED_SIZE, 99, GroupLayout.PREFERRED_SIZE))
+							.addGap(15))))
+		);
+		gl_panel.setVerticalGroup(
+			gl_panel.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_panel.createSequentialGroup()
+					.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
+						.addGroup(gl_panel.createSequentialGroup()
+							.addGap(49)
+							.addComponent(lblBarreLabel))
+						.addGroup(gl_panel.createSequentialGroup()
+							.addGap(50)
+							.addGroup(gl_panel.createParallelGroup(Alignment.BASELINE)
+								.addComponent(lblGammes, GroupLayout.PREFERRED_SIZE, 20, GroupLayout.PREFERRED_SIZE)
+								.addComponent(textFiltre, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))))
+					.addPreferredGap(ComponentPlacement.UNRELATED)
+					.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
+						.addGroup(gl_panel.createParallelGroup(Alignment.BASELINE)
+							.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
+							.addComponent(scrollPaneBarres, GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE))
+						.addGroup(gl_panel.createSequentialGroup()
+							.addGap(35)
+							.addComponent(btnUpButton)
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addComponent(btnDownButton)
+							.addPreferredGap(ComponentPlacement.RELATED, 176, Short.MAX_VALUE)
+							.addComponent(btnRun)))
+					.addPreferredGap(ComponentPlacement.UNRELATED)
+					.addGroup(gl_panel.createParallelGroup(Alignment.BASELINE)
+						.addComponent(rdbtnFastModeRadioButton)
+						.addComponent(lblHardynessLabel)
+						.addComponent(comboDifficult, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+					.addGap(18)
+					.addComponent(scrollPaneMsg, GroupLayout.PREFERRED_SIZE, 149, GroupLayout.PREFERRED_SIZE)
+					.addGap(24))
+		);
+		return gl_panel;
+	}
+
 	private void buildParamsTab(JTabbedPane tabbedPane) {
 		JPanel panel_param = new JPanel();
 		tabbedPane.addTab("Paramètres", null, panel_param, null);
@@ -545,14 +577,11 @@ public class TecalGUI {
 
 	private void setIconButton(JButton btnButton,String fileName) {
 		try {
-				    
-			URL res = getClass().getClassLoader().getResource(fileName);
-			File file;
-			String absolutePath="";
-			file = Paths.get(res.toURI()).toFile();
-			absolutePath = file.getAbsolutePath();
-		    
-		    btnButton.setIcon( new ImageIcon(absolutePath));
+			
+			InputStream in = getClass().getResourceAsStream("/"+fileName) ;					
+			BufferedImage someImage = ImageIO.read(in);
+			img = new ImageIcon(someImage);		
+		    btnButton.setIcon(  img);		    
 		  } catch (Exception ex) {
 		    System.out.println(ex);
 		  }
