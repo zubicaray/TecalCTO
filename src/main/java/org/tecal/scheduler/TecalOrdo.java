@@ -31,7 +31,7 @@ import org.tecal.scheduler.data.CSV_DATA;
 import org.tecal.scheduler.data.SQL_DATA;
 import org.tecal.scheduler.types.GammeType;
 import org.tecal.scheduler.types.ZoneType;
-import org.tecal.ui.CPO;
+import org.tecal.ui.CPO_IHM;
 
 
 class Coord 			        extends ArrayList<IntVar> 	{	private static final long serialVersionUID = 1L;}
@@ -118,6 +118,9 @@ public class TecalOrdo {
 	private	Map<Integer, List<IntervalVar>> zoneToIntervals = new HashMap<>();
 	private	Map<Integer, List<IntervalVar>> zoneCumulToIntervals = new HashMap<>();
 	
+	
+	private Map<Integer, List<AssignedTask>> assignedJobs;
+
 	private CpModel model;
 	
 	static int horizon = 0;
@@ -203,6 +206,10 @@ public class TecalOrdo {
 	 }
 	};
 	
+	public Map<Integer, List<AssignedTask>> getAssignedJobs() {
+		return assignedJobs;
+	}
+	
 	public void setBarres(LinkedHashMap<Integer,String> inBarres) {
 		
 		mBarres.clear();
@@ -216,7 +223,7 @@ public class TecalOrdo {
 		
 	}
 	
-	public void  run(boolean modeFast,int contrainteLEvel,CPO ganttFrame) {
+	public void  run(boolean modeFast,int contrainteLEvel,CPO_IHM ganttFrame) {
 
 		
 		
@@ -240,6 +247,8 @@ public class TecalOrdo {
 		machineConstraints();
 		//--------------------------------------------------------------------------------------------
 		//--------------------------------------------------------------------------------------------
+		// sur les postes d'oxy, faire en sorte que le pont 2 ne puisse pas croiser le pont et récproquement
+		zoneAnodisationConstraints();
 
 
 		// Makespan objective.
@@ -274,7 +283,7 @@ public class TecalOrdo {
 		
 
 
-		Map<Integer, List<AssignedTask>> assignedJobs = new HashMap<>();
+		assignedJobs = new HashMap<>();
 		CpSolverStatus status = solver.solve(model);
 
 		
@@ -389,7 +398,7 @@ public class TecalOrdo {
 	}
 	public static void main(String[] args) throws IOException, CsvException, URISyntaxException {
 		
-		TecalOrdo tecalOrdo=new TecalOrdo(CST.SQLSERVER);		
+		TecalOrdo tecalOrdo=new TecalOrdo(CST.CSV);		
 		
 		tecalOrdo.setParams(CST.TEMPS_ZONE_OVERLAP_MIN,
 				CST.TEMPS_MVT_PONT_MIN_JOB,
@@ -397,9 +406,9 @@ public class TecalOrdo {
 			CST.TEMPS_MVT_PONT,CST.TEMPS_ANO_ENTRE_P1_P2);
 		tecalOrdo.setBarresTest();
 		
-		CPO frame=new CPO(null);
+		CPO_IHM frame=new CPO_IHM(null);
 		
-		tecalOrdo.run(CST.MODE_FAST,CST.PORTION_HORIZON,frame);		
+		tecalOrdo.run(CST.MODE_ECO,CST.PORTION_HORIZON,frame);		
 		if(CST.PRINT_PROD_DIAG )
 			SwingUtilities.invokeLater(() -> {  
 
@@ -496,7 +505,8 @@ public class TecalOrdo {
 				// zone autorisant le "chevauchement" => zone contenant plus de  1 postes
 				IntVar capacity = model.newIntVar(0, zt.cumul, "capacity_of_"+numzone);
 
-				CumulativeConstraint cumul =model.addCumulative(capacity);    		
+				CumulativeConstraint cumul =model.addCumulative(capacity);    	
+				
 				long[] zoneUsage  = new long[listCumul.size()];
 				Arrays.fill(zoneUsage,1);
 				cumul.addDemands(listCumul.toArray(new IntervalVar[0]), zoneUsage);  	  
@@ -504,6 +514,30 @@ public class TecalOrdo {
 
 		}
 	}
+	
+	private  void zoneAnodisationConstraints() {
+	
+	
+		List<IntervalVar> intervalParZone = zoneCumulToIntervals.get(CST.ANODISATION_NUMZONE);  
+		List<IntervalVar> nooverlapAno=new  ArrayList<IntervalVar> ();
+		for( int i=0;i<intervalParZone.size();i++) {
+			
+			IntervalVar interval=intervalParZone.get(i);
+			LinearExpr debInter=interval.getStartExpr();
+			LinearExpr finInter=interval.getEndExpr();
+			
+			IntervalVar deb=getNoOverlapZone(model,debInter);
+			IntervalVar fin=getNoOverlapZone(model,finInter);
+			
+			nooverlapAno.add(deb);
+			nooverlapAno.add(fin);
+			
+		}
+			
+
+		model.addNoOverlap(nooverlapAno);    
+	}
+	
 	/**
 	 * 
 	 * au sein d'un même job, le début de la zone suivante
@@ -614,12 +648,54 @@ public class TecalOrdo {
 				}					
 	}
 	
+	static IntVar getBackward(CpModel model,IntVar mvtPont,int decay){
+		
+		
+		IntVar decayed=model.newIntVar(0, horizon, "");
+		model.newIntervalVar(
+				decayed,
+				LinearExpr.constant(decay)
+				, mvtPont,
+				"");
+		
+		return decayed;
 	
-static IntervalVar getMvt(CpModel model,IntVar mvtPont,int horizon,int left){
+	}
+	static IntVar getForeward(CpModel model,IntVar mvtPont,int decay){
+		
+		
+		IntVar decayed=model.newIntVar(0, horizon, "");
+		 model.newIntervalVar(
+				 mvtPont,
+				LinearExpr.constant(decay)
+				, decayed,
+				"");
+		
+		return decayed;
+	
+	}
+	static IntervalVar getNoOverlapZone(CpModel model,IntVar mvtPont,int left,int right){
 		
 		IntervalVar before = model.newIntervalVar(
 				model.newIntVar(0, horizon, ""),
-				LinearExpr.constant(CST.TEMPS_MVT_PONT*2)
+				LinearExpr.constant(left)
+				, mvtPont,
+				"");
+		
+		IntervalVar after = model.newIntervalVar(mvtPont,
+				LinearExpr.constant(right), 
+				model.newIntVar(0, horizon, ""),
+				"");
+		
+		return model.newIntervalVar(before.getStartExpr(),model.newIntVar(0, horizon,  ""),after.getEndExpr(),"");
+	
+	}
+
+	static IntervalVar getNoOverlapZone(CpModel model,LinearExpr mvtPont){
+		
+		IntervalVar before = model.newIntervalVar(
+				model.newIntVar(0, horizon, ""),
+				LinearExpr.constant(CST.TEMPS_MVT_PONT)
 				, mvtPont,
 				"");
 		
@@ -631,8 +707,7 @@ static IntervalVar getMvt(CpModel model,IntVar mvtPont,int horizon,int left){
 		return model.newIntervalVar(before.getStartExpr(),model.newIntVar(0, horizon,  ""),after.getEndExpr(),"");
 	
 	}
-
-	static IntervalVar getMvt(CpModel model,IntVar mvtPont,int horizon){
+	static IntervalVar getNoOverlapZone(CpModel model,IntVar mvtPont){
 		
 		IntervalVar before = model.newIntervalVar(
 				model.newIntVar(0, horizon, ""),
@@ -649,7 +724,7 @@ static IntervalVar getMvt(CpModel model,IntVar mvtPont,int horizon,int left){
 	
 	}
 	
-	static IntervalVar getMvt(CpModel model,IntVar mvtPontStart,IntVar mvtPontEnd,int horizon){
+	static IntervalVar getNoOverlapZone(CpModel model,IntVar mvtPontStart,IntVar mvtPontEnd){
 		
 		IntervalVar before = model.newIntervalVar(
 				model.newIntVar(0, horizon, ""),

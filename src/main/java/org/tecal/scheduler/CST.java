@@ -4,9 +4,12 @@ package org.tecal.scheduler;
 public class CST {
 	
 	
-	public final static String gammesTest[] ={"000007","000005","000009","000010"};
-	//public final static String gammesTest[] ={"000022","000210","000021","000164","000601","000467","000347","000169"};
-	//public final static String gammesTest[] ={"000022","000210","000021","000164","000601","000467"};
+	//public final static String gammesTest[] ={"000007","000005","000009","000010"};
+	//public final static String gammesTest[] ={"000022","000210","000021","000164","000601","000467","000347","000169","000347"};
+	//public final static String gammesTest[] ={"000022","000022","000467","000210","000246"};
+	//public final static String gammesTest[] ={"000210","000210","000210","000210","000210"};
+	//public final static String gammesTest[] ={"000022","000246"};
+	public final static String gammesTest[] ={"000554","000552","000553","000552","000553"};
 	
 	//------------------------------------------------------------
 	// -----------------  DATA ---------------------------
@@ -18,7 +21,7 @@ public class CST {
 	//------------------------------------------------------------
 	public final static boolean CSTR_NOOVERLAP_MVTS_PONT =false;
 	public final static boolean CSTR_NOOVERLAP_ZONES_GROUPEES = true ;
-	public final static boolean MODE_FAST = true ;
+	public final static boolean MODE_ECO = false ;
 	public final static int 	PORTION_HORIZON = 7 ;
 	
 	//------------------------------------------------------------

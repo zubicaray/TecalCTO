@@ -32,6 +32,8 @@ class TaskOrdo {
 	TaskOrdo(CpModel model,int horizon,int duration,int inderive,int minDebut,String suffix){
 	
 		
+		//TODO : enlever le temps de mvt de pont pour la zone de chargement
+		
 		// 6 secondes , 15ks => WEIRD ???
 		if(minDebut==0) {
 			startBDD = model.newIntVar(duration, horizon, "start" + suffix); 
@@ -68,13 +70,10 @@ class TaskOrdo {
 		}
 		*/
 		
-		if(CST.MODE_FAST) {
+		if(CST.MODE_ECO) {
 			startBDD = model.newIntVar(0, horizon, "start" + suffix); 
 		}
 	
-		
-		  
-		
 		     
 		endBDD = model.newIntVar(minDebut+duration, horizon, "end" + suffix);
 		//derive = model.newIntVar(0, horizon,  "derive_" + suffix);

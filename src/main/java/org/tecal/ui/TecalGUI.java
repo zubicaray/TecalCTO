@@ -10,16 +10,12 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.FileSystems;
-import java.nio.file.Paths;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -29,11 +25,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
-
 import javax.imageio.ImageIO;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
-import javax.swing.Icon;
+
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -67,12 +62,14 @@ import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import java.awt.Font;
 import java.awt.Component;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ChangeEvent;
 
 public class TecalGUI {
 
 	private JFrame frmTecalOrdonnanceur;
 	//private JFrame gantFrame;
-	private CPO   gantFrame;
+	private CPO_IHM   gantFrame;
 	private JTable tableGammes;
 	private DefaultTableModel modelGammes ;
 	private JTable tableBarres;
@@ -150,20 +147,7 @@ public class TecalGUI {
 		     table.setModel(model);
 		}
 
-	
-	private FileSystem initFileSystem(URI uri) throws IOException
-	{
-	    try
-	    {
-	        return FileSystems.getFileSystem(uri);
-	    }
-	    catch( FileSystemNotFoundException e )
-	    {
-	        Map<String, String> env = new HashMap<>();
-	        env.put("create", "true");
-	        return FileSystems.newFileSystem(uri, env);
-	    }
-	}
+
 	/**
 	 * Initialize the contents of the frame.
 	 */
@@ -263,11 +247,25 @@ public class TecalGUI {
 	
 		
 		rdbtnFastModeRadioButton = new JRadioButton("mode approx.");
-		rdbtnFastModeRadioButton.setSelected(CST.MODE_FAST);
+		
+		rdbtnFastModeRadioButton.setSelected(CST.MODE_ECO);
+		
+
 		
 		Integer [] comboVals= {3,4,5,6,7,8,9,10,11,12,13};
 		comboDifficult = new JComboBox<Integer>(comboVals);
 		comboDifficult.setSelectedItem(7);
+		if(! rdbtnFastModeRadioButton.isSelected()) {
+			comboDifficult.setEnabled(false);
+		}
+		
+		rdbtnFastModeRadioButton.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				
+				comboDifficult.setEnabled(rdbtnFastModeRadioButton.isSelected());
+				
+			}
+		});
 		
 		JLabel lblHardynessLabel = new JLabel("difficulté");
 		
@@ -303,7 +301,7 @@ public class TecalGUI {
 							Integer.valueOf(textTEMPS_ANO_ENTRE_P1_P2.getText()));
 					
 					mTecalOrdo.setBarres(gammes);
-					gantFrame=new CPO(icons);
+					gantFrame=new CPO_IHM(icons);
 					frmTecalOrdonnanceur.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					mTecalOrdo.run(rdbtnFastModeRadioButton.isSelected(),(int)comboDifficult.getSelectedItem(),gantFrame);	
 					frmTecalOrdonnanceur.setCursor(Cursor.getDefaultCursor());
@@ -515,6 +513,7 @@ public class TecalGUI {
 		JLabel lblNewLabel_2 = new JLabel("NUMZONE_DEBUT_PONT_2");
 		
 		textNUMZONE_DEBUT_PONT_2 = new JTextField();
+		textNUMZONE_DEBUT_PONT_2.setHorizontalAlignment(SwingConstants.RIGHT);
 		textNUMZONE_DEBUT_PONT_2.setColumns(10);
 		textNUMZONE_DEBUT_PONT_2.setText(Integer.toString(CST.NUMZONE_DEBUT_PONT_2));
 		

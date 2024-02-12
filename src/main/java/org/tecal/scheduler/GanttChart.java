@@ -61,14 +61,14 @@ public class GanttChart extends ApplicationFrame {
 	        lastTimeAtPostes= new int[cumul];
 	       // for(int i=0;i<lastTimeAtPostes.length;i++)  lastTimeAtPostes[i]=0;
 	      }
-	      public int getPoste(int starttime,int endtime) {
+	      public int getPosteIdx(int starttime,int endtime,int derive) {
 	    	 
 	    	  boolean zonePrise=false;
 	    	  int idxPoste=0;
 	    	  for(int i=0;i<lastTimeAtPostes.length;i++) {
 	    		  
 	    		  if(lastTimeAtPostes[i]==0 && !zonePrise) {
-	    			  lastTimeAtPostes[i]=endtime;
+	    			  lastTimeAtPostes[i]=derive;
 	    			  zonePrise=true;
 	    			  
 	    			  return i;
@@ -77,7 +77,7 @@ public class GanttChart extends ApplicationFrame {
 	    			  if(lastTimeAtPostes[i]<=starttime) {
 	    				  lastTimeAtPostes[i]=0;
 	    				  if( !zonePrise) {
-	    					  lastTimeAtPostes[i]=endtime;
+	    					  lastTimeAtPostes[i]=derive;
 	    	    			  zonePrise=true;
 	    	    			  
 	    	    			  idxPoste=i;
@@ -199,7 +199,7 @@ public class GanttChart extends ApplicationFrame {
 				ZoneCumul zc=zonesCumul.get(task.numzone);
 		    	int end=task.duration+task.start;
 		      		
-		    	task.IdPosteZoneCumul=zc.getPoste(task.start, end);
+		    	task.IdPosteZoneCumul=zc.getPosteIdx(task.start, end,task.derive);
 				 
 				 
 			 });

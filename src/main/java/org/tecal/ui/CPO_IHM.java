@@ -20,7 +20,7 @@ import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 
-public class CPO extends JFrame {
+public class CPO_IHM extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
@@ -36,7 +36,7 @@ public class CPO extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					CPO frame = new CPO(null);
+					CPO_IHM frame = new CPO_IHM(null);
 					//frame.addGantt(null) ;
 					frame.setVisible(true);
 				} catch (Exception e) {
@@ -49,7 +49,7 @@ public class CPO extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public CPO(List<Image> icons) {
+	public CPO_IHM(List<Image> icons) {
 		
 		setIconImages(icons); 
 		//setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

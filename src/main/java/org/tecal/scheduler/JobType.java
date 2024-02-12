@@ -293,10 +293,34 @@ public class JobType {
 			GammeType gt = zones.get(i);
 			lTasksJob.add(new Task(gt.time, gt.numzone));
 			//System.out.println("debZone: "+gt.codezone);
+			
+			boolean bridgeChanged=false;
 
 			int p = 0;
-			if (gt.numzone > CST.NUMZONE_DEBUT_PONT_2)
+			if (gt.numzone > CST.NUMZONE_DEBUT_PONT_2) {
 				p = 1;
+				if(i < zones.size() -1) {
+					GammeType next = zones.get(i+1);
+					if (next.numzone < CST.NUMZONE_DEBUT_PONT_2) 
+						bridgeChanged=true;
+				}
+					
+			}
+				
+			else{ //PONT 1 
+				
+				if(i == (zones.size() - 1))// on est avec le pont 1 mais la gamme ne va pas plus loin que l'ano
+					bridgeChanged=true;
+				else {
+					GammeType next = zones.get(i+1);
+					//la zone d'après est sur lepont 2 on doit changer quoi qu'il arrive
+					if (next.numzone > CST.NUMZONE_DEBUT_PONT_2) 
+						bridgeChanged=true;
+				}
+			}
+			
+			
+			
 			
 			
 			if (gt.numzone == CST.ANODISATION_NUMZONE) {
@@ -307,12 +331,12 @@ public class JobType {
 			}
 
 			boolean zoneCumulOrFinChaine = (// arret si p1 arrive en ano
-					(p == 0 && gt.numzone == CST.ANODISATION_NUMZONE) ||
+					(p == 0 && gt.numzone == CST.ANODISATION_NUMZONE) 
 					// arret si P2 est au bout de ligne
-					(p == 1 && i == (zones.size() - 1) && gt.numzone == CST.COLMATAGE_NUMZONE))
-					// arret si zone de cumul
-					 ;
+					//|| (  /*p == 1 &&  i == (zones.size() - 1) &&		*/			gt.numzone == CST.COLMATAGE_NUMZONE					)
+				) ;
 
+			
 			if (!newZoneZincage[p] && (gt.time + gt.derive) < CST.TEMPS_ZONE_OVERLAP_MIN) {
 				debZone = i;
 				newZoneZincage[p] = true;
@@ -321,7 +345,7 @@ public class JobType {
 				
 			}
 			else if ((gt.time + gt.derive >= CST.TEMPS_ZONE_OVERLAP_MIN && newZoneZincage[p])
-					|| zoneCumulOrFinChaine) {
+					|| zoneCumulOrFinChaine || bridgeChanged) {
 				
 				// on arrive sur une grosse zone, on étzablit le regroupement des zones précédentes
 				finZone = i - 1;
@@ -364,7 +388,7 @@ public class JobType {
 
 		taskAnod = allTasks.get(Arrays.asList(jobID, indexAnod));
 		taskColmatage = allTasks.get(Arrays.asList(jobID, indexColmatage));
-		
+		//System.out.printf("job:"+name);	
 
 		
 		for (int pont = 0; pont < idZonesNoOverlapPont.size(); pont++) {
@@ -372,6 +396,10 @@ public class JobType {
 				
 			// zones non chevauchables
 			for (int zoneID = 0; zoneID < idZonesNoOverlapPont.get(pont).size(); ++zoneID) {
+				
+				// !!
+				//on commence après la zone 0 de chargement
+				//if(pont==0 && zoneID==0) continue;
 
 				int ids []=idZonesNoOverlapPont.get(pont).get(zoneID);
 				
@@ -381,7 +409,7 @@ public class JobType {
 				
 				boolean groupe=false;
 				if(ids.length==2) {			
-					//zone sregroupées 
+					//zones regroupées 
 					idFinZone = ids[1];
 					groupe=true;
 				}
@@ -401,20 +429,28 @@ public class JobType {
 					TaskOrdo taskOrdo = allTasks.get(key);
 
 					if (i == idDebZone ) {			
-						//TODO fixe bug 
+						//TODO fixe bug -> FIXED ?
 						if(indexAnod >0 && idDebZone-1==indexAnod ) {							
 							start = taskAnod.endBDD;						
 						}
 						else {
-							start = taskOrdo.deb;
+							//TODO: gérer le cas où cette zone regroupée est juste après le chargement => décaler le start sur gauche
+							
+							if(i==1) {
+								start =TecalOrdo.getBackward(model,taskOrdo.deb,CST.TEMPS_MVT_PONT*2);
+							}
+							else {
+								start = taskOrdo.deb;
+							}
 						}
 								
 						if(groupe==false) {
 							if(i==1) {
-								debutLonguesZonesPont.get(pont).add(TecalOrdo.getMvt(model,start,horizon,30));
+								// on est juste après le chargement, on ajoute du temps pour inclure la prise au chargement précédente
+								debutLonguesZonesPont.get(pont).add(TecalOrdo.getNoOverlapZone(model, taskOrdo.deb,CST.TEMPS_MVT_PONT*2,CST.TEMPS_MVT_PONT));
 							}
 							else 
-								debutLonguesZonesPont.get(pont).add(TecalOrdo.getMvt(model,start,horizon));					
+								debutLonguesZonesPont.get(pont).add(TecalOrdo.getNoOverlapZone(model, taskOrdo.deb));					
 						}
 					}
 						
@@ -428,10 +464,9 @@ public class JobType {
 						else {
 							end = taskOrdo.fin;
 						}
-						
 						if(groupe) {						
 							// on ajoute la zone non chevauchable
-							tasksNoOverlapPont.get(pont).add(TecalOrdo.getMvt(model,start,end,horizon));											
+							tasksNoOverlapPont.get(pont).add(TecalOrdo.getNoOverlapZone(model,start,end));											
 						}
 						
 					}
