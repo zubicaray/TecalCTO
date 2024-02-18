@@ -19,6 +19,7 @@ import java.awt.Color;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
+import javax.swing.JTable;
 
 public class CPO_IHM extends JFrame {
 
@@ -29,6 +30,7 @@ public class CPO_IHM extends JFrame {
 	private JPanel panel_chart;
 	private GroupLayout gl_panelGantt ; 
 	JPanel panelGantt ;
+	private JTable tableDerive;
 	/**
 	 * Launch the application.
 	 */
@@ -67,6 +69,24 @@ public class CPO_IHM extends JFrame {
 		tabbedPane.addTab("Gantt", null, panelGantt, null);
 		JPanel panelDerives = new JPanel();
 		tabbedPane.addTab("Dérives", null, panelDerives, null);
+		
+		tableDerive = new JTable();
+		GroupLayout gl_panelDerives = new GroupLayout(panelDerives);
+		gl_panelDerives.setHorizontalGroup(
+			gl_panelDerives.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_panelDerives.createSequentialGroup()
+					.addGap(39)
+					.addComponent(tableDerive, GroupLayout.DEFAULT_SIZE, 375, Short.MAX_VALUE)
+					.addGap(31))
+		);
+		gl_panelDerives.setVerticalGroup(
+			gl_panelDerives.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_panelDerives.createSequentialGroup()
+					.addGap(33)
+					.addComponent(tableDerive, GroupLayout.DEFAULT_SIZE, 187, Short.MAX_VALUE)
+					.addGap(52))
+		);
+		panelDerives.setLayout(gl_panelDerives);
 		
 		gl_panelGantt = new GroupLayout(panelGantt);
 		UIManager.put( "Panel.foreground", new Color(255,255,255) );
