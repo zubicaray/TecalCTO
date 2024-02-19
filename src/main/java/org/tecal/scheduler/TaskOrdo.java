@@ -19,8 +19,10 @@ class TaskOrdo {
 	//réel , qui intègre les contraintes du pont
 	IntVar deb;
 	IntVar fin;
+	IntVar debutDerive;
+	IntVar finDerive;
 	IntervalVar intervalReel;
-	IntervalVar finDerive;
+	IntervalVar minimumDerive;
 
 
 
@@ -33,7 +35,7 @@ class TaskOrdo {
 	
 		
 		//TODO : enlever le temps de mvt de pont pour la zone de chargement
-		
+		/*
 		// 6 secondes , 15ks => WEIRD ???
 		if(minDebut==0) {
 			startBDD = model.newIntVar(duration, horizon, "start" + suffix); 
@@ -61,7 +63,7 @@ class TaskOrdo {
 		}
 
 		//82 secondes , 13.8ks
-		/*
+		
 		if(minDebut==0) {
 			startBDD = model.newIntVar(0, horizon, "start" + suffix); 
 		}
@@ -70,14 +72,15 @@ class TaskOrdo {
 		}
 		*/
 		
-		if(CST.MODE_ECO) {
+		//if(CST.MODE_ECO) {
 			startBDD = model.newIntVar(0, horizon, "start" + suffix); 
-		}
+		//}
 	
 		     
-		endBDD = model.newIntVar(minDebut+duration, horizon, "end" + suffix);
+		//endBDD = model.newIntVar(minDebut+duration, horizon, "end" + suffix);
+		endBDD = model.newIntVar(0, horizon, "end" + suffix);
 		//derive = model.newIntVar(0, horizon,  "derive_" + suffix);
-		arriveePont = model.newIntVar(minDebut+duration, horizon,  "pontArrive_" + suffix);
+		//arriveePont = model.newIntVar(minDebut+duration, horizon,  "pontArrive_" + suffix);
 
 		intervalBDD = model.newIntervalVar(startBDD, LinearExpr.constant(duration),endBDD, "interval" + suffix);
 
@@ -92,24 +95,34 @@ class TaskOrdo {
 
 		
 
-		deb=model.newIntVar(minDebut, horizon, "deb_nooverlap");
+		//deb=model.newIntVar(minDebut, horizon, "deb_nooverlap");
+		//fin=model.newIntVar(minDebut+duration, horizon, "fin_nooverlap");
+		deb=model.newIntVar(0, horizon, "deb_nooverlap");
 		fin=model.newIntVar(minDebut+duration, horizon, "fin_nooverlap");
+		debutDerive=model.newIntVar(minDebut+duration, horizon, "fin_nooverlap");
+		finDerive=model.newIntVar(minDebut+duration, horizon, "fin_nooverlap");
+		
 
 		model.newIntervalVar(deb,LinearExpr.constant(CST.TEMPS_MVT_PONT_MIN_JOB),startBDD,"");             
-		model.newIntervalVar(endBDD, LinearExpr.constant(CST.TEMPS_MVT_PONT_MIN_JOB), arriveePont, "");       
+		//model.newIntervalVar(endBDD, LinearExpr.constant(CST.TEMPS_MVT_PONT_MIN_JOB), arriveePont, "");       
 		intervalReel=model.newIntervalVar(
-				startBDD,
+				deb,
 				model.newIntVar(CST.TEMPS_MVT_PONT_MIN_JOB+duration, CST.TEMPS_MVT_PONT_MIN_JOB+duration+inderive, ""),
+				fin,"");
+		
+		model.newIntervalVar(
+				finDerive,
+				LinearExpr.constant(CST.TEMPS_MVT_PONT_MIN_JOB),
 				fin,"");
 		
 		
 		//arriveePontDerive= model.newIntVar(0, horizon, "");
 		//model.newIntervalVar(arriveePontDerive,				LinearExpr.constant(CST.TEMPS_MVT_PONT_MIN_JOB+10),				fin,"");
 		
-		finDerive=model.newIntervalVar(
-				model.newIntVar(minDebut+duration, horizon, ""),
+		minimumDerive=model.newIntervalVar(
+				endBDD,
 				LinearExpr.constant(CST.TEMPS_MVT_PONT_MIN_JOB),
-				fin,"");
+				debutDerive,"");
 		
 		
 		

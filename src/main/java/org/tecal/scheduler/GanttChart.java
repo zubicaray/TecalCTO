@@ -14,6 +14,7 @@ import org.jfree.ui.ApplicationFrame;
 import org.tecal.scheduler.data.SQL_DATA;
 import org.tecal.scheduler.types.PosteBDD;
 import org.tecal.scheduler.types.PosteProd;
+import org.tecal.scheduler.types.AssignedTask;
 import org.tecal.scheduler.types.GammeType;
 import org.tecal.scheduler.types.ZoneType;
 

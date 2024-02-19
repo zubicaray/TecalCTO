@@ -2,24 +2,31 @@ package org.tecal.ui;
 
 import java.awt.EventQueue;
 import java.awt.Image;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 
 import org.jfree.chart.ChartPanel;
-
 import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 
+import javax.swing.DefaultRowSorter;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JTable;
+import javax.swing.SortOrder;
+import javax.swing.JScrollPane;
+
 
 public class CPO_IHM extends JFrame {
 
@@ -30,7 +37,8 @@ public class CPO_IHM extends JFrame {
 	private JPanel panel_chart;
 	private GroupLayout gl_panelGantt ; 
 	JPanel panelGantt ;
-	private JTable tableDerive;
+	private DefaultTableModel modelDerives;
+	private JTable tableDerives;
 	/**
 	 * Launch the application.
 	 */
@@ -70,26 +78,61 @@ public class CPO_IHM extends JFrame {
 		JPanel panelDerives = new JPanel();
 		tabbedPane.addTab("Dérives", null, panelDerives, null);
 		
-		tableDerive = new JTable();
+
+	    
+	    modelDerives=new DefaultTableModel(
+				new Object[][] {
+				},
+				new String[] {
+					"barre", "zone", "dérive"
+				}
+			);
+		
+		JScrollPane scrollPane = new JScrollPane();
+		
+		
 		GroupLayout gl_panelDerives = new GroupLayout(panelDerives);
 		gl_panelDerives.setHorizontalGroup(
 			gl_panelDerives.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_panelDerives.createSequentialGroup()
-					.addGap(39)
-					.addComponent(tableDerive, GroupLayout.DEFAULT_SIZE, 375, Short.MAX_VALUE)
-					.addGap(31))
+					.addGap(58)
+					.addComponent(scrollPane, GroupLayout.PREFERRED_SIZE, 319, GroupLayout.PREFERRED_SIZE)
+					.addContainerGap(68, Short.MAX_VALUE))
 		);
 		gl_panelDerives.setVerticalGroup(
 			gl_panelDerives.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_panelDerives.createSequentialGroup()
-					.addGap(33)
-					.addComponent(tableDerive, GroupLayout.DEFAULT_SIZE, 187, Short.MAX_VALUE)
-					.addGap(52))
+					.addGap(34)
+					.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 214, Short.MAX_VALUE)
+					.addGap(24))
 		);
+		
+		tableDerives = new JTable(modelDerives);
+		
+		
+		TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(tableDerives.getModel());
+		tableDerives.setRowSorter(sorter);
+
+		List<DefaultRowSorter.SortKey> sortKeys = new ArrayList<>(25);
+		sortKeys.add(new DefaultRowSorter.SortKey(0, SortOrder.ASCENDING));
+		sortKeys.add(new DefaultRowSorter.SortKey(1, SortOrder.ASCENDING));
+		sorter.setSortKeys(sortKeys);
+		
+		
+		scrollPane.setViewportView(tableDerives);
 		panelDerives.setLayout(gl_panelDerives);
 		
 		gl_panelGantt = new GroupLayout(panelGantt);
 		UIManager.put( "Panel.foreground", new Color(255,255,255) );
+		
+		
+		
+	}
+	
+	public   DefaultTableModel getDerives()
+	{
+		
+		return modelDerives;
 		
 		
 		

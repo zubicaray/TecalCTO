@@ -23,15 +23,20 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.SwingUtilities;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.ui.RefineryUtilities;
 import org.tecal.scheduler.data.CSV_DATA;
 import org.tecal.scheduler.data.SQL_DATA;
+import org.tecal.scheduler.types.AssignedTask;
 import org.tecal.scheduler.types.GammeType;
 import org.tecal.scheduler.types.ZoneType;
 import org.tecal.ui.CPO_IHM;
+
 
 
 class Coord 			        extends ArrayList<IntVar> 	{	private static final long serialVersionUID = 1L;}
@@ -42,29 +47,6 @@ class ListeZone 				extends ArrayList<IntervalVar> 	{	private static final long 
 class ArrayListeZonePonts   	extends ArrayList<ListeZone>	{	private static final long serialVersionUID = 1L;}
 class ListeTaskOrdo				extends ArrayList<TaskOrdo> 	{	private static final long serialVersionUID = 1L;}
 
-
-class AssignedTask {
-	//id OF/GAMME propre à G.OR
-	int jobID;
-	//id zone  propre à G.OR
-	int taskID;  
-	// numzone de la table ZONE
-	int numzone;
-	int start;
-	int duration;    
-	int derive;    
-	// offset pour les zones cumul
-	int IdPosteZoneCumul;
-	// Ctor
-	AssignedTask(int jobID, int taskID, int numzone,int start, int duration,int derive) {
-		this.jobID = jobID;
-		this.taskID = taskID;
-		this.start = start;
-		this.duration = duration;
-		this.numzone=numzone;
-		this.derive=derive;
-	}
-}
 class SortTasks implements Comparator<AssignedTask> {
 	@Override
 	public int compare(AssignedTask a, AssignedTask b) {
@@ -309,7 +291,7 @@ public class TecalOrdo {
 					
 					int debut=(int) solver.value(allTasks.get(key).startBDD);
 					int fin=(int) solver.value(allTasks.get(key).endBDD);
-					int derive=(int) solver.value(allTasks.get(key).finDerive.getStartExpr());
+					int derive=(int) solver.value(allTasks.get(key).finDerive);
 					
 					if( task.numzone == CST.CHARGEMENT_NUMZONE) {
 						fin=derive;
@@ -383,6 +365,19 @@ public class TecalOrdo {
 		ChartPanel cp = new ChartPanel(chart);
 		
 		ganttFrame.addGantt(cp);
+		DefaultTableModel modelDerives =ganttFrame.getDerives();
+		
+		for(List<AssignedTask> lat : assignedJobs.values()) {
+			for(AssignedTask at :lat) {
+				if(at.derive>at.start+at.duration) {
+					Object[] rowO = {allJobs.get(at.jobID).name, zonesBDD.get(at.numzone).codezone,at.derive-at.start };
+					modelDerives.addRow(rowO);
+				}
+			}
+		}
+		
+		
+		
 		
 		ganttFrame.pack();
 		ganttFrame.setSize(new java.awt.Dimension(1500, 870));
@@ -550,17 +545,23 @@ public class TecalOrdo {
 		// Precedences inside a job.
 		for (int jobID = 0; jobID < allJobs.size(); ++jobID) {
 			List<Task> jobTasks = allJobs.get(jobID).tasksJob;
+			//List<IntervalVar> nooverlapAno=new  ArrayList<IntervalVar> ();
 			for (int taskID = 0; taskID < jobTasks.size() - 1; ++taskID) {
 				List<Integer> prevKey = Arrays.asList(jobID, taskID);
 				List<Integer> nextKey = Arrays.asList(jobID, taskID + 1);
 
-				model.addLessOrEqual(allTasks.get(nextKey).deb, allTasks.get(prevKey).fin);
+				// last OK
+				//le debut de la zone suivante doit etre compris
+				//entre le début et la fin de la dérive 
+				model.addLessOrEqual(allTasks.get(nextKey).deb, allTasks.get(prevKey).fin);				
+				model.addGreaterOrEqual(allTasks.get(nextKey).deb, allTasks.get(prevKey).debutDerive);
 				
-				model.addGreaterOrEqual(allTasks.get(nextKey).deb, allTasks.get(prevKey).finDerive.getEndExpr());
-
-				//model.addGreaterThan(allTasks.get(nextKey).deb, allTasks.get(prevKey).arriveePont);
+				//test
+				//model.addGreaterOrEqual(allTasks.get(nextKey).deb, allTasks.get(prevKey).fin);
+				//nooverlapAno.add(allTasks.get(prevKey).intervalReel);
 
 			}
+			//model.addNoOverlap(nooverlapAno);  
 
 		}
 
@@ -749,3 +750,4 @@ public class TecalOrdo {
 		this.mSource = mSource;
 	}
 }
+
