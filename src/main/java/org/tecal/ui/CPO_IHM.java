@@ -2,6 +2,8 @@ package org.tecal.ui;
 
 import java.awt.EventQueue;
 import java.awt.Image;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,6 +15,9 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
 import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.tecal.scheduler.GanttChart;
+
 import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
 
@@ -113,7 +118,7 @@ public class CPO_IHM extends JFrame {
 		TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(tableDerives.getModel());
 		tableDerives.setRowSorter(sorter);
 
-		List<DefaultRowSorter.SortKey> sortKeys = new ArrayList<>(25);
+		List<DefaultRowSorter.SortKey> sortKeys = new ArrayList<>(2);
 		sortKeys.add(new DefaultRowSorter.SortKey(0, SortOrder.ASCENDING));
 		sortKeys.add(new DefaultRowSorter.SortKey(1, SortOrder.ASCENDING));
 		sorter.setSortKeys(sortKeys);
@@ -138,8 +143,19 @@ public class CPO_IHM extends JFrame {
 		
 	}
 	
-	public void  addGantt(ChartPanel  cp) {
+	public void  addGantt(ChartPanel  cp,GanttChart ganttTecalOR ) {
+		
+		
+		
 		JButton btnNewButton = new JButton("New button");
+		
+		btnNewButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				ganttTecalOR.setTime((double) 2222);
+			}
+		});
+		
+		
 		cp.setForeground(new Color(255,255,255));
 		
 		gl_panelGantt.setHorizontalGroup(

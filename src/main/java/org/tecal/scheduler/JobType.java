@@ -399,7 +399,7 @@ public class JobType {
 				
 				// !!
 				//on commence après la zone 0 de chargement
-				//if(pont==0 && zoneID==0) continue;
+				if(pont==0 && zoneID==0) continue;
 
 				int ids []=idZonesNoOverlapPont.get(pont).get(zoneID);
 				
@@ -429,14 +429,15 @@ public class JobType {
 					TaskOrdo taskOrdo = allTasks.get(key);
 
 					if (i == idDebZone ) {			
-						//TODO fixe bug -> FIXED ?
+						
 						if(indexAnod >0 && idDebZone-1==indexAnod ) {							
 							start = taskAnod.endBDD;						
 						}
 						else {
-							//TODO: gérer le cas où cette zone regroupée est juste après le chargement => décaler le start sur gauche
-							
+							//TODO: gérer le cas où cette zone regroupée est juste après le chargement => décaler le start sur gauche							
 							if(i==1) {
+								//on est juste après le chargement:
+								//on doit prendre en compte le fait d'aller chercher la charge à la fin de la zone de chargement
 								start =TecalOrdo.getBackward(model,taskOrdo.deb,CST.TEMPS_MVT_PONT*2);
 							}
 							else {
@@ -459,7 +460,7 @@ public class JobType {
 						
 						//dernière zone avant l'anod, on ajoute un dernier mvt de pont pour y aller justement
 						if(indexAnod >0 && idFinZone+1==indexAnod) {							
-							end = taskAnod.deb;						
+							end = taskAnod.startBDD;						
 						}
 						else {
 							end = taskOrdo.fin;

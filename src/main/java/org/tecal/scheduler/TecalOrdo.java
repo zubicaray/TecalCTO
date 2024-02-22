@@ -364,7 +364,7 @@ public class TecalOrdo {
 		
 		ChartPanel cp = new ChartPanel(chart);
 		
-		ganttFrame.addGantt(cp);
+		ganttFrame.addGantt(cp,ganttTecalOR);
 		DefaultTableModel modelDerives =ganttFrame.getDerives();
 		
 		for(List<AssignedTask> lat : assignedJobs.values()) {
@@ -393,7 +393,7 @@ public class TecalOrdo {
 	}
 	public static void main(String[] args) throws IOException, CsvException, URISyntaxException {
 		
-		TecalOrdo tecalOrdo=new TecalOrdo(CST.CSV);		
+		TecalOrdo tecalOrdo=new TecalOrdo(CST.SQLSERVER);		
 		
 		tecalOrdo.setParams(CST.TEMPS_ZONE_OVERLAP_MIN,
 				CST.TEMPS_MVT_PONT_MIN_JOB,
@@ -512,7 +512,9 @@ public class TecalOrdo {
 	
 	private  void zoneAnodisationConstraints() {
 	
-	
+		if(zoneCumulToIntervals.containsKey(CST.ANODISATION_NUMZONE)==false ) return;
+		
+		
 		List<IntervalVar> intervalParZone = zoneCumulToIntervals.get(CST.ANODISATION_NUMZONE);  
 		List<IntervalVar> nooverlapAno=new  ArrayList<IntervalVar> ();
 		for( int i=0;i<intervalParZone.size();i++) {
@@ -545,7 +547,7 @@ public class TecalOrdo {
 		// Precedences inside a job.
 		for (int jobID = 0; jobID < allJobs.size(); ++jobID) {
 			List<Task> jobTasks = allJobs.get(jobID).tasksJob;
-			//List<IntervalVar> nooverlapAno=new  ArrayList<IntervalVar> ();
+	
 			for (int taskID = 0; taskID < jobTasks.size() - 1; ++taskID) {
 				List<Integer> prevKey = Arrays.asList(jobID, taskID);
 				List<Integer> nextKey = Arrays.asList(jobID, taskID + 1);
@@ -554,15 +556,11 @@ public class TecalOrdo {
 				//le debut de la zone suivante doit etre compris
 				//entre le début et la fin de la dérive 
 				model.addLessOrEqual(allTasks.get(nextKey).deb, allTasks.get(prevKey).fin);				
-				model.addGreaterOrEqual(allTasks.get(nextKey).deb, allTasks.get(prevKey).debutDerive);
+				model.addGreaterOrEqual(allTasks.get(nextKey).deb, allTasks.get(prevKey).debutDerive);				
 				
-				//test
-				//model.addGreaterOrEqual(allTasks.get(nextKey).deb, allTasks.get(prevKey).fin);
-				//nooverlapAno.add(allTasks.get(prevKey).intervalReel);
 
 			}
-			//model.addNoOverlap(nooverlapAno);  
-
+		
 		}
 
 	}
@@ -590,63 +588,63 @@ public class TecalOrdo {
 	private  void machineConstraints() {
 		// les zones de rincages ne doivent pas se croiser
 
-				ArrayList<ZonesIntervalVar> listZonesNoOverlapParPont  = new  ArrayList<ZonesIntervalVar>();  
-				listZonesNoOverlapParPont.add( new  ZonesIntervalVar()); // add zones pont 1
-				listZonesNoOverlapParPont.add( new  ZonesIntervalVar()); // add zones pont 2
+		ArrayList<ZonesIntervalVar> listZonesNoOverlapParPont  = new  ArrayList<ZonesIntervalVar>();  
+		listZonesNoOverlapParPont.add( new  ZonesIntervalVar()); // add zones pont 1
+		listZonesNoOverlapParPont.add( new  ZonesIntervalVar()); // add zones pont 2
 
-				
-				//---------------------------------------------------------------------------
-				// NOOVERLAP ZONES REGROUPEES -----------------------------------------------
-				//---------------------------------------------------------------------------
-				
-				if(CST.CSTR_NOOVERLAP_ZONES_GROUPEES)
-				{
+		
+		//---------------------------------------------------------------------------
+		// NOOVERLAP ZONES REGROUPEES -----------------------------------------------
+		//---------------------------------------------------------------------------
+		
+		if(CST.CSTR_NOOVERLAP_ZONES_GROUPEES)
+		{
+			
+			//---------------------------------------------------------------------------
+			// le débuts des zones lognues des autres jobs 
+			// toutes les zones regroupées ne doivent pas se croiser
+			//---------------------------------------------------------------------------
+			for (JobType j  :allJobs) { 
+				int p=0;    	
+				for(ListeZone zonesRegroupeesP :j.tasksNoOverlapPont) {   
+					listZonesNoOverlapParPont.get(p).addAll(zonesRegroupeesP);   				 
+					p++;
+				}
+				p=0;
+
+			}
+			for(ArrayList<IntervalVar> listZonesNoOverlap: listZonesNoOverlapParPont) {
+				model.addNoOverlap(listZonesNoOverlap);
+			}
+			//---------------------------------------------------------------------------
+			//le débuts des zones lognues des autres jobs 
+			// ne doivent pas croiser les zones regroupées du job en cours
+			//---------------------------------------------------------------------------
+			for(int pont=0;pont<CST.NB_PONTS;pont++) {
+				for(int j=0;j<allJobs.size();j++) {
+					JobType j1=allJobs.get(j);
 					
-					//---------------------------------------------------------------------------
-					// le débuts des zones lognues des autres jobs 
-					// toutes les zones regroupées ne doivent pas se croiser
-					//---------------------------------------------------------------------------
-					for (JobType j  :allJobs) { 
-						int p=0;    	
-						for(ListeZone zonesRegroupeesP :j.tasksNoOverlapPont) {   
-							listZonesNoOverlapParPont.get(p).addAll(zonesRegroupeesP);   				 
-							p++;
-						}
-						p=0;
-
-					}
-					for(ArrayList<IntervalVar> listZonesNoOverlap: listZonesNoOverlapParPont) {
-						model.addNoOverlap(listZonesNoOverlap);
-					}
-					//---------------------------------------------------------------------------
-					//le débuts des zones lognues des autres jobs 
-					// ne doivent pas croiser les zones regroupées du job en cours
-					//---------------------------------------------------------------------------
-					for(int pont=0;pont<CST.NB_PONTS;pont++) {
-						for(int j=0;j<allJobs.size();j++) {
-							JobType j1=allJobs.get(j);
-							
-					    	 ListeZone zonesGroupeesWithAllOthers=new ListeZone();
-					    	 ListeZone zonesLonguesWithAllOthers=new ListeZone();
-					    
-					    	 zonesGroupeesWithAllOthers.addAll(j1.tasksNoOverlapPont.get(pont));   
-					    	 zonesLonguesWithAllOthers.addAll(j1.debutLonguesZonesPont.get(pont));   
-					    	 
-					    	 for(int k=0;k<allJobs.size();k++) {
-					    		 if(k==j) continue;			
-					    		 zonesGroupeesWithAllOthers.addAll(allJobs.get(k).debutLonguesZonesPont.get(pont));	
-					    		 zonesLonguesWithAllOthers.addAll(allJobs.get(k).debutLonguesZonesPont.get(pont));
-					    	 }
-							 
-					    	 model.addNoOverlap(zonesGroupeesWithAllOthers);
-					    	 model.addNoOverlap(zonesLonguesWithAllOthers);
-							
-
-
-						}
-					}
+			    	 ListeZone zonesGroupeesWithAllOthers=new ListeZone();
+			    	 ListeZone zonesLonguesWithAllOthers=new ListeZone();
+			    
+			    	 zonesGroupeesWithAllOthers.addAll(j1.tasksNoOverlapPont.get(pont));   
+			    	 zonesLonguesWithAllOthers.addAll(j1.debutLonguesZonesPont.get(pont));   
+			    	 
+			    	 for(int k=0;k<allJobs.size();k++) {
+			    		 if(k==j) continue;			
+			    		 zonesGroupeesWithAllOthers.addAll(allJobs.get(k).debutLonguesZonesPont.get(pont));	
+			    		 zonesLonguesWithAllOthers.addAll(allJobs.get(k).debutLonguesZonesPont.get(pont));
+			    	 }
+					 
+			    	 model.addNoOverlap(zonesGroupeesWithAllOthers);
+			    	 model.addNoOverlap(zonesLonguesWithAllOthers);
 					
-				}					
+
+
+				}
+			}
+			
+		}					
 	}
 	
 	static IntVar getBackward(CpModel model,IntVar mvtPont,int decay){

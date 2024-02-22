@@ -18,6 +18,7 @@ import org.tecal.scheduler.types.AssignedTask;
 import org.tecal.scheduler.types.GammeType;
 import org.tecal.scheduler.types.ZoneType;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -44,6 +45,7 @@ public class GanttChart extends ApplicationFrame {
 
 	ArrayList<String[]>  labelsModel;
 	ArrayList<String[]> labels;
+	ValueMarker timeBar;
 
 	public GanttChart(SQL_DATA sqlCnx,final String title) {
 
@@ -304,21 +306,33 @@ public class GanttChart extends ApplicationFrame {
 		     
 		 private static final long serialVersionUID = 1L;
 		
-		public String generateToolTip(XYDataset dataset, int series, int item) {    	
+		 public String generateToolTip(XYDataset dataset, int series, int item) {    	
 			//System.out.println("series:"+series+" "+" item:"+item+" val="+labelsModel[series][item]);    		 
 		        return  labelsModel.get(series)[item];
 		    }
-		};
+		 };
 	     renderer.setSeriesToolTipGenerator(0, ttgen); 
 	
 	     renderer.setBaseToolTipGenerator(ttgen);	 
 		 
 		 XYPlot plot = new XYPlot(dataset, new SymbolAxis("zones", zonesAllGamme), new NumberAxis(), renderer);
 	     plot.setOrientation(PlotOrientation.HORIZONTAL);
+	     
+	     timeBar = new ValueMarker(1500);  // position is the value on the axis
+	     timeBar.setPaint(Color.red);
+	     //marker.setLabel("here"); // see JavaDoc for labels, colors, strokes
+
+	    
+	     plot.addRangeMarker(timeBar);
+	    
 	    
 	     return   new JFreeChart(plot);
 	     //getContentPane().add(new ChartPanel(chart));
 		
+	
+	}
+	public void setTime(Double val){
+		timeBar.setValue(val);
 	
 	}
 	
