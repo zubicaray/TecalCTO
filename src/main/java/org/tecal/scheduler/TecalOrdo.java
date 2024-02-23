@@ -21,11 +21,11 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
+
 
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -230,7 +230,7 @@ public class TecalOrdo {
 		//--------------------------------------------------------------------------------------------
 		//--------------------------------------------------------------------------------------------
 		// sur les postes d'oxy, faire en sorte que le pont 2 ne puisse pas croiser le pont et récproquement
-		zoneAnodisationConstraints();
+		zoneCumulConstraints();
 
 
 		// Makespan objective.
@@ -291,7 +291,18 @@ public class TecalOrdo {
 					
 					int debut=(int) solver.value(allTasks.get(key).startBDD);
 					int fin=(int) solver.value(allTasks.get(key).endBDD);
-					int derive=(int) solver.value(allTasks.get(key).finDerive);
+					
+					int derive;
+					// on ne sait pas à quel moment entre le min et le max de dérive
+					// le solveur a choisit => on doit regarde quand commence la tache d'apres
+					// pour calculer la dérive
+					if(task.numzone != CST.DECHARGEMENT_NUMZONE){
+						
+						List<Integer> keySuivante = Arrays.asList(jobID, taskID+1);
+						derive=(int) solver.value(allTasks.get(keySuivante).startBDD)-2*CST.TEMPS_MVT_PONT_MIN_JOB;
+					}
+					else derive=(int) solver.value(allTasks.get(key).finDerive);
+					
 					
 					if( task.numzone == CST.CHARGEMENT_NUMZONE) {
 						fin=derive;
@@ -370,7 +381,10 @@ public class TecalOrdo {
 		for(List<AssignedTask> lat : assignedJobs.values()) {
 			for(AssignedTask at :lat) {
 				if(at.derive>at.start+at.duration) {
-					Object[] rowO = {allJobs.get(at.jobID).name, zonesBDD.get(at.numzone).codezone,at.derive-at.start };
+					
+					int t=at.derive-at.start;
+					String s=String.format("%02d:%02d",  t / 60, (t % 60));
+					Object[] rowO = {allJobs.get(at.jobID).name, zonesBDD.get(at.numzone).codezone,s };
 					modelDerives.addRow(rowO);
 				}
 			}
@@ -510,29 +524,32 @@ public class TecalOrdo {
 		}
 	}
 	
-	private  void zoneAnodisationConstraints() {
+	private  void zoneCumulConstraints() {
 	
-		if(zoneCumulToIntervals.containsKey(CST.ANODISATION_NUMZONE)==false ) return;
+				
 		
-		
-		List<IntervalVar> intervalParZone = zoneCumulToIntervals.get(CST.ANODISATION_NUMZONE);  
-		List<IntervalVar> nooverlapAno=new  ArrayList<IntervalVar> ();
-		for( int i=0;i<intervalParZone.size();i++) {
-			
-			IntervalVar interval=intervalParZone.get(i);
-			LinearExpr debInter=interval.getStartExpr();
-			LinearExpr finInter=interval.getEndExpr();
-			
-			IntervalVar deb=getNoOverlapZone(model,debInter);
-			IntervalVar fin=getNoOverlapZone(model,finInter);
-			
-			nooverlapAno.add(deb);
-			nooverlapAno.add(fin);
-			
+		for(List<IntervalVar> intervalParZone :zoneCumulToIntervals.values()) {
+			List<IntervalVar> nooverlapAno=new  ArrayList<IntervalVar> ();
+			for( int i=0;i<intervalParZone.size();i++) {
+				
+				IntervalVar interval=intervalParZone.get(i);
+				LinearExpr debInter=interval.getStartExpr();
+				LinearExpr finInter=interval.getEndExpr();
+				
+				IntervalVar deb=getNoOverlapZone(model,debInter);
+				IntervalVar fin=getNoOverlapZone(model,finInter);
+				
+				nooverlapAno.add(deb);
+				nooverlapAno.add(fin);
+				
+			}
+			model.addNoOverlap(nooverlapAno);    
 		}
+		
+		
 			
 
-		model.addNoOverlap(nooverlapAno);    
+		
 	}
 	
 	/**

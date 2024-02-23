@@ -28,6 +28,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
 
 
@@ -41,6 +44,7 @@ public class GanttChart extends ApplicationFrame {
 	private static final long serialVersionUID = 1L;
 
 	private SQL_DATA mSqlCnx ;
+	private timerGantt mTimer;
 	
 
 	ArrayList<String[]>  labelsModel;
@@ -51,6 +55,8 @@ public class GanttChart extends ApplicationFrame {
 
 		super(title);
 		mSqlCnx=sqlCnx;
+		
+		setTimer(new timerGantt());
 		   
 	}
 	
@@ -103,7 +109,26 @@ public class GanttChart extends ApplicationFrame {
 	 * 
 	 */
 	
-	
+	public class timerGantt extends TimerTask {
+	    @Override
+	    public void run() {
+	        //System.out.println("Email sent at: "	          + LocalDateTime.ofInstant(Instant.ofEpochMilli(scheduledExecutionTime()), ZoneId.systemDefault()));
+	    	
+	    	timeBar.setValue(timeBar.getValue()+1);
+	       
+	    }
+	}
+	public void setTime(Double val) {
+		
+		new Timer().schedule(mTimer, 0, 1000);	
+		
+	}
+	public void  backward(int v) {
+		timeBar.setValue(timeBar.getValue()-v);
+	}
+	public void  foreward(int v) {
+		timeBar.setValue(timeBar.getValue()+v);
+	}
 	
 	public JFreeChart model_diag(
 			Map<Integer, List<AssignedTask>> assignedJobs ,HashMap<Integer,ZoneType> inZonesBDD, 
@@ -321,20 +346,16 @@ public class GanttChart extends ApplicationFrame {
 	     timeBar = new ValueMarker(1500);  // position is the value on the axis
 	     timeBar.setPaint(Color.red);
 	     //marker.setLabel("here"); // see JavaDoc for labels, colors, strokes
-
+	     timeBar.setValue(163);
 	    
 	     plot.addRangeMarker(timeBar);
+	     	   
+	     JFreeChart j= new JFreeChart(plot);	     
 	    
-	    
-	     return   new JFreeChart(plot);
-	     //getContentPane().add(new ChartPanel(chart));
-		
+	     return  j;
 	
 	}
-	public void setTime(Double val){
-		timeBar.setValue(val);
-	
-	}
+
 	
 	public void prod_diag() {
 		XYIntervalSeriesCollection dataset = new XYIntervalSeriesCollection();
@@ -471,6 +492,12 @@ public class GanttChart extends ApplicationFrame {
 	    
 	     JFreeChart chart = new JFreeChart(plot);
 	     getContentPane().add(new ChartPanel(chart));
+	}
+	public timerGantt getTimer() {
+		return mTimer;
+	}
+	public void setTimer(timerGantt mTimer) {
+		this.mTimer = mTimer;
 	}
 	
 

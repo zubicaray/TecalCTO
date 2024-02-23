@@ -243,7 +243,7 @@ public class JobType {
 
 			ZoneType  zt=zonesBDD.get(task.numzone);
 			if(task.numzone == CST.DECHARGEMENT_NUMZONE )
-					task.duration=CST.TEMPS_DECHARGEMENT;
+				task.duration=CST.TEMPS_DECHARGEMENT;
 			
 			
 			if( task.numzone == CST.CHARGEMENT_NUMZONE)
