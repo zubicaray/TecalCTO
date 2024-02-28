@@ -11,6 +11,9 @@ public class CST {
 	//public final static String gammesTest[] ={"000022","000246"};
 	public final static String gammesTest1[] ={"000022","000554","000552","000553","000552","000553"};
 	public final static String test26janvier[] ={"000021","000164","000601","000467","000347","000169"};
+	
+	// C10 ne sort pas car il attend C05
+	public final static String testPrioriteC05[] ={"000601","000164"};
 	public final static String gammesTest[] =test26janvier;
 	
 	//------------------------------------------------------------
@@ -23,11 +26,11 @@ public class CST {
 	//------------------------------------------------------------
 	public final static boolean CSTR_NOOVERLAP_MVTS_PONT =false;
 	public final static boolean CSTR_NOOVERLAP_ZONES_GROUPEES = true ;
-	public final static boolean MODE_ECO = true ;
+	public final static boolean MODE_ECO = false ;
 	public final static int 	PORTION_HORIZON = 7 ;
 	
 	//------------------------------------------------------------
-	// -----------------  TEMPS ----------------------------------
+	//------------------  TEMPS ----------------------------------
 	//------------------------------------------------------------
 	// pour affichage dans Gantt, peu importe le temps
 	public final static int TEMPS_DECHARGEMENT =60;	

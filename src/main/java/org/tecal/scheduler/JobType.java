@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.tecal.scheduler.data.SQL_DATA;
 import org.tecal.scheduler.types.GammeType;
 import org.tecal.scheduler.types.ZoneType;
 
@@ -250,7 +251,17 @@ public class JobType {
 				task.duration=CST.TEMPS_CHARGEMENT;
 			
 			
-			TaskOrdo taskOrdo = new TaskOrdo(model,horizon,task.duration,zt.derive, minDebut,suffix);   
+			TaskOrdo taskOrdo;
+			if(task.numzone == CST.DECHARGEMENT_NUMZONE ) {
+				taskOrdo = new TaskOrdo(model,horizon,task.duration,zt.derive, minDebut,0,suffix);   
+			}
+			else {
+				Task taskSuivante = tasksJob.get(taskID+1);
+				
+				int tps=SQL_DATA.getTempsDeplacement(task.numzone,taskSuivante.numzone,1);
+				taskOrdo = new TaskOrdo(model,horizon,task.duration,zt.derive, minDebut,tps,suffix);   
+			}
+			
 			minDebut+=task.duration;
 
 
@@ -438,20 +449,20 @@ public class JobType {
 							if(i==1) {
 								//on est juste après le chargement:
 								//on doit prendre en compte le fait d'aller chercher la charge à la fin de la zone de chargement
-								start =TecalOrdo.getBackward(model,taskOrdo.deb,CST.TEMPS_MVT_PONT*2);
+								start =TecalOrdo.getBackward(model,taskOrdo.startBDD,CST.TEMPS_MVT_PONT*2);
 							}
 							else {
-								start = taskOrdo.deb;
+								start = taskOrdo.startBDD;
 							}
 						}
 								
 						if(groupe==false) {
 							if(i==1) {
 								// on est juste après le chargement, on ajoute du temps pour inclure la prise au chargement précédente
-								debutLonguesZonesPont.get(pont).add(TecalOrdo.getNoOverlapZone(model, taskOrdo.deb,CST.TEMPS_MVT_PONT*2,CST.TEMPS_MVT_PONT));
+								debutLonguesZonesPont.get(pont).add(TecalOrdo.getNoOverlapZone(model, taskOrdo.startBDD,CST.TEMPS_MVT_PONT*2,CST.TEMPS_MVT_PONT));
 							}
 							else 
-								debutLonguesZonesPont.get(pont).add(TecalOrdo.getNoOverlapZone(model, taskOrdo.deb));					
+								debutLonguesZonesPont.get(pont).add(TecalOrdo.getNoOverlapZone(model, taskOrdo.startBDD));					
 						}
 					}
 						

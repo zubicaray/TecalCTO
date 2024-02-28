@@ -6,8 +6,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 import org.tecal.scheduler.types.GammeType;
 import org.tecal.scheduler.types.PosteBDD;
@@ -15,15 +17,15 @@ import org.tecal.scheduler.types.PosteProd;
 import org.tecal.scheduler.types.ZoneType;
 
 
-
+class TempsDeplacement 		extends HashMap<List<Integer>,Integer[]>	{	private static final long serialVersionUID = 1L;}
 
 public class SQL_DATA {
 	private Connection mConnection ;
 	private Statement mStatement;
 	
 	private HashMap<Integer,ZoneType>  zones;
-	private HashMap<String, ArrayList<GammeType> > gammes;
-		
+	private HashMap<String, ArrayList<GammeType> > gammes;		
+	static TempsDeplacement  mTempsDeplacement;		
 	
 	private String mWHERE_CLAUSE;
 
@@ -52,7 +54,7 @@ public class SQL_DATA {
 		
 		
 		
-		// test pour le 26/01/1979
+		// test pour le 26/01/2024
 		mListeFiche="('00079261','00079262','00079263','00079264','00079265','00079266')";
 		
 		
@@ -77,12 +79,12 @@ public class SQL_DATA {
 		
 		setZones();
 		setLignesGammes();
+		setTempsDeplacements();
 	
 	}
 	
 
 public HashMap<Integer,ZoneType> getZones() {
-
 	return zones;
 }
 private  void setZones() {
@@ -260,7 +262,44 @@ public HashMap<String, String>  getFicheGamme() {
 	}
 
 
+public void setTempsDeplacements() {
 	
+	 ResultSet resultSet = null;        
+     
+	 mTempsDeplacement = new TempsDeplacement();
+	 
+	 
+     String selectSql = "SELECT [depart]"
+     		+ "      ,[arrivee]"
+     		+ "      ,[lent]"
+     		+ "      ,[normal]"
+     		+ "      ,[rapide]"
+     		+ "  FROM [ANODISATION_SECOURS].[dbo].[TempsDeplacements]";
+     
+     try {
+			resultSet = mStatement.executeQuery(selectSql);
+			// Print results from select statement
+	        while (resultSet.next()) {
+	        
+	            int depart=resultSet.getInt(1);
+	            int arrivee=resultSet.getInt(2);
+	            int lent=resultSet.getInt(3);
+	            int normal=resultSet.getInt(4);
+	            int rapide=resultSet.getInt(5);
+	            
+	            List<Integer> key=Arrays.asList(depart, arrivee);
+	            Integer values[]= {lent,normal,rapide};
+	            mTempsDeplacement.put(key,values);
+	            
+	        }
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+
+	
+}
     // Connect to your database.
     // Replace server name, username, and password with your credentials
     public  HashMap <String, LinkedHashMap<Integer,PosteProd> > getTempsAuPostes() {
@@ -322,4 +361,17 @@ public HashMap<String, String>  getFicheGamme() {
       return finalArray;
        
     }
+
+
+    static TempsDeplacement getmTempsDeplacement() {
+		return mTempsDeplacement;
+	}
+    public static int getTempsDeplacement(int dep,int arr,int vitesse) {    	
+		return mTempsDeplacement.get(Arrays.asList(dep, arr))[vitesse];
+	}
+
+
+	static void setmTempsDeplacement(TempsDeplacement mTempsDeplacement) {
+		SQL_DATA.mTempsDeplacement = mTempsDeplacement;
+	}
 }

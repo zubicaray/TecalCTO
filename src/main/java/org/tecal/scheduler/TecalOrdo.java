@@ -5,7 +5,7 @@ import com.google.ortools.sat.CpModel;
 import com.google.ortools.sat.CpSolver;
 import com.google.ortools.sat.CpSolverStatus;
 import com.google.ortools.sat.CumulativeConstraint;
-//import com.google.ortools.sat.DecisionStrategyProto;
+
 import com.google.ortools.sat.IntVar;
 import com.google.ortools.sat.IntervalVar;
 import com.google.ortools.sat.LinearExpr;
@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
+
 
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
@@ -39,13 +39,14 @@ import org.tecal.ui.CPO_IHM;
 
 
 
-class Coord 			        extends ArrayList<IntVar> 	{	private static final long serialVersionUID = 1L;}
-class CoordsRincage 			extends ArrayList<IntVar[]> 	{	private static final long serialVersionUID = 1L;}
-class ArrayCoordsRincagePonts   extends ArrayList<CoordsRincage>{	private static final long serialVersionUID = 1L;}
-class ZonesIntervalVar 			extends ArrayList<IntervalVar> 	{	private static final long serialVersionUID = 1L;}
-class ListeZone 				extends ArrayList<IntervalVar> 	{	private static final long serialVersionUID = 1L;}
-class ArrayListeZonePonts   	extends ArrayList<ListeZone>	{	private static final long serialVersionUID = 1L;}
-class ListeTaskOrdo				extends ArrayList<TaskOrdo> 	{	private static final long serialVersionUID = 1L;}
+ class TempsDeplacement 		extends HashMap<Integer[],Integer[]>	{	private static final long serialVersionUID = 1L;}
+ class Coord 			        extends ArrayList<IntVar> 	{	private static final long serialVersionUID = 1L;}
+ class CoordsRincage 			extends ArrayList<IntVar[]> 	{	private static final long serialVersionUID = 1L;}
+ class ArrayCoordsRincagePonts   extends ArrayList<CoordsRincage>{	private static final long serialVersionUID = 1L;}
+ class ZonesIntervalVar 		extends ArrayList<IntervalVar> 	{	private static final long serialVersionUID = 1L;}
+ class ListeZone 				extends ArrayList<IntervalVar> 	{	private static final long serialVersionUID = 1L;}
+ class ArrayListeZonePonts   	extends ArrayList<ListeZone>	{	private static final long serialVersionUID = 1L;}
+ class ListeTaskOrdo			extends ArrayList<TaskOrdo> 	{	private static final long serialVersionUID = 1L;}
 
 class SortTasks implements Comparator<AssignedTask> {
 	@Override
@@ -241,7 +242,7 @@ public class TecalOrdo {
 			List<Task> job = allJobs.get(jobID).tasksJob;
 			List<Integer> key = Arrays.asList(jobID, job.size() - 1);
 			ends.add(allTasks.get(key).fin);
-			starts.add(allTasks.get(key).deb);
+			starts.add(allTasks.get(key).startBDD);
 		}
 
 		
@@ -299,7 +300,7 @@ public class TecalOrdo {
 					if(task.numzone != CST.DECHARGEMENT_NUMZONE){
 						
 						List<Integer> keySuivante = Arrays.asList(jobID, taskID+1);
-						derive=(int) solver.value(allTasks.get(keySuivante).startBDD)-2*CST.TEMPS_MVT_PONT_MIN_JOB;
+						derive=(int) solver.value(allTasks.get(keySuivante).startBDD)-allTasks.get(key).tempsDeplacement;
 					}
 					else derive=(int) solver.value(allTasks.get(key).finDerive);
 					
@@ -518,7 +519,8 @@ public class TecalOrdo {
 				
 				long[] zoneUsage  = new long[listCumul.size()];
 				Arrays.fill(zoneUsage,1);
-				cumul.addDemands(listCumul.toArray(new IntervalVar[0]), zoneUsage);  	  
+				cumul.addDemands(listCumul.toArray(new IntervalVar[0]), zoneUsage);
+				
 			}
 
 		}
@@ -532,12 +534,15 @@ public class TecalOrdo {
 			List<IntervalVar> nooverlapAno=new  ArrayList<IntervalVar> ();
 			for( int i=0;i<intervalParZone.size();i++) {
 				
-				IntervalVar interval=intervalParZone.get(i);
+				IntervalVar interval=intervalParZone.get(i);				
 				LinearExpr debInter=interval.getStartExpr();
 				LinearExpr finInter=interval.getEndExpr();
 				
-				IntervalVar deb=getNoOverlapZone(model,debInter);
-				IntervalVar fin=getNoOverlapZone(model,finInter);
+				// TODO
+				// !!!
+				// comprendre pourquoi ca bloque ici quand les params changent
+				IntervalVar deb=getNoOverlapZone(model,debInter,0,30);
+				IntervalVar fin=getNoOverlapZone(model,finInter,30,30);
 				
 				nooverlapAno.add(deb);
 				nooverlapAno.add(fin);
@@ -572,8 +577,8 @@ public class TecalOrdo {
 				// last OK
 				//le debut de la zone suivante doit etre compris
 				//entre le début et la fin de la dérive 
-				model.addLessOrEqual(allTasks.get(nextKey).deb, allTasks.get(prevKey).fin);				
-				model.addGreaterOrEqual(allTasks.get(nextKey).deb, allTasks.get(prevKey).debutDerive);				
+				model.addLessOrEqual(allTasks.get(nextKey).startBDD, allTasks.get(prevKey).fin);				
+				model.addGreaterOrEqual(allTasks.get(nextKey).startBDD, allTasks.get(prevKey).debutDerive);				
 				
 
 			}
@@ -717,6 +722,22 @@ public class TecalOrdo {
 		
 		IntervalVar after = model.newIntervalVar(mvtPont,
 				LinearExpr.constant(CST.TEMPS_MVT_PONT), 
+				model.newIntVar(0, horizon, ""),
+				"");
+		
+		return model.newIntervalVar(before.getStartExpr(),model.newIntVar(0, horizon,  ""),after.getEndExpr(),"");
+	
+	}
+	static IntervalVar getNoOverlapZone(CpModel model,LinearExpr mvtPont,int left,int right){
+		
+		IntervalVar before = model.newIntervalVar(
+				model.newIntVar(0, horizon, ""),
+				LinearExpr.constant(left)
+				, mvtPont,
+				"");
+		
+		IntervalVar after = model.newIntervalVar(mvtPont,
+				LinearExpr.constant(right), 
 				model.newIntVar(0, horizon, ""),
 				"");
 		
