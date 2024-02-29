@@ -16,11 +16,13 @@ import java.io.InputStream;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-
+import java.util.Calendar;
 import java.util.LinkedHashMap;
 import java.util.List;
-
+import java.util.Properties;
 import java.util.Vector;
 import javax.imageio.ImageIO;
 import javax.swing.GroupLayout;
@@ -29,6 +31,7 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFormattedTextField.AbstractFormatter;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -46,6 +49,9 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
+import org.jdatepicker.impl.JDatePanelImpl;
+import org.jdatepicker.impl.JDatePickerImpl;
+import org.jdatepicker.impl.UtilDateModel;
 import org.tecal.scheduler.CST;
 import org.tecal.scheduler.TecalOrdo;
 import org.tecal.scheduler.data.SQL_DATA;
@@ -61,6 +67,31 @@ import java.awt.Font;
 import java.awt.Component;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
+
+ class DateLabelFormatter extends AbstractFormatter {
+
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private String datePattern = "yyyy-MM-dd";
+    private SimpleDateFormat dateFormatter = new SimpleDateFormat(datePattern);
+
+    @Override
+    public Object stringToValue(String text) throws ParseException {
+        return dateFormatter.parseObject(text);
+    }
+
+    @Override
+    public String valueToString(Object value) throws ParseException {
+        if (value != null) {
+            Calendar cal = (Calendar) value;
+            return dateFormatter.format(cal.getTime());
+        }
+
+        return "";
+    }
+}
 
 public class TecalGUI {
 
@@ -86,6 +117,10 @@ public class TecalGUI {
 	private JTextField textTEMPS_MVT_PONT;
 	private JTextField textTEMPS_ANO_ENTRE_P1_P2;
 	private JTextField textNUMZONE_DEBUT_PONT_2;
+	private JTabbedPane tabbedPane_1;
+	private JTable table_1;
+	private JTable table_2;
+	private JTable tableOF;
 	
 	/**
 	 * Launch the application.
@@ -181,19 +216,19 @@ public class TecalGUI {
 		frmTecalOrdonnanceur.setBounds(100, 100, 729, 661);
 		frmTecalOrdonnanceur.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
-		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		tabbedPane_1 = new JTabbedPane(JTabbedPane.TOP);
 		GroupLayout groupLayout = new GroupLayout(frmTecalOrdonnanceur.getContentPane());
 		groupLayout.setHorizontalGroup(
 			groupLayout.createParallelGroup(Alignment.LEADING)
-				.addComponent(tabbedPane, GroupLayout.DEFAULT_SIZE, 686, Short.MAX_VALUE)
+				.addComponent(tabbedPane_1, GroupLayout.DEFAULT_SIZE, 686, Short.MAX_VALUE)
 		);
 		groupLayout.setVerticalGroup(
 			groupLayout.createParallelGroup(Alignment.LEADING)
-				.addComponent(tabbedPane, GroupLayout.DEFAULT_SIZE, 542, Short.MAX_VALUE)
+				.addComponent(tabbedPane_1, GroupLayout.DEFAULT_SIZE, 542, Short.MAX_VALUE)
 		);
 		
-		JPanel panel = new JPanel();
-		tabbedPane.addTab("Choix des gammes", null, panel, null);
+		JPanel panelCPO = new JPanel();
+		tabbedPane_1.addTab("Choix des gammes", null, panelCPO, null);
 		
 		JScrollPane scrollPane = new JScrollPane();
 		
@@ -273,7 +308,7 @@ public class TecalGUI {
 		setIconButton(btnRun,"icons8-play-16.png");
 		
 		
-		GroupLayout gl_panel = mainGuiGrouping(panel, scrollPane, scrollPaneBarres, lblBarreLabel, lblGammes,
+		GroupLayout gl_panel = mainGuiGrouping(panelCPO, scrollPane, scrollPaneBarres, lblBarreLabel, lblGammes,
 				btnUpButton, btnDownButton, lblHardynessLabel, scrollPaneMsg, btnRun);
 		
 		
@@ -385,71 +420,71 @@ public class TecalGUI {
 		}
 		
 		scrollPane.setViewportView(tableGammes);
-		panel.setLayout(gl_panel);
+		panelCPO.setLayout(gl_panel);
 		
-		buildParamsTab(tabbedPane);
+		buildParamsTab(tabbedPane_1);
 		frmTecalOrdonnanceur.getContentPane().setLayout(groupLayout);
 	}
 
 	private GroupLayout mainGuiGrouping(JPanel panel, JScrollPane scrollPane, JScrollPane scrollPaneBarres,
 			JLabel lblBarreLabel, JLabel lblGammes, JButton btnUpButton, JButton btnDownButton,
 			JLabel lblHardynessLabel, JScrollPane scrollPaneMsg, JButton btnRun) {
-		GroupLayout gl_panel = new GroupLayout(panel);
-		gl_panel.setHorizontalGroup(
-			gl_panel.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_panel.createSequentialGroup()
+		GroupLayout gl_panelCPO = new GroupLayout(panel);
+		gl_panelCPO.setHorizontalGroup(
+			gl_panelCPO.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_panelCPO.createSequentialGroup()
 					.addContainerGap()
-					.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
-						.addGroup(gl_panel.createSequentialGroup()
+					.addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING)
+						.addGroup(gl_panelCPO.createSequentialGroup()
 							.addComponent(scrollPaneMsg, GroupLayout.DEFAULT_SIZE, 688, Short.MAX_VALUE)
 							.addContainerGap())
-						.addGroup(gl_panel.createSequentialGroup()
-							.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
+						.addGroup(gl_panelCPO.createSequentialGroup()
+							.addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING)
 								.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 443, Short.MAX_VALUE)
-								.addGroup(gl_panel.createSequentialGroup()
+								.addGroup(gl_panelCPO.createSequentialGroup()
 									.addComponent(lblGammes, GroupLayout.PREFERRED_SIZE, 67, GroupLayout.PREFERRED_SIZE)
 									.addGap(111)
 									.addComponent(textFiltre, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-								.addGroup(gl_panel.createSequentialGroup()
+								.addGroup(gl_panelCPO.createSequentialGroup()
 									.addComponent(rdbtnFastModeRadioButton)
 									.addGap(34)
 									.addComponent(lblHardynessLabel, GroupLayout.PREFERRED_SIZE, 64, GroupLayout.PREFERRED_SIZE)
 									.addPreferredGap(ComponentPlacement.RELATED)
 									.addComponent(comboDifficult, GroupLayout.PREFERRED_SIZE, 56, GroupLayout.PREFERRED_SIZE)))
 							.addPreferredGap(ComponentPlacement.RELATED)
-							.addGroup(gl_panel.createParallelGroup(Alignment.LEADING, false)
-								.addGroup(gl_panel.createSequentialGroup()
+							.addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING, false)
+								.addGroup(gl_panelCPO.createSequentialGroup()
 									.addComponent(scrollPaneBarres, GroupLayout.PREFERRED_SIZE, 135, GroupLayout.PREFERRED_SIZE)
-									.addGroup(gl_panel.createParallelGroup(Alignment.LEADING, false)
-										.addGroup(gl_panel.createSequentialGroup()
+									.addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING, false)
+										.addGroup(gl_panelCPO.createSequentialGroup()
 											.addPreferredGap(ComponentPlacement.RELATED, 19, Short.MAX_VALUE)
 											.addComponent(btnUpButton, GroupLayout.PREFERRED_SIZE, 80, GroupLayout.PREFERRED_SIZE))
-										.addGroup(Alignment.TRAILING, gl_panel.createSequentialGroup()
+										.addGroup(Alignment.TRAILING, gl_panelCPO.createSequentialGroup()
 											.addGap(18)
-											.addGroup(gl_panel.createParallelGroup(Alignment.LEADING, false)
+											.addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING, false)
 												.addComponent(btnRun, Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 81, GroupLayout.PREFERRED_SIZE)
 												.addComponent(btnDownButton, GroupLayout.PREFERRED_SIZE, 81, GroupLayout.PREFERRED_SIZE)))))
 								.addComponent(lblBarreLabel, GroupLayout.PREFERRED_SIZE, 99, GroupLayout.PREFERRED_SIZE))
 							.addGap(15))))
 		);
-		gl_panel.setVerticalGroup(
-			gl_panel.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_panel.createSequentialGroup()
-					.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
-						.addGroup(gl_panel.createSequentialGroup()
+		gl_panelCPO.setVerticalGroup(
+			gl_panelCPO.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_panelCPO.createSequentialGroup()
+					.addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING)
+						.addGroup(gl_panelCPO.createSequentialGroup()
 							.addGap(49)
 							.addComponent(lblBarreLabel))
-						.addGroup(gl_panel.createSequentialGroup()
+						.addGroup(gl_panelCPO.createSequentialGroup()
 							.addGap(50)
-							.addGroup(gl_panel.createParallelGroup(Alignment.BASELINE)
+							.addGroup(gl_panelCPO.createParallelGroup(Alignment.BASELINE)
 								.addComponent(lblGammes, GroupLayout.PREFERRED_SIZE, 20, GroupLayout.PREFERRED_SIZE)
 								.addComponent(textFiltre, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))))
 					.addPreferredGap(ComponentPlacement.UNRELATED)
-					.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
-						.addGroup(gl_panel.createParallelGroup(Alignment.BASELINE)
+					.addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING)
+						.addGroup(gl_panelCPO.createParallelGroup(Alignment.BASELINE)
 							.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
 							.addComponent(scrollPaneBarres, GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE))
-						.addGroup(gl_panel.createSequentialGroup()
+						.addGroup(gl_panelCPO.createSequentialGroup()
 							.addGap(35)
 							.addComponent(btnUpButton)
 							.addPreferredGap(ComponentPlacement.RELATED)
@@ -457,7 +492,7 @@ public class TecalGUI {
 							.addPreferredGap(ComponentPlacement.RELATED, 176, Short.MAX_VALUE)
 							.addComponent(btnRun)))
 					.addPreferredGap(ComponentPlacement.UNRELATED)
-					.addGroup(gl_panel.createParallelGroup(Alignment.BASELINE)
+					.addGroup(gl_panelCPO.createParallelGroup(Alignment.BASELINE)
 						.addComponent(rdbtnFastModeRadioButton)
 						.addComponent(lblHardynessLabel)
 						.addComponent(comboDifficult, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
@@ -465,10 +500,75 @@ public class TecalGUI {
 					.addComponent(scrollPaneMsg, GroupLayout.PREFERRED_SIZE, 149, GroupLayout.PREFERRED_SIZE)
 					.addGap(24))
 		);
-		return gl_panel;
+		return gl_panelCPO;
 	}
 
 	private void buildParamsTab(JTabbedPane tabbedPane) {
+		
+		JPanel panelVisuProd = new JPanel();
+		UtilDateModel model = new UtilDateModel();
+		//model.setDate(20,04,2014);
+		// Need this...
+		Properties p = new Properties();
+		p.put("text.today", "Today");
+		p.put("text.month", "Month");
+		p.put("text.year", "Year");
+		JDatePanelImpl datePanel = new JDatePanelImpl(model, p);
+		
+		table_1 = new JTable();
+		
+		table_2 = new JTable();
+		
+		JScrollPane scrollPane = new JScrollPane();
+		// Don't know about the formatter, but there it is...
+		JDatePickerImpl datePicker = new JDatePickerImpl(datePanel, new DateLabelFormatter());
+		
+		tabbedPane_1.addTab("Visuel de prod", null, panelVisuProd, null);
+		
+		JScrollPane scrollPane_1 = new JScrollPane();
+		GroupLayout gl_panelVisuProd = new GroupLayout(panelVisuProd);
+		gl_panelVisuProd.setHorizontalGroup(
+			gl_panelVisuProd.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_panelVisuProd.createSequentialGroup()
+					.addGroup(gl_panelVisuProd.createParallelGroup(Alignment.LEADING)
+						.addGroup(gl_panelVisuProd.createSequentialGroup()
+							.addGap(249)
+							.addComponent(table_1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+							.addGap(5)
+							.addComponent(table_2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+							.addGap(5)
+							.addComponent(scrollPane, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+							.addGap(5)
+							.addComponent(datePicker, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+						.addGroup(gl_panelVisuProd.createSequentialGroup()
+							.addGap(102)
+							.addComponent(scrollPane_1, GroupLayout.PREFERRED_SIZE, 505, GroupLayout.PREFERRED_SIZE)))
+					.addContainerGap(101, Short.MAX_VALUE))
+		);
+		gl_panelVisuProd.setVerticalGroup(
+			gl_panelVisuProd.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_panelVisuProd.createSequentialGroup()
+					.addGroup(gl_panelVisuProd.createParallelGroup(Alignment.LEADING)
+						.addGroup(gl_panelVisuProd.createSequentialGroup()
+							.addGap(16)
+							.addComponent(table_1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+						.addGroup(gl_panelVisuProd.createSequentialGroup()
+							.addGap(16)
+							.addComponent(table_2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+						.addGroup(gl_panelVisuProd.createSequentialGroup()
+							.addGap(15)
+							.addComponent(scrollPane, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+						.addGroup(gl_panelVisuProd.createSequentialGroup()
+							.addGap(5)
+							.addComponent(datePicker, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+					.addGap(54)
+					.addComponent(scrollPane_1, GroupLayout.DEFAULT_SIZE, 368, Short.MAX_VALUE)
+					.addGap(144))
+		);
+		
+		tableOF = new JTable();
+		scrollPane_1.setViewportView(tableOF);
+		panelVisuProd.setLayout(gl_panelVisuProd);
 		JPanel panel_param = new JPanel();
 		tabbedPane.addTab("Paramètres", null, panel_param, null);
 		

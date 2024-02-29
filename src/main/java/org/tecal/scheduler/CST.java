@@ -6,28 +6,32 @@ public class CST {
 	
 	//public final static String gammesTest[] ={"000007","000005","000009","000010"};
 	public final static String gammesTestBig[] ={"000022","000210","000021","000164","000601","000467","000347","000169","000347"};
+	public final static String gammesTestBig2[] ={"000021","000164","000601","000467","000347","000169","000021","000164","000601","000601","000467"};
 	public final static String gammesTest_PB_pont2[] ={"000022","000022","000467","000210","000246"};
 	//public final static String gammesTest[] ={"000210","000210","000210","000210","000210"};
 	//public final static String gammesTest[] ={"000022","000246"};
 	public final static String gammesTest1[] ={"000022","000554","000552","000553","000552","000553"};
 	public final static String test26janvier[] ={"000021","000164","000601","000467","000347","000169"};
-	
+	public final static String test8mars[] ={"000094","000003","000169","000174","000776","000671"};
+	public final static String test8mars2[] ={"000094","000003"};
 	// C10 ne sort pas car il attend C05
 	public final static String testPrioriteC05[] ={"000601","000164"};
-	public final static String gammesTest[] =test26janvier;
+	public final static String gammesTest[] =test8mars2;
 	
+
+	//------------------------------------------------------------
+	// -----------------  CONSTRAINTES ---------------------------
+	//------------------------------------------------------------
+	public final static boolean MODE_ECO = false ;
+	public final static int 	PORTION_HORIZON = 7 ;
+	public final static boolean CSTR_NOOVERLAP_MVTS_PONT =false;
+	public final static boolean CSTR_NOOVERLAP_ZONES_GROUPEES = true ;
+
 	//------------------------------------------------------------
 	// -----------------  DATA ---------------------------
 	//------------------------------------------------------------
 	public final static int SQLSERVER =1;
 	public final static int CSV =2;
-	//------------------------------------------------------------
-	// -----------------  CONSTRAINTES ---------------------------
-	//------------------------------------------------------------
-	public final static boolean CSTR_NOOVERLAP_MVTS_PONT =false;
-	public final static boolean CSTR_NOOVERLAP_ZONES_GROUPEES = true ;
-	public final static boolean MODE_ECO = false ;
-	public final static int 	PORTION_HORIZON = 7 ;
 	
 	//------------------------------------------------------------
 	//------------------  TEMPS ----------------------------------

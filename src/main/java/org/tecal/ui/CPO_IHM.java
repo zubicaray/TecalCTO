@@ -161,7 +161,7 @@ public class CPO_IHM extends JFrame {
 		    	
 		    	 int mouseX = event.getTrigger().getX();
 		         int mouseY = event.getTrigger().getY();
-		         System.out.println("x = " + mouseX + ", y = " + mouseY);
+		         //System.out.println("x = " + mouseX + ", y = " + mouseY);
 		         Point2D p =cp.translateScreenToJava2D(
 		                 new Point(mouseX, mouseY));
 		         XYPlot plot = (XYPlot) cp.getChart().getPlot();

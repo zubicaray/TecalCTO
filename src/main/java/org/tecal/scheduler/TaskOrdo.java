@@ -37,11 +37,7 @@ public class TaskOrdo {
 			isOverlapable=true;
 		}		
 		
-		
-		//inderive-=CST.TEMPS_MVT_PONT_MIN_JOB;
-		//inderive=Math.max(CST.TEMPS_MVT_PONT_MIN_JOB,inderive);
-
-		
+			
 		startBDD = model.newIntVar(0, horizon, "start" + suffix); 
 		endBDD = model.newIntVar(0, horizon, "end" + suffix);		
 		fin=model.newIntVar(0, horizon, "fin_nooverlap");

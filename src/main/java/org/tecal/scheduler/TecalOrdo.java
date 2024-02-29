@@ -541,8 +541,10 @@ public class TecalOrdo {
 				// TODO
 				// !!!
 				// comprendre pourquoi ca bloque ici quand les params changent
-				IntervalVar deb=getNoOverlapZone(model,debInter,0,30);
+				IntervalVar deb=getNoOverlapZone(model,debInter,30,30);
 				IntervalVar fin=getNoOverlapZone(model,finInter,30,30);
+				
+				
 				
 				nooverlapAno.add(deb);
 				nooverlapAno.add(fin);

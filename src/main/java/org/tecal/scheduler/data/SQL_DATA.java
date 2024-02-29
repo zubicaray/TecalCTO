@@ -1,5 +1,7 @@
 package org.tecal.scheduler.data;
 
+import java.io.File;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -11,6 +13,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import org.ini4j.Ini;
+import org.ini4j.InvalidFileFormatException;
 import org.tecal.scheduler.types.GammeType;
 import org.tecal.scheduler.types.PosteBDD;
 import org.tecal.scheduler.types.PosteProd;
@@ -29,19 +33,37 @@ public class SQL_DATA {
 	
 	private String mWHERE_CLAUSE;
 
-	private String mWHERE_NUMZONE;
 	private String mListeFiche;
 	public  SQL_DATA()  {
-		String connectionUrl =
-                "jdbc:sqlserver://ZUBI-STUDIO\\SQLEXPRESS:1433;"
-                + "database=ANODISATION_SECOURS;"
-                + "user=sa;"
-                + "password=Jeff_nenette;"
-                + "encrypt=true;"
-                +"integratedSecurity=true;"
-                + "trustServerCertificate=true;";
-                //+ "loginTimeout=15;";
 		
+		String connectionUrl = null;
+		File fileToParse = new File("tecalCPO.ini");
+		
+		try {
+			Ini ini = new Ini(fileToParse);
+			String user=ini.get("BDD", "user");
+			String database=ini.get("BDD", "database");
+			String password=ini.get("BDD", "password");
+			String server=ini.get("BDD", "server");
+			
+			
+			connectionUrl =
+	                "jdbc:sqlserver://"+server+";"
+	                + "database="+database+";"
+	                + "user="+user+";"
+	                + "password="+password+";"
+	                + "encrypt=true;"
+	                +"integratedSecurity=true;"
+	                + "trustServerCertificate=true;";
+	    
+			
+		} catch (InvalidFileFormatException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		
 		mListeFiche="('00079250','00079251','00079252','00079253','00079254')";
@@ -53,7 +75,6 @@ public class SQL_DATA {
 		//mListeFiche="('00079261','00079262','00079263','00079264','00079265','00079266','00079267')";
 		
 		
-		
 		// test pour le 26/01/2024
 		mListeFiche="('00079261','00079262','00079263','00079264','00079265','00079266')";
 		
@@ -63,11 +84,10 @@ public class SQL_DATA {
 		//mListeFiche="('00079261','00079262')";				
 		
 		// on élimine les postse de chargements /déchargements
-		mWHERE_CLAUSE="where DF.DateEntreePoste >=  '20231102' and DF.DateSortiePoste< '20231103'  and "
-				+ "DF.numficheproduction in "+mListeFiche+" \r\n";
-			
+		mWHERE_CLAUSE="where DF.numficheproduction in "+mListeFiche+" ";			
 		
-		mWHERE_NUMZONE=" Z.numzone not in (1998989898) ";
+		
+		
 		try {
 			mConnection = DriverManager.getConnection(connectionUrl);
 			mStatement= mConnection.createStatement();
@@ -93,9 +113,7 @@ private  void setZones() {
 	zones = new HashMap<Integer,ZoneType>();
     // Create and execute a SELECT SQL statement.
     String selectSql = "select Z.numzone,Z.CodeZone, Z.NumDernierPoste-Z.NumPremierPoste+1 as cumul,derive from  \r\n"
-    		+ "[Anodisation_secours].[dbo].ZONES Z WHERE\r\n"
-    		+ mWHERE_NUMZONE
-    		+ " order by numzone";
+    		+ "ZONES Z order by numzone";
     
     try {
 		resultSet = mStatement.executeQuery(selectSql);
@@ -124,13 +142,13 @@ public HashMap<Integer,PosteBDD> getPostes() {
 		int cpt=0;
         // Create and execute a SELECT SQL statement.
         String selectSql = "select distinct P.Nomposte +' - ' + P.LibellePoste,P.numposte from  \r\n"
-        		+ "[Anodisation_secours].[dbo].[DetailsGammesProduction]  DG\r\n"
-        		+ "INNER JOIN   [Anodisation_secours].[dbo].[DetailsFichesProduction] DF\r\n"
+        		+ "[DetailsGammesProduction]  DG\r\n"
+        		+ "INNER JOIN   [DetailsFichesProduction] DF\r\n"
         		+ "on  \r\n"
         		+ "	DG.numficheproduction=DF.numficheproduction and\r\n"
         		+ "	DG.numligne=DF.NumLigne and DG.NumPosteReel=DF.NumPoste\r\n"
         		+ "\r\n"
-        		+ "INNER JOIN  [Anodisation_secours].[dbo].POSTES P\r\n"
+        		+ "INNER JOIN  POSTES P\r\n"
         		+ "on P.Numposte=DF.Numposte\r\n"
         		+ mWHERE_CLAUSE
         		+ "order by P.numposte, P.Nomposte +' - ' + P.LibellePoste";
@@ -171,8 +189,8 @@ private void  setLignesGammes() {
         		+ " TempsAuPosteSecondes+TempsEgouttageSecondes, \r\n"
         		+ " Z.ID_GROUPEMENT,Z.derive,Z.NumDernierPoste-Z.NumPremierPoste+1 as cumul  "
         		+ "from  \r\n"
-        		+ "	[Anodisation_secours].[dbo].[DetailsGammesAnodisation]  DG\r\n"
-        		+ "	INNER JOIN [Anodisation_secours].[dbo].ZONES Z\r\n"
+        		+ "	[DetailsGammesAnodisation]  DG\r\n"
+        		+ "	INNER JOIN ZONES Z\r\n"
         		+ "	on Z.numzone=DG.numzone "
         		+ "order by NumGamme,numligne "
         		;
@@ -217,7 +235,7 @@ public ResultSet getEnteteGammes() {
     String selectSql = ""
     		+ "SELECT [NumGamme] as numero"
     		+ ",[NomGamme] as designation "    	
-    		+ "  FROM [ANODISATION_SECOURS].[dbo].[GammesAnodisation] "
+    		+ "  FROM [GammesAnodisation] "
     		+ "order by NumGamme "
     		;
     try {
@@ -240,8 +258,8 @@ public HashMap<String, String>  getFicheGamme() {
 		HashMap<String, String> res = new HashMap<>();
         // Create and execute a SELECT SQL statement.
         String selectSql = "select distinct DF.numficheproduction,NumGammeAnodisation "
-        		+ "from  [Anodisation_secours].[dbo].[DetailsChargesProduction] DC"
-        		+ " INNER JOIN   [Anodisation_secours].[dbo].[DetailsFichesProduction] DF\r\n"
+        		+ "from  [DetailsChargesProduction] DC"
+        		+ " INNER JOIN   [DetailsFichesProduction] DF\r\n"
         		+ "on  \r\n"
         		+ "	DC.numficheproduction=DF.numficheproduction  "
         		
@@ -274,7 +292,7 @@ public void setTempsDeplacements() {
      		+ "      ,[lent]"
      		+ "      ,[normal]"
      		+ "      ,[rapide]"
-     		+ "  FROM [ANODISATION_SECOURS].[dbo].[TempsDeplacements]";
+     		+ "  FROM [TempsDeplacements]";
      
      try {
 			resultSet = mStatement.executeQuery(selectSql);
@@ -319,13 +337,13 @@ public void setTempsDeplacements() {
         String selectSql = "select DG.numficheproduction,P.Nomposte +' - ' + P.LibellePoste,  \r\n"
         		+ "DATEDIFF(SECOND, DATEADD(DAY, DATEDIFF(DAY, 0, DF.DateEntreePoste), 0),DF.DateEntreePoste),\r\n"
         		+ "DATEDIFF(SECOND, DATEADD(DAY, DATEDIFF(DAY, 0, DF.DateSortiePoste), 0),DF.DateSortiePoste)	,DF.NumLigne, DF.Numposte  from  \r\n"
-        		+ "[Anodisation_secours].[dbo].[DetailsGammesProduction]  DG\r\n"
-        		+ "INNER JOIN   [Anodisation_secours].[dbo].[DetailsFichesProduction] DF\r\n"
+        		+ "[DetailsGammesProduction]  DG\r\n"
+        		+ "INNER JOIN   [DetailsFichesProduction] DF\r\n"
         		+ "on  \r\n"
         		+ "	DG.numficheproduction=DF.numficheproduction and\r\n"
         		+ "	DG.numligne=DF.NumLigne and DG.NumPosteReel=DF.NumPoste\r\n"
         		+ "\r\n"
-        		+ "INNER JOIN [Anodisation_secours].[dbo].POSTES P\r\n"
+        		+ "INNER JOIN POSTES P\r\n"
         		+ "on P.Numposte=DF.Numposte\r\n"
         		+ mWHERE_CLAUSE
         		+ "order by DG.numficheproduction, DF.Numposte,DG.NumLigne";
