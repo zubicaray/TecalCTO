@@ -52,7 +52,9 @@ import javax.swing.table.TableRowSorter;
 import org.jdatepicker.impl.JDatePanelImpl;
 import org.jdatepicker.impl.JDatePickerImpl;
 import org.jdatepicker.impl.UtilDateModel;
+import org.jfree.ui.RefineryUtilities;
 import org.tecal.scheduler.CST;
+import org.tecal.scheduler.GanttChart;
 import org.tecal.scheduler.TecalOrdo;
 import org.tecal.scheduler.data.SQL_DATA;
 import org.tecal.scheduler.types.GammeType;
@@ -62,6 +64,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import java.awt.Font;
 import java.awt.Component;
@@ -100,6 +103,7 @@ public class TecalGUI {
 	private CPO_IHM   gantFrame;
 	private JTable tableGammes;
 	private DefaultTableModel modelGammes ;
+	private DefaultTableModel modelVisuProd ;
 	private JTable tableBarres;
 	private DefaultTableModel modelBarres;
 	private JTextField textFiltre;
@@ -118,9 +122,11 @@ public class TecalGUI {
 	private JTextField textTEMPS_ANO_ENTRE_P1_P2;
 	private JTextField textNUMZONE_DEBUT_PONT_2;
 	private JTabbedPane tabbedPane_1;
-	private JTable table_1;
-	private JTable table_2;
 	private JTable tableOF;
+	private JDatePickerImpl datePicker;
+	JPanel panelVisuProd; 
+	JScrollPane scrollPaneVisuProd;
+	GroupLayout gl_panelVisuProd ;
 	
 	/**
 	 * Launch the application.
@@ -382,6 +388,7 @@ public class TecalGUI {
 		
 		
 		ResultSet rs =sqlCnx.getEnteteGammes();
+		
 
 	    // It creates and displays the table
 	    try {
@@ -421,8 +428,9 @@ public class TecalGUI {
 		
 		scrollPane.setViewportView(tableGammes);
 		panelCPO.setLayout(gl_panel);
-		
+		buildVisuProd();
 		buildParamsTab(tabbedPane_1);
+		
 		frmTecalOrdonnanceur.getContentPane().setLayout(groupLayout);
 	}
 
@@ -502,10 +510,10 @@ public class TecalGUI {
 		);
 		return gl_panelCPO;
 	}
-
-	private void buildParamsTab(JTabbedPane tabbedPane) {
+	
+	private void  buildVisuProd() {
 		
-		JPanel panelVisuProd = new JPanel();
+		panelVisuProd = new JPanel();
 		UtilDateModel model = new UtilDateModel();
 		//model.setDate(20,04,2014);
 		// Need this...
@@ -514,61 +522,88 @@ public class TecalGUI {
 		p.put("text.month", "Month");
 		p.put("text.year", "Year");
 		JDatePanelImpl datePanel = new JDatePanelImpl(model, p);
-		
-		table_1 = new JTable();
-		
-		table_2 = new JTable();
-		
-		JScrollPane scrollPane = new JScrollPane();
 		// Don't know about the formatter, but there it is...
-		JDatePickerImpl datePicker = new JDatePickerImpl(datePanel, new DateLabelFormatter());
+		datePicker = new JDatePickerImpl(datePanel, new DateLabelFormatter());
+		datePicker.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					buildTableModelVisuProd();
+				} catch (SQLException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+		});
 		
 		tabbedPane_1.addTab("Visuel de prod", null, panelVisuProd, null);
 		
-		JScrollPane scrollPane_1 = new JScrollPane();
-		GroupLayout gl_panelVisuProd = new GroupLayout(panelVisuProd);
+		scrollPaneVisuProd = new JScrollPane();
+		
+		JButton btnRunVisuProd = new JButton("Lancer Gantt");
+		btnRunVisuProd.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				 int[] sel = tableOF.getSelectedRows();
+				 String lOF[]=new String[sel.length];
+				 for(int i=0;i<sel.length;i++) {
+					 lOF[i]=tableOF.getModel().getValueAt(sel[i], 0).toString();
+				 }
+				 
+				 SwingUtilities.invokeLater(() -> {  
+
+					 final GanttChart ganttTecal = new GanttChart(sqlCnx,"Gantt Chart prod du 02/11/2023");
+					 ganttTecal.prod_diag(lOF);
+					 ganttTecal.pack();
+					 ganttTecal.setSize(new java.awt.Dimension(1500, 870));
+				     RefineryUtilities.centerFrameOnScreen(ganttTecal);
+				     ganttTecal.setVisible(true);
+
+				});
+				 
+			}
+		});
+		gl_panelVisuProd = new GroupLayout(panelVisuProd);
 		gl_panelVisuProd.setHorizontalGroup(
 			gl_panelVisuProd.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_panelVisuProd.createSequentialGroup()
 					.addGroup(gl_panelVisuProd.createParallelGroup(Alignment.LEADING)
 						.addGroup(gl_panelVisuProd.createSequentialGroup()
-							.addGap(249)
-							.addComponent(table_1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-							.addGap(5)
-							.addComponent(table_2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-							.addGap(5)
-							.addComponent(scrollPane, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-							.addGap(5)
+							.addGap(266)
 							.addComponent(datePicker, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
 						.addGroup(gl_panelVisuProd.createSequentialGroup()
-							.addGap(102)
-							.addComponent(scrollPane_1, GroupLayout.PREFERRED_SIZE, 505, GroupLayout.PREFERRED_SIZE)))
-					.addContainerGap(101, Short.MAX_VALUE))
+							.addGap(62)
+							.addComponent(scrollPaneVisuProd)))
+					.addGap(18)
+					.addComponent(btnRunVisuProd)
+					.addGap(143))
 		);
 		gl_panelVisuProd.setVerticalGroup(
 			gl_panelVisuProd.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_panelVisuProd.createSequentialGroup()
+					.addGap(5)
 					.addGroup(gl_panelVisuProd.createParallelGroup(Alignment.LEADING)
 						.addGroup(gl_panelVisuProd.createSequentialGroup()
-							.addGap(16)
-							.addComponent(table_1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+							.addComponent(btnRunVisuProd)
+							.addContainerGap())
 						.addGroup(gl_panelVisuProd.createSequentialGroup()
-							.addGap(16)
-							.addComponent(table_2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-						.addGroup(gl_panelVisuProd.createSequentialGroup()
-							.addGap(15)
-							.addComponent(scrollPane, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-						.addGroup(gl_panelVisuProd.createSequentialGroup()
-							.addGap(5)
-							.addComponent(datePicker, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
-					.addGap(54)
-					.addComponent(scrollPane_1, GroupLayout.DEFAULT_SIZE, 368, Short.MAX_VALUE)
-					.addGap(144))
+							.addComponent(datePicker, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+							.addGap(31)
+							.addComponent(scrollPaneVisuProd)
+							.addGap(99))))
 		);
 		
-		tableOF = new JTable();
-		scrollPane_1.setViewportView(tableOF);
-		panelVisuProd.setLayout(gl_panelVisuProd);
+		
+		
+		
+	}
+
+	private void buildParamsTab(JTabbedPane tabbedPane) {
+		
+		
+		
+		
+		
+		
 		JPanel panel_param = new JPanel();
 		tabbedPane.addTab("Paramètres", null, panel_param, null);
 		
@@ -750,6 +785,65 @@ public class TecalGUI {
     	    }
     	};
    
+
+	}
+	
+	public   void buildTableModelVisuProd()
+	        throws SQLException {
+
+		java.util.Date d=(java.util.Date) datePicker.getModel().getValue();
+		ResultSet rs =sqlCnx.getVisuProd(d);
+	    ResultSetMetaData metaData = rs.getMetaData();
+
+	    // names of columns
+	    Vector<String> columnNames = new Vector<String>();
+	    int columnCount = metaData.getColumnCount();
+	    for (int column = 1; column <= columnCount; column++) {
+	        columnNames.add(metaData.getColumnName(column));
+	    }
+
+	    // data of the table
+	    Vector<Vector<Object>> data = new Vector<Vector<Object>>();
+	    while (rs.next()) {
+	        Vector<Object> vector = new Vector<Object>();
+	        for (int columnIndex = 1; columnIndex <= columnCount; columnIndex++) {
+	            vector.add(rs.getObject(columnIndex));
+	        }
+	        data.add(vector);
+	    }
+	    
+	    modelVisuProd = new DefaultTableModel(data, columnNames) {
+
+    	    /**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
+
+			@Override
+    	    public boolean isCellEditable(int row, int column) {
+    	       //all cells false
+    	       return false;
+    	    }
+    	};
+   
+    	tableOF = new JTable(modelVisuProd);
+		scrollPaneVisuProd.setViewportView(tableOF);
+		panelVisuProd.setLayout(gl_panelVisuProd);
+		
+		
+		tableOF.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+		
+	
+		tableOF.addMouseListener(new MouseAdapter() {
+		    public void mousePressed(MouseEvent mouseEvent) {
+		        JTable table =(JTable) mouseEvent.getSource();
+		        Point point = mouseEvent.getPoint();
+		        int row = table.rowAtPoint(point);
+		        if (mouseEvent.getClickCount() == 2 && table.getSelectedRow() != -1) {	    	        	
+		        	modelVisuProd.removeRow(row);	         	
+		        }
+		    }
+		});
 
 	}
 	

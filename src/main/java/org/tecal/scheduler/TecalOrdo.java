@@ -423,7 +423,7 @@ public class TecalOrdo {
 			SwingUtilities.invokeLater(() -> {  
 
 				 final GanttChart ganttTecal = new GanttChart(tecalOrdo.getSqlCnx(),"Gantt Chart prod du 02/11/2023");
-				 ganttTecal.prod_diag();
+				 ganttTecal.prod_diag(CST.mListeOf26janvier);
 				 ganttTecal.pack();
 				 ganttTecal.setSize(new java.awt.Dimension(1500, 870));
 			     RefineryUtilities.centerFrameOnScreen(ganttTecal);

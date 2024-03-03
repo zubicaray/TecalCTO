@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
 
 
 
@@ -357,12 +356,12 @@ public class GanttChart extends ApplicationFrame {
 	}
 
 	
-	public void prod_diag() {
+	public void prod_diag(String[] listeOF) {
 		XYIntervalSeriesCollection dataset = new XYIntervalSeriesCollection();
 		
 		 ArrayList<PosteBDD> posteAllOF = new ArrayList <PosteBDD>();
 		 
-		 HashMap<Integer,PosteBDD> mapPosteBDD= mSqlCnx.getPostes();
+		 HashMap<Integer,PosteBDD> mapPosteBDD= mSqlCnx.getPostes(listeOF);
 		 
 		 mapPosteBDD.values().forEach( v->{ posteAllOF.add(v); });		 
 		 
@@ -379,7 +378,7 @@ public class GanttChart extends ApplicationFrame {
 		String[] labelPosteAllOF=labelPosteAllOFTmp.toArray(new String[0]);
 		 
 		 //gamme par fiche production (on peut avoir une  même gamme pour deux fichesProd
-		 HashMap<String, String> ficheGamme=  mSqlCnx.getFicheGamme();
+		 HashMap<String, String> ficheGamme=  mSqlCnx.getFicheGamme(listeOF);
 		 
 		 String[] ficheToZones=ficheGamme.values().toArray(new String[0]);
 		 
@@ -394,7 +393,7 @@ public class GanttChart extends ApplicationFrame {
 		 }
 
 		 //temps aux postes par fiches production
-		 HashMap<String, LinkedHashMap<Integer,PosteProd> > tempsAuPostes=mSqlCnx.getTempsAuPostes() ;
+		 HashMap<String, LinkedHashMap<Integer,PosteProd> > tempsAuPostes=mSqlCnx.getTempsAuPostes(listeOF) ;
 		 
 		
 		 

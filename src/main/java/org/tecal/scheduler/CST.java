@@ -3,6 +3,8 @@ package org.tecal.scheduler;
 
 public class CST {
 	
+	public final static String[] mListeOf26janvier={"00079261","00079262","00079263","00079264","00079265","00079266"};
+	
 	
 	//public final static String gammesTest[] ={"000007","000005","000009","000010"};
 	public final static String gammesTestBig[] ={"000022","000210","000021","000164","000601","000467","000347","000169","000347"};
@@ -12,18 +14,20 @@ public class CST {
 	//public final static String gammesTest[] ={"000022","000246"};
 	public final static String gammesTest1[] ={"000022","000554","000552","000553","000552","000553"};
 	public final static String test26janvier[] ={"000021","000164","000601","000467","000347","000169"};
-	public final static String test8mars[] ={"000094","000003","000169","000174","000776","000671"};
+	public final static String test8mars[] ={"000094","000169","000174","000776","000671"};
 	public final static String test8mars2[] ={"000094","000003"};
 	// C10 ne sort pas car il attend C05
 	public final static String testPrioriteC05[] ={"000601","000164"};
-	public final static String gammesTest[] =test8mars2;
+	public final static String gammesTest[] =test26janvier;
+	
+	
 	
 
 	//------------------------------------------------------------
 	// -----------------  CONSTRAINTES ---------------------------
 	//------------------------------------------------------------
-	public final static boolean MODE_ECO = false ;
-	public final static int 	PORTION_HORIZON = 7 ;
+	public final static boolean MODE_ECO = true ;
+	public final static int 	PORTION_HORIZON = 10 ;
 	public final static boolean CSTR_NOOVERLAP_MVTS_PONT =false;
 	public final static boolean CSTR_NOOVERLAP_ZONES_GROUPEES = true ;
 
@@ -55,7 +59,7 @@ public class CST {
 	//--------------------------------------------------------------
 	//------------ AFFICHAGE ---------------------------------------
 	//--------------------------------------------------------------
-	public final static boolean PRINT_PROD_DIAG 	=false;
+	public final static boolean PRINT_PROD_DIAG 	=true;
 	public final static boolean PrintTaskTime 		=false;
 	public final static boolean PrintZonesTime		=false;
 	public final static boolean PrintMvtsPont		=false;

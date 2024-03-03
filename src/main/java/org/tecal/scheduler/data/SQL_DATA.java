@@ -7,11 +7,14 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.StringJoiner;
 
 import org.ini4j.Ini;
 import org.ini4j.InvalidFileFormatException;
@@ -30,10 +33,28 @@ public class SQL_DATA {
 	private HashMap<Integer,ZoneType>  zones;
 	private HashMap<String, ArrayList<GammeType> > gammes;		
 	static TempsDeplacement  mTempsDeplacement;		
-	
-	private String mWHERE_CLAUSE;
+	 private static  final SimpleDateFormat FMT =
+	            new SimpleDateFormat( "yyyyMMdd" );
 
-	private String mListeFiche;
+	
+	public static String quote(String s) {
+	    return new StringBuilder()
+	        .append('\'')
+	        .append(s)
+	        .append('\'')
+	        .toString();
+	}
+	public static String toClause(String[] arrayS) {
+		
+		StringJoiner joiner = new StringJoiner(",");
+		
+		
+		for(String s : arrayS) {
+			joiner.add(quote(s));
+		}
+		return joiner.toString();
+	}
+	
 	public  SQL_DATA()  {
 		
 		String connectionUrl = null;
@@ -66,25 +87,7 @@ public class SQL_DATA {
 		}
 		
 		
-		mListeFiche="('00079250','00079251','00079252','00079253','00079254')";
-		mListeFiche="('00079255','00079256','00079257','00079258','00079259','00079260','00079261','00079262','00079263','00079264','00079265','00079266','00079267')";
-		
-		//'00079257','00079261',
-		mListeFiche="('00079254','00079255','00079256','00079257','00079258','00079259','00079260','00079261','00079262','00079263','00079264','00079265','00079266','00079267')";
-		//mListeFiche="('00079258','00079259','00079260','00079261','00079262','00079263','00079264','00079265','00079266','00079267')";
-		//mListeFiche="('00079261','00079262','00079263','00079264','00079265','00079266','00079267')";
-		
-		
-		// test pour le 26/01/2024
-		mListeFiche="('00079261','00079262','00079263','00079264','00079265','00079266')";
-		
-		
-		//mListeFiche="('00079263','00079264','00079265','00079266','00079267')";	
-		//mListeFiche="('00079262','00079263','00079264','00079265')";
-		//mListeFiche="('00079261','00079262')";				
-		
-		// on élimine les postse de chargements /déchargements
-		mWHERE_CLAUSE="where DF.numficheproduction in "+mListeFiche+" ";			
+			
 		
 		
 		
@@ -112,7 +115,7 @@ private  void setZones() {
 	ResultSet resultSet = null;        
 	zones = new HashMap<Integer,ZoneType>();
     // Create and execute a SELECT SQL statement.
-    String selectSql = "select Z.numzone,Z.CodeZone, Z.NumDernierPoste-Z.NumPremierPoste+1 as cumul,derive from  \r\n"
+    String selectSql = "select Z.numzone,Z.CodeZone, Z.NumDernierPoste-Z.NumPremierPoste+1 as cumul,derive from   "
     		+ "ZONES Z order by numzone";
     
     try {
@@ -135,22 +138,22 @@ private  void setZones() {
 	
 
 
-public HashMap<Integer,PosteBDD> getPostes() {
+public HashMap<Integer,PosteBDD> getPostes(String[] listeOF) {
 		
 		ResultSet resultSet = null;        
 		HashMap<Integer,PosteBDD> res = new HashMap<Integer,PosteBDD>();
 		int cpt=0;
         // Create and execute a SELECT SQL statement.
-        String selectSql = "select distinct P.Nomposte +' - ' + P.LibellePoste,P.numposte from  \r\n"
-        		+ "[DetailsGammesProduction]  DG\r\n"
-        		+ "INNER JOIN   [DetailsFichesProduction] DF\r\n"
-        		+ "on  \r\n"
-        		+ "	DG.numficheproduction=DF.numficheproduction and\r\n"
-        		+ "	DG.numligne=DF.NumLigne and DG.NumPosteReel=DF.NumPoste\r\n"
-        		+ "\r\n"
-        		+ "INNER JOIN  POSTES P\r\n"
-        		+ "on P.Numposte=DF.Numposte\r\n"
-        		+ mWHERE_CLAUSE
+        String selectSql = "select distinct P.Nomposte +' - ' + P.LibellePoste,P.numposte from   "
+        		+ "[DetailsGammesProduction]  DG "
+        		+ "INNER JOIN   [DetailsFichesProduction] DF "
+        		+ "on   "
+        		+ "	DG.numficheproduction=DF.numficheproduction and "
+        		+ "	DG.numligne=DF.NumLigne and DG.NumPosteReel=DF.NumPoste "
+        		+ " "
+        		+ "INNER JOIN  POSTES P "
+        		+ "on P.Numposte=DF.Numposte "
+        		+ " where DF.numficheproduction in  ("+toClause(listeOF)+")  "
         		+ "order by P.numposte, P.Nomposte +' - ' + P.LibellePoste";
         
         try {
@@ -184,13 +187,13 @@ private void  setLignesGammes() {
 		gammes  = new HashMap<String, ArrayList<GammeType> >();
         // Create and execute a SELECT SQL statement.
         String selectSql = ""
-        		+ "select \r\n"
+        		+ "select  "
         		+ "	DG.NumGamme,Z.CodeZone,numligne ,Z.numzone, "
-        		+ " TempsAuPosteSecondes+TempsEgouttageSecondes, \r\n"
+        		+ " TempsAuPosteSecondes+TempsEgouttageSecondes,  "
         		+ " Z.ID_GROUPEMENT,Z.derive,Z.NumDernierPoste-Z.NumPremierPoste+1 as cumul  "
-        		+ "from  \r\n"
-        		+ "	[DetailsGammesAnodisation]  DG\r\n"
-        		+ "	INNER JOIN ZONES Z\r\n"
+        		+ "from   "
+        		+ "	[DetailsGammesAnodisation]  DG "
+        		+ "	INNER JOIN ZONES Z "
         		+ "	on Z.numzone=DG.numzone "
         		+ "order by NumGamme,numligne "
         		;
@@ -230,7 +233,6 @@ public ResultSet getEnteteGammes() {
 	
 	
 	
-	gammes  = new HashMap<String, ArrayList<GammeType> >();
     // Create and execute a SELECT SQL statement.
     String selectSql = ""
     		+ "SELECT [NumGamme] as numero"
@@ -249,21 +251,68 @@ public ResultSet getEnteteGammes() {
 
 	return resultSet;
 }
+
+public ResultSet getVisuProd(java.util.Date inDate) {
+	ResultSet resultSet = null;    
+	
+	java.util.Date dt = inDate;
+	Calendar c = Calendar.getInstance(); 
+	c.setTime(dt); 
+	c.add(Calendar.DATE, 1);
+	dt = c.getTime();
+	
+	String deb=toSQLServerFormat(inDate);
+	String fin=toSQLServerFormat(dt);
+	
+    // Create and execute a SELECT SQL statement.
+    String selectSql = "select DG.numficheproduction, 	DC.NumGammeANodisation,DC.NumBarre  \r\n"
+    		+ "from   	[DetailsGammesProduction]  DG 	\r\n"
+    		+ "INNER JOIN   [DetailsFichesProduction] DF 	on   		\r\n"
+    		+ "DG.numficheproduction=DF.numficheproduction and 		\r\n"
+    		+ "DG.numligne=DF.NumLigne  and DF.NumLigne=1 	\r\n"
+    		+ "INNER JOIN ( select numficheproduction,NumGammeANodisation,NumBarre from [DetailsChargesProduction] where numligne=1\r\n"
+    		+ ") DC 	\r\n"
+    		+ "on   		DC.numficheproduction=DF.numficheproduction \r\n"
+    		+ "--and DC.numligne=DF.NumLigne    	where  		--vitesse normale 		\r\n"
+    		+ "--DF.numficheproduction in ('00074996','00074981','00075196','00075015','00075020','00075192','00075195','00075184','00075185')  	\r\n"
+    		+ "WHERE		DF.DateEntreePoste BETWEEN   '"+deb+"'  and '"+fin+"'      "
+    		+ "order by DF.DateEntreePoste,DC.NumBarre,DG.numficheproduction "
+    	
+    		
+    		;
+    try {
+		resultSet = mStatement.executeQuery(selectSql);
+		// Print results from select statement
+    
+	} catch (SQLException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+
+	return resultSet;
+}
+	
+private String toSQLServerFormat(java.util.Date d) {
+	
+        java.sql.Date       date = new java.sql.Date( d.getTime());
+        return  FMT.format( date ) ;
+
+	
+}
 	
 	
-	
-public HashMap<String, String>  getFicheGamme() {
+public HashMap<String, String>  getFicheGamme(String[] listeOF) {
 		
 		ResultSet resultSet = null;        
 		HashMap<String, String> res = new HashMap<>();
         // Create and execute a SELECT SQL statement.
         String selectSql = "select distinct DF.numficheproduction,NumGammeAnodisation "
         		+ "from  [DetailsChargesProduction] DC"
-        		+ " INNER JOIN   [DetailsFichesProduction] DF\r\n"
-        		+ "on  \r\n"
+        		+ " INNER JOIN   [DetailsFichesProduction] DF "
+        		+ "on   "
         		+ "	DC.numficheproduction=DF.numficheproduction  "
         		
-        		+ mWHERE_CLAUSE;
+        		+" and DF.numficheproduction in ("+toClause(listeOF)+") " ;
         try {
 			resultSet = mStatement.executeQuery(selectSql);
 			// Print results from select statement
@@ -320,32 +369,32 @@ public void setTempsDeplacements() {
 }
     // Connect to your database.
     // Replace server name, username, and password with your credentials
-    public  HashMap <String, LinkedHashMap<Integer,PosteProd> > getTempsAuPostes() {
+    public  HashMap <String, LinkedHashMap<Integer,PosteProd> > getTempsAuPostes(String[] listeOF) {
         
 
         ResultSet resultSet = null;        
         
         HashMap <String, LinkedHashMap<Integer,PosteProd> >finalArray = new HashMap <String, LinkedHashMap<Integer,PosteProd>>();
 
-        HashMap<Integer,PosteBDD> postes= getPostes();
+        HashMap<Integer,PosteBDD> postes= getPostes(listeOF);
 
         /**
          * tri par DF.Numposte,DG.NumLigne
          * car c l'ordre d'affichage des cases de la gamme dans jfreechart
          */
         
-        String selectSql = "select DG.numficheproduction,P.Nomposte +' - ' + P.LibellePoste,  \r\n"
-        		+ "DATEDIFF(SECOND, DATEADD(DAY, DATEDIFF(DAY, 0, DF.DateEntreePoste), 0),DF.DateEntreePoste),\r\n"
-        		+ "DATEDIFF(SECOND, DATEADD(DAY, DATEDIFF(DAY, 0, DF.DateSortiePoste), 0),DF.DateSortiePoste)	,DF.NumLigne, DF.Numposte  from  \r\n"
-        		+ "[DetailsGammesProduction]  DG\r\n"
-        		+ "INNER JOIN   [DetailsFichesProduction] DF\r\n"
-        		+ "on  \r\n"
-        		+ "	DG.numficheproduction=DF.numficheproduction and\r\n"
-        		+ "	DG.numligne=DF.NumLigne and DG.NumPosteReel=DF.NumPoste\r\n"
-        		+ "\r\n"
-        		+ "INNER JOIN POSTES P\r\n"
-        		+ "on P.Numposte=DF.Numposte\r\n"
-        		+ mWHERE_CLAUSE
+        String selectSql = "select DG.numficheproduction,P.Nomposte +' - ' + P.LibellePoste,   "
+        		+ "DATEDIFF(SECOND, DATEADD(DAY, DATEDIFF(DAY, 0, DF.DateEntreePoste), 0),DF.DateEntreePoste), "
+        		+ "DATEDIFF(SECOND, DATEADD(DAY, DATEDIFF(DAY, 0, DF.DateSortiePoste), 0),DF.DateSortiePoste)	,DF.NumLigne, DF.Numposte  from   "
+        		+ "[DetailsGammesProduction]  DG "
+        		+ "INNER JOIN   [DetailsFichesProduction] DF "
+        		+ "on   "
+        		+ "	DG.numficheproduction=DF.numficheproduction and "
+        		+ "	DG.numligne=DF.NumLigne and DG.NumPosteReel=DF.NumPoste "
+        		+ " "
+        		+ "INNER JOIN POSTES P "
+        		+ "on P.Numposte=DF.Numposte "
+        		+ " and DF.numficheproduction in ("+toClause(listeOF)+") " 
         		+ "order by DG.numficheproduction, DF.Numposte,DG.NumLigne";
         
         try {

@@ -236,6 +236,7 @@ public class JobType {
 	void addIntervalForModel(Map<List<Integer>, TaskOrdo> allTasks,Map<Integer, List<IntervalVar>> zoneToIntervals,Map<Integer, 
 			List<IntervalVar>> zoneCumulToIntervals,int jobID,HashMap<Integer,ZoneType>  zonesBDD) {
 
+		//System.out.println("Job "+name);
 		
 		int minDebut=0;
 		for (int taskID = 0; taskID < tasksJob.size(); ++taskID) {
@@ -257,7 +258,9 @@ public class JobType {
 			}
 			else {
 				Task taskSuivante = tasksJob.get(taskID+1);
-				
+				//System.out.println("------------------------------------------------");
+				//System.out.println("task.numzone "+task.numzone);
+				//System.out.println("task.numzone "+taskSuivante.numzone);
 				int tps=SQL_DATA.getTempsDeplacement(task.numzone,taskSuivante.numzone,1);
 				taskOrdo = new TaskOrdo(model,horizon,task.duration,zt.derive, minDebut,tps,suffix);   
 			}
