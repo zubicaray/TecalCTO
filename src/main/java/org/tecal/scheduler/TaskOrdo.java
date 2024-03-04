@@ -63,11 +63,6 @@ public class TaskOrdo {
 				LinearExpr.constant(tempsDeplacement),
 				debutDerive,"");
 		
-		
-		
-		
-		
-
 
 	}
 	

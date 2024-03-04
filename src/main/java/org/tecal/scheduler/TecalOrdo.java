@@ -40,9 +40,9 @@ import org.tecal.ui.CPO_IHM;
 
 
  class TempsDeplacement 		extends HashMap<Integer[],Integer[]>	{	private static final long serialVersionUID = 1L;}
- class Coord 			        extends ArrayList<IntVar> 	{	private static final long serialVersionUID = 1L;}
+ class Coord 			        extends ArrayList<IntVar> 		{	private static final long serialVersionUID = 1L;}
  class CoordsRincage 			extends ArrayList<IntVar[]> 	{	private static final long serialVersionUID = 1L;}
- class ArrayCoordsRincagePonts   extends ArrayList<CoordsRincage>{	private static final long serialVersionUID = 1L;}
+ class ArrayCoordsRincagePonts  extends ArrayList<CoordsRincage>{	private static final long serialVersionUID = 1L;}
  class ZonesIntervalVar 		extends ArrayList<IntervalVar> 	{	private static final long serialVersionUID = 1L;}
  class ListeZone 				extends ArrayList<IntervalVar> 	{	private static final long serialVersionUID = 1L;}
  class ArrayListeZonePonts   	extends ArrayList<ListeZone>	{	private static final long serialVersionUID = 1L;}
@@ -60,7 +60,6 @@ class SortTasks implements Comparator<AssignedTask> {
 }
 
 class Task {
-
 	int numzone;
 	int duration;
 	Task( int duration,int numzone) {       
@@ -147,7 +146,7 @@ public class TecalOrdo {
 		// temps incompresible d'un mouvement d epoint
 		mTEMPS_MVT_PONT_MIN_JOB =inTEMPS_MVT_PONT_MIN_JOB;
 		//temps entre les différentes "zones regroupées"	
-		mGAP_ZONE_NOOVERLAP =inGAP_ZONE_NOOVERLAP;//TEMPS_MVT_PONT_MIN_JOB*5; //90
+		mGAP_ZONE_NOOVERLAP =inGAP_ZONE_NOOVERLAP;
 		// temps autour d'un début de grosse zone
 		mTEMPS_MVT_PONT =inTEMPS_MVT_PONT;		
 		// temps de sécurité entre deux gammes différentes sur un même poste d'ano
@@ -625,7 +624,7 @@ public class TecalOrdo {
 		{
 			
 			//---------------------------------------------------------------------------
-			// le débuts des zones lognues des autres jobs 
+			// le débuts des zones longues des autres jobs 
 			// toutes les zones regroupées ne doivent pas se croiser
 			//---------------------------------------------------------------------------
 			for (JobType j  :allJobs) { 
@@ -641,7 +640,7 @@ public class TecalOrdo {
 				model.addNoOverlap(listZonesNoOverlap);
 			}
 			//---------------------------------------------------------------------------
-			//le débuts des zones lognues des autres jobs 
+			//le débuts des zones longues des autres jobs 
 			// ne doivent pas croiser les zones regroupées du job en cours
 			//---------------------------------------------------------------------------
 			for(int pont=0;pont<CST.NB_PONTS;pont++) {

@@ -70,6 +70,7 @@ import java.awt.Font;
 import java.awt.Component;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
+import javax.swing.JCheckBox;
 
  class DateLabelFormatter extends AbstractFormatter {
 
@@ -127,6 +128,15 @@ public class TecalGUI {
 	JPanel panelVisuProd; 
 	JScrollPane scrollPaneVisuProd;
 	GroupLayout gl_panelVisuProd ;
+	private JScrollPane scrollPaneMsg_1;
+	private JLabel lblGammes;
+	private JLabel lblHardynessLabel;
+	private JScrollPane scrollPane_1;
+	private JScrollPane scrollPaneBarres;
+	private JButton btnUpButton;
+	private JButton btnRun_1;
+	private JButton btnDownButton_1;
+	private JLabel lblBarreLabel_1;
 	
 	/**
 	 * Launch the application.
@@ -236,9 +246,9 @@ public class TecalGUI {
 		JPanel panelCPO = new JPanel();
 		tabbedPane_1.addTab("Choix des gammes", null, panelCPO, null);
 		
-		JScrollPane scrollPane = new JScrollPane();
+		scrollPane_1 = new JScrollPane();
 		
-		JScrollPane scrollPaneBarres = new JScrollPane();
+		scrollPaneBarres = new JScrollPane();
 		
 		textFiltre = new JTextField();
 		textFiltre.addKeyListener(new KeyAdapter() {
@@ -257,29 +267,29 @@ public class TecalGUI {
 		});
 		textFiltre.setColumns(10);
 		
-		JLabel lblBarreLabel = new JLabel("barres:");
-		lblBarreLabel.setFont(new Font("Tahoma", Font.PLAIN, 13));
+		lblBarreLabel_1 = new JLabel("barres:                     vitesses:");
+		lblBarreLabel_1.setFont(new Font("Tahoma", Font.PLAIN, 13));
 		
-		JLabel lblGammes = new JLabel("gammes:");
+		lblGammes = new JLabel("gammes:");
 		lblGammes.setFont(new Font("Tahoma", Font.PLAIN, 13));
 		
-		JButton btnUpButton = new JButton("haut");
+		btnUpButton = new JButton("haut");
 		btnUpButton.setHorizontalAlignment(SwingConstants.LEFT);
 		btnUpButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				moveRowBy(-1);
 			}
 		});
-		JButton btnDownButton = new JButton("bas");
-		btnDownButton.setHorizontalAlignment(SwingConstants.LEFT);
-		btnDownButton.addActionListener(new ActionListener() {
+		btnDownButton_1 = new JButton("bas");
+		btnDownButton_1.setHorizontalAlignment(SwingConstants.LEFT);
+		btnDownButton_1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				moveRowBy(1);
 			}
 		});
 		
 		setIconButton(btnUpButton,"icons8-up-16.png");
-		setIconButton(btnDownButton,"icons8-down-16.png");
+		setIconButton(btnDownButton_1,"icons8-down-16.png");
 		
 		
 	
@@ -305,20 +315,20 @@ public class TecalGUI {
 			}
 		});
 		
-		JLabel lblHardynessLabel = new JLabel("difficulté");
+		lblHardynessLabel = new JLabel("difficulté");
 		
-		JScrollPane scrollPaneMsg = new JScrollPane();
+		scrollPaneMsg_1 = new JScrollPane();
 		
-		JButton btnRun = new JButton("GO");
-		btnRun.setHorizontalAlignment(SwingConstants.LEFT);
-		setIconButton(btnRun,"icons8-play-16.png");
-		
-		
-		GroupLayout gl_panel = mainGuiGrouping(panelCPO, scrollPane, scrollPaneBarres, lblBarreLabel, lblGammes,
-				btnUpButton, btnDownButton, lblHardynessLabel, scrollPaneMsg, btnRun);
+		btnRun_1 = new JButton("GO");
+		btnRun_1.setHorizontalAlignment(SwingConstants.LEFT);
+		setIconButton(btnRun_1,"icons8-play-16.png");
 		
 		
-		btnRun.addActionListener(new ActionListener() {
+		GroupLayout gl_panel = mainGuiGrouping(panelCPO, scrollPane_1, scrollPaneBarres, lblBarreLabel_1, lblGammes,
+				btnUpButton, btnDownButton_1, lblHardynessLabel, scrollPaneMsg_1, btnRun_1);
+		
+		
+		btnRun_1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				
 				LinkedHashMap<Integer,String> gammes=new LinkedHashMap <Integer,String>();
@@ -354,13 +364,37 @@ public class TecalGUI {
 		});
 		
 		textArea = new JTextArea();
-		scrollPaneMsg.setViewportView(textArea);
+		scrollPaneMsg_1.setViewportView(textArea);
 		
 		try {
 			
 			
 			buildTableModelBarre();
-			tableBarres = new JTable(modelBarres);
+			tableBarres = new JTable(modelBarres) {
+
+	            private static final long serialVersionUID = 1L;
+
+	            @Override
+	            public boolean isCellEditable(int row, int column) {
+	              return column == 2 || column == 3;
+	            }
+	          
+				@Override
+	            public Class<?>  getColumnClass(int column) {
+	                switch (column) {
+	                    case 0:
+	                        return String.class;
+	                    case 1:
+	                        return String.class;
+	                    case 2:
+	                        return Boolean.class;
+	                    case 3:
+	                        return Boolean.class;
+	                    default:
+	                        return Boolean.class;
+	                }
+	            }
+	        };
 			tableBarres.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 	    	TableColumnModel columnModel = tableBarres.getColumnModel();
 	        columnModel.getColumn(0).setPreferredWidth(40);
@@ -414,7 +448,7 @@ public class TecalGUI {
 	    	        if (mouseEvent.getClickCount() == 2 && table.getSelectedRow() != -1) {
 	    	        	String gamme=table.getModel().getValueAt(row, 0).toString();
 	    	        	mNumBarre++;
-	    	        	Object[] rowO = { mNumBarre, gamme };
+	    	        	Object[] rowO = { mNumBarre, gamme,false,false };
 	    	        	modelBarres.addRow(rowO);
 	    	        	
 	    	        }
@@ -426,7 +460,7 @@ public class TecalGUI {
 			e.printStackTrace();
 		}
 		
-		scrollPane.setViewportView(tableGammes);
+		scrollPane_1.setViewportView(tableGammes);
 		panelCPO.setLayout(gl_panel);
 		buildVisuProd();
 		buildParamsTab(tabbedPane_1);
@@ -437,6 +471,9 @@ public class TecalGUI {
 	private GroupLayout mainGuiGrouping(JPanel panel, JScrollPane scrollPane, JScrollPane scrollPaneBarres,
 			JLabel lblBarreLabel, JLabel lblGammes, JButton btnUpButton, JButton btnDownButton,
 			JLabel lblHardynessLabel, JScrollPane scrollPaneMsg, JButton btnRun) {
+		
+		JCheckBox chckbxPrio = new JCheckBox(" prioriser");
+		chckbxPrio.setFont(new Font("Tahoma", Font.PLAIN, 13));
 		GroupLayout gl_panelCPO = new GroupLayout(panel);
 		gl_panelCPO.setHorizontalGroup(
 			gl_panelCPO.createParallelGroup(Alignment.LEADING)
@@ -444,11 +481,10 @@ public class TecalGUI {
 					.addContainerGap()
 					.addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING)
 						.addGroup(gl_panelCPO.createSequentialGroup()
-							.addComponent(scrollPaneMsg, GroupLayout.DEFAULT_SIZE, 688, Short.MAX_VALUE)
+							.addComponent(scrollPaneMsg_1, GroupLayout.DEFAULT_SIZE, 688, Short.MAX_VALUE)
 							.addContainerGap())
 						.addGroup(gl_panelCPO.createSequentialGroup()
 							.addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING)
-								.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 443, Short.MAX_VALUE)
 								.addGroup(gl_panelCPO.createSequentialGroup()
 									.addComponent(lblGammes, GroupLayout.PREFERRED_SIZE, 67, GroupLayout.PREFERRED_SIZE)
 									.addGap(111)
@@ -458,54 +494,52 @@ public class TecalGUI {
 									.addGap(34)
 									.addComponent(lblHardynessLabel, GroupLayout.PREFERRED_SIZE, 64, GroupLayout.PREFERRED_SIZE)
 									.addPreferredGap(ComponentPlacement.RELATED)
-									.addComponent(comboDifficult, GroupLayout.PREFERRED_SIZE, 56, GroupLayout.PREFERRED_SIZE)))
-							.addPreferredGap(ComponentPlacement.RELATED)
+									.addComponent(comboDifficult, GroupLayout.PREFERRED_SIZE, 56, GroupLayout.PREFERRED_SIZE))
+								.addComponent(scrollPane_1, GroupLayout.DEFAULT_SIZE, 359, Short.MAX_VALUE))
+							.addGap(18)
 							.addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING, false)
 								.addGroup(gl_panelCPO.createSequentialGroup()
-									.addComponent(scrollPaneBarres, GroupLayout.PREFERRED_SIZE, 135, GroupLayout.PREFERRED_SIZE)
-									.addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING, false)
-										.addGroup(gl_panelCPO.createSequentialGroup()
-											.addPreferredGap(ComponentPlacement.RELATED, 19, Short.MAX_VALUE)
-											.addComponent(btnUpButton, GroupLayout.PREFERRED_SIZE, 80, GroupLayout.PREFERRED_SIZE))
-										.addGroup(Alignment.TRAILING, gl_panelCPO.createSequentialGroup()
-											.addGap(18)
-											.addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING, false)
-												.addComponent(btnRun, Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 81, GroupLayout.PREFERRED_SIZE)
-												.addComponent(btnDownButton, GroupLayout.PREFERRED_SIZE, 81, GroupLayout.PREFERRED_SIZE)))))
-								.addComponent(lblBarreLabel, GroupLayout.PREFERRED_SIZE, 99, GroupLayout.PREFERRED_SIZE))
-							.addGap(15))))
+									.addPreferredGap(ComponentPlacement.RELATED, 3, Short.MAX_VALUE)
+									.addComponent(lblBarreLabel_1, GroupLayout.PREFERRED_SIZE, 204, GroupLayout.PREFERRED_SIZE))
+								.addComponent(scrollPaneBarres, Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 207, GroupLayout.PREFERRED_SIZE))
+							.addGap(18)
+							.addGroup(gl_panelCPO.createParallelGroup(Alignment.TRAILING)
+								.addComponent(btnUpButton, GroupLayout.PREFERRED_SIZE, 80, GroupLayout.PREFERRED_SIZE)
+								.addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING, false)
+									.addComponent(btnRun_1, Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 81, GroupLayout.PREFERRED_SIZE)
+									.addComponent(btnDownButton_1, GroupLayout.PREFERRED_SIZE, 81, GroupLayout.PREFERRED_SIZE))
+								.addComponent(chckbxPrio, GroupLayout.PREFERRED_SIZE, 81, GroupLayout.PREFERRED_SIZE))
+							.addContainerGap())))
 		);
 		gl_panelCPO.setVerticalGroup(
 			gl_panelCPO.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_panelCPO.createSequentialGroup()
-					.addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING)
-						.addGroup(gl_panelCPO.createSequentialGroup()
-							.addGap(49)
-							.addComponent(lblBarreLabel))
-						.addGroup(gl_panelCPO.createSequentialGroup()
-							.addGap(50)
-							.addGroup(gl_panelCPO.createParallelGroup(Alignment.BASELINE)
-								.addComponent(lblGammes, GroupLayout.PREFERRED_SIZE, 20, GroupLayout.PREFERRED_SIZE)
-								.addComponent(textFiltre, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))))
+					.addGap(50)
+					.addGroup(gl_panelCPO.createParallelGroup(Alignment.BASELINE)
+						.addComponent(lblGammes, GroupLayout.PREFERRED_SIZE, 20, GroupLayout.PREFERRED_SIZE)
+						.addComponent(textFiltre, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+						.addComponent(lblBarreLabel_1))
 					.addPreferredGap(ComponentPlacement.UNRELATED)
 					.addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING)
 						.addGroup(gl_panelCPO.createParallelGroup(Alignment.BASELINE)
-							.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
+							.addComponent(scrollPane_1, GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
 							.addComponent(scrollPaneBarres, GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE))
 						.addGroup(gl_panelCPO.createSequentialGroup()
 							.addGap(35)
 							.addComponent(btnUpButton)
 							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(btnDownButton)
-							.addPreferredGap(ComponentPlacement.RELATED, 176, Short.MAX_VALUE)
-							.addComponent(btnRun)))
+							.addComponent(btnDownButton_1)
+							.addPreferredGap(ComponentPlacement.UNRELATED)
+							.addComponent(chckbxPrio)
+							.addPreferredGap(ComponentPlacement.RELATED, 146, Short.MAX_VALUE)
+							.addComponent(btnRun_1)))
 					.addPreferredGap(ComponentPlacement.UNRELATED)
 					.addGroup(gl_panelCPO.createParallelGroup(Alignment.BASELINE)
 						.addComponent(rdbtnFastModeRadioButton)
 						.addComponent(lblHardynessLabel)
 						.addComponent(comboDifficult, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
 					.addGap(18)
-					.addComponent(scrollPaneMsg, GroupLayout.PREFERRED_SIZE, 149, GroupLayout.PREFERRED_SIZE)
+					.addComponent(scrollPaneMsg_1, GroupLayout.PREFERRED_SIZE, 149, GroupLayout.PREFERRED_SIZE)
 					.addGap(24))
 		);
 		return gl_panelCPO;
@@ -557,6 +591,7 @@ public class TecalGUI {
 					 ganttTecal.setSize(new java.awt.Dimension(1500, 870));
 				     RefineryUtilities.centerFrameOnScreen(ganttTecal);
 				     ganttTecal.setVisible(true);
+				     ganttTecal.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
 				});
 				 
@@ -728,6 +763,8 @@ public class TecalGUI {
 	   
 	    columnNames.add("barre");
 	    columnNames.add("gamme");
+	    columnNames.add("haut");
+	    columnNames.add("bas");
 	    
 
 

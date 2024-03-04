@@ -137,7 +137,8 @@ private  void setZones() {
 }
 	
 
-
+//TODO
+//appeler deux fois pour le diag de prod
 public HashMap<Integer,PosteBDD> getPostes(String[] listeOF) {
 		
 		ResultSet resultSet = null;        
@@ -265,7 +266,7 @@ public ResultSet getVisuProd(java.util.Date inDate) {
 	String fin=toSQLServerFormat(dt);
 	
     // Create and execute a SELECT SQL statement.
-    String selectSql = "select DG.numficheproduction, 	DC.NumGammeANodisation,DC.NumBarre  \r\n"
+    String selectSql = "select DG.numficheproduction as [N° OF], 	DC.NumGammeANodisation as [gamme ],DC.NumBarre as  [barre] \r\n"
     		+ "from   	[DetailsGammesProduction]  DG 	\r\n"
     		+ "INNER JOIN   [DetailsFichesProduction] DF 	on   		\r\n"
     		+ "DG.numficheproduction=DF.numficheproduction and 		\r\n"
@@ -395,7 +396,7 @@ public void setTempsDeplacements() {
         		+ "INNER JOIN POSTES P "
         		+ "on P.Numposte=DF.Numposte "
         		+ " and DF.numficheproduction in ("+toClause(listeOF)+") " 
-        		+ "order by DG.numficheproduction, DF.Numposte,DG.NumLigne";
+        		+ "  where DF.DateEntreePoste < DF.DateSortiePoste order by DG.numficheproduction, DF.Numposte,DG.NumLigne";
         
         try {
 			resultSet = mStatement.executeQuery(selectSql);
