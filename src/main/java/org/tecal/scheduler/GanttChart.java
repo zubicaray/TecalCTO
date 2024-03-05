@@ -31,10 +31,12 @@ import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import javax.swing.JFrame;
 
 
 
-public class GanttChart extends ApplicationFrame {
+
+public class GanttChart extends JFrame {
 
 	 
 	/**
@@ -356,7 +358,7 @@ public class GanttChart extends ApplicationFrame {
 	}
 
 	
-	public void prod_diag(String[] listeOF) {
+	public void prod_diag(String[] listeOF,java.util.Date date) {
 		XYIntervalSeriesCollection dataset = new XYIntervalSeriesCollection();
 		
 		 ArrayList<PosteBDD> posteAllOF = new ArrayList <PosteBDD>();
@@ -393,7 +395,7 @@ public class GanttChart extends ApplicationFrame {
 		 }
 
 		 //temps aux postes par fiches production
-		 HashMap<String, LinkedHashMap<Integer,PosteProd> > tempsAuPostes=mSqlCnx.getTempsAuPostes(listeOF) ;
+		 HashMap<String, LinkedHashMap<Integer,PosteProd> > tempsAuPostes=mSqlCnx.getTempsAuPostes(listeOF,date) ;
 		 
 		
 		 

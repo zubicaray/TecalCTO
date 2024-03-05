@@ -1,14 +1,36 @@
 package org.tecal.scheduler;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 public class CST {
 	
+	
+	public final static SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd", Locale.FRENCH);
+
+	public static Date getDate(String s)  {
+		try {
+			return formatter.parse("s");
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
 	public final static String[] mListeOf26janvier={"00079260","00079261","00079262","00079263","00079264","00079265","00079266"};
+	
+	;
+	
+	
+			
 	
 	
 	//public final static String gammesTest[] ={"000007","000005","000009","000010"};
 	public final static String gammesTestBig[] ={"000022","000210","000021","000164","000601","000467","000347","000169","000347"};
-	public final static String gammesTestBig2[] ={"000021","000164","000601","000467","000347","000169","000021","000164","000601","000601","000467"};
+	public final static String gammesTestBig2[] ={"000021","000164","000601","000467","000347","000169","000021","000164","000601","000601","000467","000467","000347","000169","000021","000164"};
 	public final static String gammesTest_PB_pont2[] ={"000022","000022","000467","000210","000246"};
 	//public final static String gammesTest[] ={"000210","000210","000210","000210","000210"};
 	//public final static String gammesTest[] ={"000022","000246"};
@@ -29,7 +51,7 @@ public class CST {
 	// -----------------  CONSTRAINTES ---------------------------
 	//------------------------------------------------------------
 	public final static boolean MODE_ECO = false ;
-	public final static int 	PORTION_HORIZON = 10 ;
+	public final static int 	PORTION_HORIZON = 7 ;
 	public final static boolean CSTR_NOOVERLAP_MVTS_PONT =false;
 	public final static boolean CSTR_NOOVERLAP_ZONES_GROUPEES = true ;
 

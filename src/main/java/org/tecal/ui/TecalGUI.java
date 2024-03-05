@@ -20,11 +20,13 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.Vector;
 import javax.imageio.ImageIO;
+import javax.swing.DefaultCellEditor;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 
@@ -45,6 +47,7 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowFilter;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
@@ -64,7 +67,6 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import java.awt.Font;
 import java.awt.Component;
@@ -127,7 +129,6 @@ public class TecalGUI {
 	private JDatePickerImpl datePicker;
 	JPanel panelVisuProd; 
 	JScrollPane scrollPaneVisuProd;
-	GroupLayout gl_panelVisuProd ;
 	private JScrollPane scrollPaneMsg_1;
 	private JLabel lblGammes;
 	private JLabel lblHardynessLabel;
@@ -137,6 +138,7 @@ public class TecalGUI {
 	private JButton btnRun_1;
 	private JButton btnDownButton_1;
 	private JLabel lblBarreLabel_1;
+
 	
 	/**
 	 * Launch the application.
@@ -273,15 +275,15 @@ public class TecalGUI {
 		lblGammes = new JLabel("gammes:");
 		lblGammes.setFont(new Font("Tahoma", Font.PLAIN, 13));
 		
-		btnUpButton = new JButton("haut");
-		btnUpButton.setHorizontalAlignment(SwingConstants.LEFT);
+		btnUpButton = new JButton();
+		btnUpButton.setHorizontalAlignment(SwingConstants.CENTER);
 		btnUpButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				moveRowBy(-1);
 			}
 		});
-		btnDownButton_1 = new JButton("bas");
-		btnDownButton_1.setHorizontalAlignment(SwingConstants.LEFT);
+		btnDownButton_1 = new JButton();
+		btnDownButton_1.setHorizontalAlignment(SwingConstants.CENTER);
 		btnDownButton_1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				moveRowBy(1);
@@ -379,22 +381,23 @@ public class TecalGUI {
 	              return column == 2 || column == 3;
 	            }
 	          
-				@Override
-	            public Class<?>  getColumnClass(int column) {
-	                switch (column) {
-	                    case 0:
-	                        return String.class;
-	                    case 1:
-	                        return String.class;
-	                    case 2:
-	                        return Boolean.class;
-	                    case 3:
-	                        return Boolean.class;
-	                    default:
-	                        return Boolean.class;
-	                }
-	            }
+			
 	        };
+	        
+	        TableColumn colMontee =tableBarres.getColumnModel().getColumn(2);
+	        // créer un ComboBox
+	        JComboBox<String> cb = new JComboBox<>();
+	        cb.addItem("lente");
+	        cb.addItem("normale");
+	        cb.addItem("rapide");
+	        //définir l'éditeur par défaut
+	        colMontee.setCellEditor(new DefaultCellEditor(cb));
+	        
+	        TableColumn colDescente =tableBarres.getColumnModel().getColumn(3);	
+	        //définir l'éditeur par défaut
+	        colDescente.setCellEditor(new DefaultCellEditor(cb));
+	        
+	        
 			tableBarres.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 	    	TableColumnModel columnModel = tableBarres.getColumnModel();
 	        columnModel.getColumn(0).setPreferredWidth(40);
@@ -448,7 +451,7 @@ public class TecalGUI {
 	    	        if (mouseEvent.getClickCount() == 2 && table.getSelectedRow() != -1) {
 	    	        	String gamme=table.getModel().getValueAt(row, 0).toString();
 	    	        	mNumBarre++;
-	    	        	Object[] rowO = { mNumBarre, gamme,false,false };
+	    	        	Object[] rowO = { mNumBarre, gamme,"normale","normale" };
 	    	        	modelBarres.addRow(rowO);
 	    	        	
 	    	        }
@@ -480,9 +483,7 @@ public class TecalGUI {
 				.addGroup(gl_panelCPO.createSequentialGroup()
 					.addContainerGap()
 					.addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING)
-						.addGroup(gl_panelCPO.createSequentialGroup()
-							.addComponent(scrollPaneMsg_1, GroupLayout.DEFAULT_SIZE, 688, Short.MAX_VALUE)
-							.addContainerGap())
+						.addComponent(scrollPaneMsg_1, GroupLayout.DEFAULT_SIZE, 688, Short.MAX_VALUE)
 						.addGroup(gl_panelCPO.createSequentialGroup()
 							.addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING)
 								.addGroup(gl_panelCPO.createSequentialGroup()
@@ -495,21 +496,21 @@ public class TecalGUI {
 									.addComponent(lblHardynessLabel, GroupLayout.PREFERRED_SIZE, 64, GroupLayout.PREFERRED_SIZE)
 									.addPreferredGap(ComponentPlacement.RELATED)
 									.addComponent(comboDifficult, GroupLayout.PREFERRED_SIZE, 56, GroupLayout.PREFERRED_SIZE))
-								.addComponent(scrollPane_1, GroupLayout.DEFAULT_SIZE, 359, Short.MAX_VALUE))
+								.addComponent(scrollPane_1, GroupLayout.DEFAULT_SIZE, 364, Short.MAX_VALUE))
 							.addGap(18)
 							.addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING, false)
-								.addGroup(gl_panelCPO.createSequentialGroup()
-									.addPreferredGap(ComponentPlacement.RELATED, 3, Short.MAX_VALUE)
-									.addComponent(lblBarreLabel_1, GroupLayout.PREFERRED_SIZE, 204, GroupLayout.PREFERRED_SIZE))
+								.addComponent(lblBarreLabel_1, Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 204, GroupLayout.PREFERRED_SIZE)
 								.addComponent(scrollPaneBarres, Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 207, GroupLayout.PREFERRED_SIZE))
 							.addGap(18)
 							.addGroup(gl_panelCPO.createParallelGroup(Alignment.TRAILING)
-								.addComponent(btnUpButton, GroupLayout.PREFERRED_SIZE, 80, GroupLayout.PREFERRED_SIZE)
-								.addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING, false)
-									.addComponent(btnRun_1, Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 81, GroupLayout.PREFERRED_SIZE)
-									.addComponent(btnDownButton_1, GroupLayout.PREFERRED_SIZE, 81, GroupLayout.PREFERRED_SIZE))
-								.addComponent(chckbxPrio, GroupLayout.PREFERRED_SIZE, 81, GroupLayout.PREFERRED_SIZE))
-							.addContainerGap())))
+								.addComponent(btnRun_1, GroupLayout.PREFERRED_SIZE, 81, GroupLayout.PREFERRED_SIZE)
+								.addComponent(chckbxPrio, GroupLayout.PREFERRED_SIZE, 81, GroupLayout.PREFERRED_SIZE)
+								.addGroup(gl_panelCPO.createSequentialGroup()
+									.addGroup(gl_panelCPO.createParallelGroup(Alignment.TRAILING)
+										.addComponent(btnDownButton_1, GroupLayout.PREFERRED_SIZE, 31, GroupLayout.PREFERRED_SIZE)
+										.addComponent(btnUpButton, GroupLayout.PREFERRED_SIZE, 30, GroupLayout.PREFERRED_SIZE))
+									.addGap(50)))))
+					.addContainerGap())
 		);
 		gl_panelCPO.setVerticalGroup(
 			gl_panelCPO.createParallelGroup(Alignment.LEADING)
@@ -531,7 +532,7 @@ public class TecalGUI {
 							.addComponent(btnDownButton_1)
 							.addPreferredGap(ComponentPlacement.UNRELATED)
 							.addComponent(chckbxPrio)
-							.addPreferredGap(ComponentPlacement.RELATED, 146, Short.MAX_VALUE)
+							.addPreferredGap(ComponentPlacement.RELATED, 144, Short.MAX_VALUE)
 							.addComponent(btnRun_1)))
 					.addPreferredGap(ComponentPlacement.UNRELATED)
 					.addGroup(gl_panelCPO.createParallelGroup(Alignment.BASELINE)
@@ -558,6 +559,7 @@ public class TecalGUI {
 		JDatePanelImpl datePanel = new JDatePanelImpl(model, p);
 		// Don't know about the formatter, but there it is...
 		datePicker = new JDatePickerImpl(datePanel, new DateLabelFormatter());
+		
 		datePicker.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
@@ -572,60 +574,70 @@ public class TecalGUI {
 		tabbedPane_1.addTab("Visuel de prod", null, panelVisuProd, null);
 		
 		scrollPaneVisuProd = new JScrollPane();
+
+		
 		
 		JButton btnRunVisuProd = new JButton("Lancer Gantt");
 		btnRunVisuProd.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				 int[] sel = tableOF.getSelectedRows();
+				 if(sel.length==0) {			
+					 JOptionPane.showMessageDialog(frmTecalOrdonnanceur, "Pas d'OF choisi !","Visuel de prod", JOptionPane.ERROR_MESSAGE);
+					 return;
+				 }
+				
 				 String lOF[]=new String[sel.length];
 				 for(int i=0;i<sel.length;i++) {
 					 lOF[i]=tableOF.getModel().getValueAt(sel[i], 0).toString();
 				 }
 				 
-				 SwingUtilities.invokeLater(() -> {  
+				  
+				 frmTecalOrdonnanceur.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+				 Date d=(Date)datePicker.getModel().getValue();
+				 final GanttChart ganttTecal = new GanttChart(sqlCnx,"Prod du "+d);
+				 ganttTecal.prod_diag(lOF,d);
+				 ganttTecal.pack();
+				 ganttTecal.setSize(new java.awt.Dimension(1500, 870));
+			     RefineryUtilities.centerFrameOnScreen(ganttTecal);
+			     ganttTecal.setVisible(true);
+			     ganttTecal.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+			     frmTecalOrdonnanceur.setCursor(Cursor.getDefaultCursor());
 
-					 final GanttChart ganttTecal = new GanttChart(sqlCnx,"Gantt Chart prod du 02/11/2023");
-					 ganttTecal.prod_diag(lOF);
-					 ganttTecal.pack();
-					 ganttTecal.setSize(new java.awt.Dimension(1500, 870));
-				     RefineryUtilities.centerFrameOnScreen(ganttTecal);
-				     ganttTecal.setVisible(true);
-				     ganttTecal.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-
-				});
+				
+				
 				 
 			}
 		});
-		gl_panelVisuProd = new GroupLayout(panelVisuProd);
+		GroupLayout gl_panelVisuProd = new GroupLayout(panelVisuProd);
 		gl_panelVisuProd.setHorizontalGroup(
 			gl_panelVisuProd.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_panelVisuProd.createSequentialGroup()
 					.addGroup(gl_panelVisuProd.createParallelGroup(Alignment.LEADING)
 						.addGroup(gl_panelVisuProd.createSequentialGroup()
-							.addGap(266)
-							.addComponent(datePicker, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+							.addGap(199)
+							.addComponent(datePicker, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+							.addGap(35)
+							.addComponent(btnRunVisuProd))
 						.addGroup(gl_panelVisuProd.createSequentialGroup()
-							.addGap(62)
-							.addComponent(scrollPaneVisuProd)))
-					.addGap(18)
-					.addComponent(btnRunVisuProd)
-					.addGap(143))
+							.addGap(22)
+							.addComponent(scrollPaneVisuProd, GroupLayout.DEFAULT_SIZE, 657, Short.MAX_VALUE)))
+					.addGap(29))
 		);
 		gl_panelVisuProd.setVerticalGroup(
 			gl_panelVisuProd.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_panelVisuProd.createSequentialGroup()
 					.addGap(5)
 					.addGroup(gl_panelVisuProd.createParallelGroup(Alignment.LEADING)
-						.addGroup(gl_panelVisuProd.createSequentialGroup()
-							.addComponent(btnRunVisuProd)
-							.addContainerGap())
-						.addGroup(gl_panelVisuProd.createSequentialGroup()
-							.addComponent(datePicker, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-							.addGap(31)
-							.addComponent(scrollPaneVisuProd)
-							.addGap(99))))
+						.addComponent(datePicker, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+						.addComponent(btnRunVisuProd))
+					.addGap(42)
+					.addComponent(scrollPaneVisuProd, GroupLayout.DEFAULT_SIZE, 487, Short.MAX_VALUE)
+					.addGap(37))
 		);
+		
+		
+		panelVisuProd.setLayout(gl_panelVisuProd);
 		
 		
 		
@@ -634,10 +646,7 @@ public class TecalGUI {
 
 	private void buildParamsTab(JTabbedPane tabbedPane) {
 		
-		
-		
-		
-		
+	
 		
 		JPanel panel_param = new JPanel();
 		tabbedPane.addTab("Paramètres", null, panel_param, null);
@@ -763,8 +772,8 @@ public class TecalGUI {
 	   
 	    columnNames.add("barre");
 	    columnNames.add("gamme");
-	    columnNames.add("haut");
-	    columnNames.add("bas");
+	    columnNames.add("montée");
+	    columnNames.add("desc.");
 	    
 
 
@@ -865,7 +874,7 @@ public class TecalGUI {
    
     	tableOF = new JTable(modelVisuProd);
 		scrollPaneVisuProd.setViewportView(tableOF);
-		panelVisuProd.setLayout(gl_panelVisuProd);
+		//panelVisuProd.setLayout(gl_panelVisuProd);
 		
 		
 		tableOF.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
@@ -881,6 +890,7 @@ public class TecalGUI {
 		        }
 		    }
 		});
+		scrollPaneVisuProd.setViewportView(tableOF);
 
 	}
 	

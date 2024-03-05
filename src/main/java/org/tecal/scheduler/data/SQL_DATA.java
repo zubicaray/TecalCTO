@@ -11,6 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -274,8 +275,6 @@ public ResultSet getVisuProd(java.util.Date inDate) {
     		+ "INNER JOIN ( select numficheproduction,NumGammeANodisation,NumBarre from [DetailsChargesProduction] where numligne=1\r\n"
     		+ ") DC 	\r\n"
     		+ "on   		DC.numficheproduction=DF.numficheproduction \r\n"
-    		+ "--and DC.numligne=DF.NumLigne    	where  		--vitesse normale 		\r\n"
-    		+ "--DF.numficheproduction in ('00074996','00074981','00075196','00075015','00075020','00075192','00075195','00075184','00075185')  	\r\n"
     		+ "WHERE		DF.DateEntreePoste BETWEEN   '"+deb+"'  and '"+fin+"'      "
     		+ "order by DF.DateEntreePoste,DC.NumBarre,DG.numficheproduction "
     	
@@ -370,7 +369,7 @@ public void setTempsDeplacements() {
 }
     // Connect to your database.
     // Replace server name, username, and password with your credentials
-    public  HashMap <String, LinkedHashMap<Integer,PosteProd> > getTempsAuPostes(String[] listeOF) {
+    public  HashMap <String, LinkedHashMap<Integer,PosteProd> > getTempsAuPostes(String[] listeOF,Date ds) {
         
 
         ResultSet resultSet = null;        
@@ -378,6 +377,9 @@ public void setTempsDeplacements() {
         HashMap <String, LinkedHashMap<Integer,PosteProd> >finalArray = new HashMap <String, LinkedHashMap<Integer,PosteProd>>();
 
         HashMap<Integer,PosteBDD> postes= getPostes(listeOF);
+        
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd");
+        String format = formatter.format(ds);
 
         /**
          * tri par DF.Numposte,DG.NumLigne
@@ -385,8 +387,8 @@ public void setTempsDeplacements() {
          */
         
         String selectSql = "select DG.numficheproduction,P.Nomposte +' - ' + P.LibellePoste,   "
-        		+ "DATEDIFF(SECOND, DATEADD(DAY, DATEDIFF(DAY, 0, DF.DateEntreePoste), 0),DF.DateEntreePoste), "
-        		+ "DATEDIFF(SECOND, DATEADD(DAY, DATEDIFF(DAY, 0, DF.DateSortiePoste), 0),DF.DateSortiePoste)	,DF.NumLigne, DF.Numposte  from   "
+        		+ "DATEDIFF(SECOND, DATEADD(DAY, DATEDIFF(DAY, 0, '"+format+"'), 0),DF.DateEntreePoste), "
+        		+ "DATEDIFF(SECOND, DATEADD(DAY, DATEDIFF(DAY, 0, '"+format+"'), 0),DF.DateSortiePoste)	,DF.NumLigne, DF.Numposte  from   "
         		+ "[DetailsGammesProduction]  DG "
         		+ "INNER JOIN   [DetailsFichesProduction] DF "
         		+ "on   "
