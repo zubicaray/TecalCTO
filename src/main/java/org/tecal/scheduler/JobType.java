@@ -20,9 +20,11 @@ import com.google.ortools.sat.IntervalVar;
 
 public class JobType {
 	List<Task> tasksJob;
+	List<TaskOrdo> mTaskOrdoList;
 	
 	List<ListeZone> tasksNoOverlapPont;
 	List<ListeZone> debutLonguesZonesPont;
+	ArrayListeZonePonts bridgesMoves;
 	
 	List<List<int[]>> idZonesNoOverlapPont;
 	
@@ -64,6 +66,10 @@ public class JobType {
 
 		idZonesNoOverlapPont= new ArrayList<List<int[]>>();	
 		
+		tasksJob = new ArrayList<Task>();
+		mTaskOrdoList= new ArrayList<TaskOrdo>();
+		bridgesMoves = new ArrayListeZonePonts();
+		
 		
 		
 		
@@ -77,6 +83,9 @@ public class JobType {
 	
 		
 		for(int pont=0;pont< CST.NB_PONTS;pont++){
+			
+			ListeZone bridgeMove= new ListeZone();
+			bridgesMoves.add(bridgeMove);
 			
 			ListeZone tasksNoOverlapable= new ListeZone();
 			tasksNoOverlapPont.add(tasksNoOverlapable);
@@ -175,7 +184,45 @@ public class JobType {
 	}
 
 	
-	
+	void makeBridgesMoves() {
+
+		
+		IntVar deb = null;
+		IntVar fin= null;
+		int bridge=0;
+		System.out.println("Job "+name);
+		for (int taskID = 0; taskID < mTaskOrdoList.size()-1; ++taskID) {
+			
+						
+			
+			TaskOrdo taskOrdo = mTaskOrdoList.get(taskID);			
+			TaskOrdo taskOrdoNext = mTaskOrdoList.get(taskID+1);
+		
+			if(taskID >indexAnod) {
+				bridge=1;								
+			}
+			ListeZone lBridgeMoves=bridgesMoves.get(bridge);
+			
+			if(taskID==0) {
+				deb=TecalOrdo.getBackward(model, taskOrdoNext.startBDD,taskOrdo.tempsDeplacement+30);
+				continue;
+			}
+			
+			
+			if(taskOrdo.isOverlapable || taskID ==indexAnod || taskID == mTaskOrdoList.size()-1) {
+				fin=TecalOrdo.getForeward(model, taskOrdo.startBDD,CST.TEMPS_MVT_PONT);
+				
+				lBridgeMoves.add(model.newIntervalVar(deb, model.newIntVar(0, horizon, ""), fin ,""));
+				deb=TecalOrdo.getBackward(model, taskOrdoNext.startBDD,taskOrdo.tempsDeplacement+30);
+				
+			}
+			
+			
+			
+			
+			
+		}
+	}
 
 	void addIntervalForModel(Map<List<Integer>, TaskOrdo> allTasks,Map<Integer, List<IntervalVar>> zoneToIntervals,Map<Integer, 
 			List<IntervalVar>> zoneCumulToIntervals,int jobID,HashMap<Integer,ZoneType>  zonesBDD) {
@@ -225,6 +272,7 @@ public class JobType {
 
 			List<Integer> key = Arrays.asList(jobID, taskID);
 			allTasks.put(key, taskOrdo);     
+			mTaskOrdoList.add(taskOrdo);
 
 
 		}
@@ -236,7 +284,7 @@ public class JobType {
 	// chevauchable
 	void addZones(List<GammeType> inzones) {
 
-		List<Task> lTasksJob = new ArrayList<Task>();
+
 
 		boolean newZoneZincage[] = { false, false };
 		if(CST.PrintGroupementZones) System.out.println("---------------------------------------");
@@ -249,7 +297,7 @@ public class JobType {
 		int finZone = -1;
 		for (int i = 0; i < zones.size(); i++) {
 			GammeType gt = zones.get(i);
-			lTasksJob.add(new Task(gt.time, gt.numzone));
+			tasksJob.add(new Task(gt.time, gt.numzone));
 			//System.out.println("debZone: "+gt.codezone);
 			
 			boolean bridgeChanged=false;
@@ -346,7 +394,7 @@ public class JobType {
 
 
 		}
-		tasksJob = lTasksJob;
+		
 
 	}
 	
@@ -431,17 +479,7 @@ public class JobType {
 						if(indexAnod >0 && idFinZone+1==indexAnod) {							
 							end = taskAnod.startBDD;						
 						} 
-						/*
-						else
-						if(indexColmatage >0 && idFinZone+1==indexColmatage) {							
-								end = TecalOrdo.getForeward(model, taskColmatage.startBDD,0);						
-						} 
 						
-						else
-						if(indexDechargement >0 && idFinZone+1==indexDechargement) {							
-									end = TecalOrdo.getForeward(model, taskDechargement.startBDD,0);						
-						} 	
-						*/
 						else {
 							end = taskOrdo.fin;
 						}

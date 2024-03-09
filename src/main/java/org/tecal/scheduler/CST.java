@@ -35,7 +35,7 @@ public class CST {
 	//public final static String gammesTest[] ={"000210","000210","000210","000210","000210"};
 	//public final static String gammesTest[] ={"000022","000246"};
 	public final static String gammesTest1[] ={"000022","000554","000552","000553","000552","000553"};
-	public final static String test26janvier[] ={"000020","000021","000164","000601","000467","000347","000169"};
+	public final static String test26janvier[] ={"000020","000021","000164","000601","000467","000347","000169","000467","000347","000169"};
 	public final static String test8mars[] ={"000094","000169","000174","000776","000671"};
 	public final static String test8mars2[] ={"000094","000003"};
 	// C10 ne sort pas car il attend C05
@@ -50,10 +50,10 @@ public class CST {
 	//------------------------------------------------------------
 	// -----------------  CONSTRAINTES ---------------------------
 	//------------------------------------------------------------
-	public final static boolean MODE_ECO = false ;
-	public final static int 	PORTION_HORIZON = 7 ;
-	public final static boolean CSTR_NOOVERLAP_MVTS_PONT =false;
-	public final static boolean CSTR_NOOVERLAP_ZONES_GROUPEES = true ;
+	public final static boolean MODE_ECO = true ;
+	public final static int 	PORTION_HORIZON = 8 ;
+	public final static boolean CSTR_NOOVERLAP_ZONES_GROUPEES = false ;
+	public final static boolean CSTR_NOOVERLAP_BRIDGES = true ;
 
 	//------------------------------------------------------------
 	// -----------------  DATA ---------------------------

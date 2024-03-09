@@ -227,6 +227,7 @@ public class TecalOrdo {
 		// CONSTRAINTES SUR CHAQUE POSTE
 		//--------------------------------------------------------------------------------------------
 		machineConstraints();
+		bridgesConstraints();
 		//--------------------------------------------------------------------------------------------
 		//--------------------------------------------------------------------------------------------
 		// sur les postes d'oxy, faire en sorte que le pont 2 ne puisse pas croiser le pont et récproquement
@@ -484,6 +485,7 @@ public class TecalOrdo {
 		for (int jobID = 0; jobID < allJobs.size(); ++jobID) {
 			JobType job = allJobs.get(jobID);
 			job.addIntervalForModel(allTasks,zoneToIntervals,zoneCumulToIntervals,jobID,zonesBDD);
+			job.makeBridgesMoves();
 			
 		}
 
@@ -524,7 +526,7 @@ public class TecalOrdo {
 
 		}
 	}
-	
+	// on impose du temps entre la fin du zone et le début d'une autre
 	private  void zoneCumulConstraints() {
 	
 				
@@ -557,14 +559,7 @@ public class TecalOrdo {
 
 		
 	}
-	
-	/**
-	 * 
-	 * au sein d'un même job, le début de la zone suivante
-	 * se situe à 2*CST.TEMPS_MVT_PONT_MIN_JOB de la fin de l'autre au minimum
-	 * et plus à la dérive précédente + 2*CST.TEMPS_MVT_PONT_MIN_JOB
-	 * @param model
-	 */
+
 	private  void jobsPrecedence () {
 
 		// Precedences inside a job.
@@ -624,7 +619,6 @@ public class TecalOrdo {
 		{
 			
 			//---------------------------------------------------------------------------
-			// le débuts des zones longues des autres jobs 
 			// toutes les zones regroupées ne doivent pas se croiser
 			//---------------------------------------------------------------------------
 			for (JobType j  :allJobs) { 
@@ -669,6 +663,44 @@ public class TecalOrdo {
 			
 		}					
 	}
+	
+	private  void bridgesConstraints() {
+		// les zones de rincages ne doivent pas se croiser
+
+		ArrayList<ZonesIntervalVar> listZonesNoOverlapParPont  = new  ArrayList<ZonesIntervalVar>();  
+		listZonesNoOverlapParPont.add( new  ZonesIntervalVar()); // add zones pont 1
+		listZonesNoOverlapParPont.add( new  ZonesIntervalVar()); // add zones pont 2
+
+		
+		//---------------------------------------------------------------------------
+		// NOOVERLAP ZONES REGROUPEES -----------------------------------------------
+		//---------------------------------------------------------------------------
+		
+		if(CST.CSTR_NOOVERLAP_BRIDGES)
+		{
+			
+			//---------------------------------------------------------------------------
+			// toutes les zones regroupées ne doivent pas se croiser
+			//---------------------------------------------------------------------------
+			for (JobType j  :allJobs) { 
+				int p=0;    	
+				for(ListeZone bridgeMoveP :j.bridgesMoves) {   
+					listZonesNoOverlapParPont.get(p).addAll(bridgeMoveP);   				 
+					p++;
+				}
+				p=0;
+
+			}
+			
+	
+			for(ArrayList<IntervalVar> listZonesNoOverlap: listZonesNoOverlapParPont) {
+				model.addNoOverlap(listZonesNoOverlap);
+			}
+		
+			
+		}					
+	}
+	
 	
 	static IntVar getBackward(CpModel model,IntVar mvtPont,int decay){
 		
