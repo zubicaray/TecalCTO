@@ -228,6 +228,7 @@ public class TecalOrdo {
 		//--------------------------------------------------------------------------------------------
 		machineConstraints();
 		bridgesConstraints();
+		brigesSecurity();
 		//--------------------------------------------------------------------------------------------
 		//--------------------------------------------------------------------------------------------
 		// sur les postes d'oxy, faire en sorte que le pont 2 ne puisse pas croiser le pont et récproquement
@@ -529,36 +530,35 @@ public class TecalOrdo {
 	// on impose du temps entre la fin du zone et le début d'une autre
 	private  void zoneCumulConstraints() {
 	
-				
-		
-		for(List<IntervalVar> intervalParZone :zoneCumulToIntervals.values()) {
-			List<IntervalVar> nooverlapAno=new  ArrayList<IntervalVar> ();
-			for( int i=0;i<intervalParZone.size();i++) {
-				
-				IntervalVar interval=intervalParZone.get(i);				
-				LinearExpr debInter=interval.getStartExpr();
-				LinearExpr finInter=interval.getEndExpr();
-				
-				// TODO
-				// !!!
-				// comprendre pourquoi ca bloque ici quand les params changent
-				IntervalVar deb=getNoOverlapZone(model,debInter,30,30);
-				IntervalVar fin=getNoOverlapZone(model,finInter,30,30);
-				
-				
-				
-				nooverlapAno.add(deb);
-				nooverlapAno.add(fin);
-				
+		if(CST.CSTR_ECART_ZONES_CUMULS)
+		{
+
+			for(List<IntervalVar> intervalParZone :zoneCumulToIntervals.values()) {
+				List<IntervalVar> nooverlapAno=new  ArrayList<IntervalVar> ();
+				for( int i=0;i<intervalParZone.size();i++) {
+					
+					IntervalVar interval=intervalParZone.get(i);				
+					LinearExpr debInter=interval.getStartExpr();
+					LinearExpr finInter=interval.getEndExpr();
+					
+					// TODO
+					// !!!
+					// comprendre pourquoi ca bloque ici quand les params changent
+					IntervalVar deb=getNoOverlapZone(model,debInter,30,30);
+					IntervalVar fin=getNoOverlapZone(model,finInter,30,30);
+					
+					
+					
+					nooverlapAno.add(deb);
+					nooverlapAno.add(fin);
+					
+				}
+				model.addNoOverlap(nooverlapAno);    
 			}
-			model.addNoOverlap(nooverlapAno);    
 		}
 		
-		
-			
-
-		
 	}
+	
 
 	private  void jobsPrecedence () {
 
@@ -604,11 +604,7 @@ public class TecalOrdo {
 	 * @param model
 	 */
 	private  void machineConstraints() {
-		// les zones de rincages ne doivent pas se croiser
-
-		ArrayList<ZonesIntervalVar> listZonesNoOverlapParPont  = new  ArrayList<ZonesIntervalVar>();  
-		listZonesNoOverlapParPont.add( new  ZonesIntervalVar()); // add zones pont 1
-		listZonesNoOverlapParPont.add( new  ZonesIntervalVar()); // add zones pont 2
+	
 
 		
 		//---------------------------------------------------------------------------
@@ -617,7 +613,11 @@ public class TecalOrdo {
 		
 		if(CST.CSTR_NOOVERLAP_ZONES_GROUPEES)
 		{
-			
+			// les zones de rincages ne doivent pas se croiser
+
+			ArrayList<ZonesIntervalVar> listZonesNoOverlapParPont  = new  ArrayList<ZonesIntervalVar>();  
+			listZonesNoOverlapParPont.add( new  ZonesIntervalVar()); // add zones pont 1
+			listZonesNoOverlapParPont.add( new  ZonesIntervalVar()); // add zones pont 2
 			//---------------------------------------------------------------------------
 			// toutes les zones regroupées ne doivent pas se croiser
 			//---------------------------------------------------------------------------
@@ -655,33 +655,46 @@ public class TecalOrdo {
 					 
 			    	 model.addNoOverlap(zonesGroupeesWithAllOthers);
 			    	 model.addNoOverlap(zonesLonguesWithAllOthers);
-					
-
 
 				}
 			}
 			
 		}					
 	}
+	private void brigesSecurity () {
+
+		if(CST.CSTR_BRIDGES_SECURITY) {
+			ListeZone zonesAutourAnodisation=new ListeZone();
+			for(int j=0;j<allJobs.size();j++) {
+				JobType job=allJobs.get(j);
+				
+		    	 
+		    	 IntervalVar z1=getNoOverlapZone(model,job.mTaskOrdoList.get(job.indexLastZoneP1).intervalBDD);
+		    	 zonesAutourAnodisation.add(z1);
+		    	 IntervalVar z2=getNoOverlapZone(model,job.mTaskOrdoList.get(job.indexFirstZoneP2).intervalBDD);
+		    	 zonesAutourAnodisation.add(z2);
+		    	
+		    	
+			}
+			model.addNoOverlap(zonesAutourAnodisation);
+		}
+   	 	
+
+	}
 	
 	private  void bridgesConstraints() {
-		// les zones de rincages ne doivent pas se croiser
-
-		ArrayList<ZonesIntervalVar> listZonesNoOverlapParPont  = new  ArrayList<ZonesIntervalVar>();  
-		listZonesNoOverlapParPont.add( new  ZonesIntervalVar()); // add zones pont 1
-		listZonesNoOverlapParPont.add( new  ZonesIntervalVar()); // add zones pont 2
 
 		
 		//---------------------------------------------------------------------------
-		// NOOVERLAP ZONES REGROUPEES -----------------------------------------------
+		// CONTRAINTES SUR PONTS -----------------------------------------------
 		//---------------------------------------------------------------------------
 		
 		if(CST.CSTR_NOOVERLAP_BRIDGES)
 		{
 			
-			//---------------------------------------------------------------------------
-			// toutes les zones regroupées ne doivent pas se croiser
-			//---------------------------------------------------------------------------
+			ArrayList<ZonesIntervalVar> listZonesNoOverlapParPont  = new  ArrayList<ZonesIntervalVar>();  
+			listZonesNoOverlapParPont.add( new  ZonesIntervalVar()); // add zones pont 1
+			listZonesNoOverlapParPont.add( new  ZonesIntervalVar()); // add zones pont 2
 			for (JobType j  :allJobs) { 
 				int p=0;    	
 				for(ListeZone bridgeMoveP :j.bridgesMoves) {   
@@ -810,6 +823,24 @@ public class TecalOrdo {
 		return model.newIntervalVar(before.getStartExpr(),model.newIntVar(0, horizon,  ""),after.getEndExpr(),"");
 	
 	}
+	
+static IntervalVar getNoOverlapZone(CpModel model,IntervalVar mvt){
+		
+		IntervalVar before = model.newIntervalVar(
+				model.newIntVar(0, horizon, ""),
+				LinearExpr.constant(CST.TEMPS_MVT_PONT)
+				, mvt.getStartExpr(),
+				"");
+		
+		IntervalVar after = model.newIntervalVar( mvt.getEndExpr(),
+				LinearExpr.constant(CST.TEMPS_MVT_PONT), 
+				model.newIntVar(0, horizon, ""),
+				"");
+		
+		return model.newIntervalVar(before.getStartExpr(),model.newIntVar(0, horizon,  ""),after.getEndExpr(),"");
+	
+	}
+	
 
 	public int getSource() {
 		return mSource;

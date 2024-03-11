@@ -41,6 +41,10 @@ public class JobType {
 	int indexAnod=-1;
 	int indexColmatage=-1;
 	int indexDechargement=-1;
+	
+	int indexLastZoneP1=-1;
+	int indexFirstZoneP2=-1;
+	
 
 	List<GammeType> zones;
 	
@@ -183,20 +187,24 @@ public class JobType {
 
 	}
 
-	
+	void makeSafetyBetweenBridges() {
+		
+	}
 	void makeBridgesMoves() {
 
 		
 		IntVar deb = null;
 		IntVar fin= null;
 		int bridge=0;
-		System.out.println("Job "+name);
-		for (int taskID = 0; taskID < mTaskOrdoList.size()-1; ++taskID) {
+		//System.out.println("Job "+name);
+		for (int taskID = 0; taskID < mTaskOrdoList.size(); ++taskID) {
 			
 						
 			
-			TaskOrdo taskOrdo = mTaskOrdoList.get(taskID);			
-			TaskOrdo taskOrdoNext = mTaskOrdoList.get(taskID+1);
+			TaskOrdo taskOrdo = mTaskOrdoList.get(taskID);		
+			TaskOrdo taskOrdoNext =null;
+			if(taskID != mTaskOrdoList.size()-1) 
+				taskOrdoNext = mTaskOrdoList.get(taskID+1);
 		
 			if(taskID >indexAnod) {
 				bridge=1;								
@@ -209,11 +217,19 @@ public class JobType {
 			}
 			
 			
-			if(taskOrdo.isOverlapable || taskID ==indexAnod || taskID == mTaskOrdoList.size()-1) {
+			if(taskOrdo.isOverlapable || taskID ==indexAnod ||  taskID == mTaskOrdoList.size()-1 ) {
 				fin=TecalOrdo.getForeward(model, taskOrdo.startBDD,CST.TEMPS_MVT_PONT);
 				
 				lBridgeMoves.add(model.newIntervalVar(deb, model.newIntVar(0, horizon, ""), fin ,""));
-				deb=TecalOrdo.getBackward(model, taskOrdoNext.startBDD,taskOrdo.tempsDeplacement+30);
+				
+				if(taskID != mTaskOrdoList.size()-1)
+					deb=TecalOrdo.getBackward(model, taskOrdoNext.startBDD,taskOrdo.tempsDeplacement+30);
+				
+				
+				if(taskID ==indexAnod) {
+					//bridgesMoves.get(0).add(TecalOrdo.getNoOverlapZone(model, taskOrdo.endBDD,0,40));
+				}
+				
 				
 			}
 			
@@ -328,6 +344,8 @@ public class JobType {
 			
 			if (gt.numzone == CST.ANODISATION_NUMZONE) {
 				indexAnod=i;
+				indexLastZoneP1=i-1;
+				indexFirstZoneP2=i+1;
 			}
 			if (gt.numzone == CST.COLMATAGE_NUMZONE) {
 				indexColmatage=i;
@@ -404,7 +422,7 @@ public class JobType {
 		taskAnod = allTasks.get(Arrays.asList(jobID, indexAnod));
 		taskColmatage = allTasks.get(Arrays.asList(jobID, indexColmatage));
 		taskDechargement = allTasks.get(Arrays.asList(jobID, indexDechargement));
-		System.out.println("job:"+name);	
+		//System.out.println("job:"+name);	
 
 		
 		for (int pont = 0; pont < idZonesNoOverlapPont.size(); pont++) {
@@ -487,6 +505,11 @@ public class JobType {
 						if(groupe) {						
 							// on ajoute la zone non chevauchable
 							tasksNoOverlapPont.get(pont).add(TecalOrdo.getNoOverlapZone(model,start,end));											
+						}
+						//TODO
+						//to test
+						if(idFinZone+1==indexAnod) {
+							//debutLonguesZonesPont.get(pont).add(TecalOrdo.getNoOverlapZone(model, taskAnod.endBDD,0,40));
 						}
 						
 					}
