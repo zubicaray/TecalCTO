@@ -191,8 +191,8 @@ private void  setLignesGammes() {
         String selectSql = ""
         		+ "select  "
         		+ "	DG.NumGamme,Z.CodeZone,numligne ,Z.numzone, "
-        		+ " TempsAuPosteSecondes+TempsEgouttageSecondes,  "
-        		+ " Z.ID_GROUPEMENT,Z.derive,Z.NumDernierPoste-Z.NumPremierPoste+1 as cumul  "
+        		+ " TempsAuPosteSecondes,  "
+        		+ " Z.ID_GROUPEMENT,Z.derive,Z.NumDernierPoste-Z.NumPremierPoste+1 as cumul ,TempsEgouttageSecondes "
         		+ "from   "
         		+ "	[DetailsGammesAnodisation]  DG "
         		+ "	INNER JOIN ZONES Z "
@@ -214,7 +214,8 @@ private void  setLignesGammes() {
 		            resultSet.getInt(5),
 		            zones.get(numzone).idzonebdd,
 		            resultSet.getInt(7),
-		            resultSet.getInt(6));
+		            resultSet.getInt(6),
+		            resultSet.getInt(9));
 	            
 	          
 	            if (!gammes.containsKey(gt.numgamme)) {

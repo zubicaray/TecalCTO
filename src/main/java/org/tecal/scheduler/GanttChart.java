@@ -74,7 +74,7 @@ public class GanttChart extends JFrame {
 	    	 
 	    	  boolean zonePrise=false;
 	    	  int idxPoste=0;
-	    	  for(int i=0;i<lastTimeAtPostes.length;i++) {
+	    	  for(int i=lastTimeAtPostes.length-1;i>=0;i--) {
 	    		  
 	    		  if(lastTimeAtPostes[i]==0 && !zonePrise) {
 	    			  lastTimeAtPostes[i]=derive;
@@ -301,7 +301,7 @@ public class GanttChart extends JFrame {
 			    }
 		    
 			    labelsModel.get(idjob)[cpt1]="start:"+at.start+", durée:"+at.duration+"\n, fin:"+(at.derive)
-			    		+ " dérive: " +(at.derive-dr[1])+ ", " +df.get(at.taskID).codezone;
+			    		+ " dérive: " +(at.derive-dr[1])+", égouttage:"+df.get(at.taskID).egouttage+ ", " +df.get(at.taskID).codezone;
 			    cpt1++;    
 			    
 			    

@@ -43,6 +43,7 @@ public class CST {
 	public final static String testPrioriteC05[] ={"000601","000164"};
 	// pb chevauchage colmatage
 	public final static String test2[] ={"000601","000347","000347","000347"};
+	public final static String test1mars[] ={"000686","000212","000818","000818","000812","000811","000022","000601","000109","000818"};
 	public final static String gammesTest[] =test26janvier;
 	
 	
@@ -51,8 +52,8 @@ public class CST {
 	//------------------------------------------------------------
 	// -----------------  CONSTRAINTES ---------------------------
 	//------------------------------------------------------------
-	public final static boolean MODE_ECO = false ;
-	public final static int 	PORTION_HORIZON = 8 ;
+	public final static boolean MODE_ECO = false;
+	public final static int 	PORTION_HORIZON = 4 ;
 	//ancienne méthode
 	public final static boolean CSTR_ECART_ZONES_CUMULS=false;
 	public final static boolean CSTR_NOOVERLAP_ZONES_GROUPEES=false ;

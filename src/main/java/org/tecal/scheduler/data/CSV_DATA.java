@@ -80,7 +80,10 @@ public class CSV_DATA {
 	    	//for(String s : line)     System.out.println("|"+s+"|");
 	    	
 	    	int numzone= Integer.parseInt(line[0].replaceAll(" ",""));
-	        ZoneType z=new ZoneType(numzone,line[1].trim(),Integer.parseInt(line[2].replaceAll(" ","")),Integer.parseInt(line[3].replaceAll(" ","")),idzone);
+	        ZoneType z=new ZoneType(numzone,line[1].trim(),
+	        		Integer.parseInt(line[2].replaceAll(" ","")),
+	        		Integer.parseInt(line[3].replaceAll(" ","")),
+	        		idzone);
 	        zones.put(z.numzone,z);
 	        idzone++;
 	    }
@@ -96,6 +99,8 @@ public class CSV_DATA {
 		
 		return gammes;
 	}
+	
+	//TODO:ajouter egouttage dans les csv
 	private  void  setGammesZones() {
 		
 	
@@ -113,7 +118,8 @@ public class CSV_DATA {
             		numzone,
             		Integer.parseInt(line[3].replaceAll(" ","")), 
             		zt.idzonebdd,
-            		Integer.parseInt(line[4].replaceAll(" ","")), 0
+            		Integer.parseInt(line[4].replaceAll(" ","")), 0,
+            		Integer.parseInt(line[5].replaceAll(" ",""))
 		            );
             
           

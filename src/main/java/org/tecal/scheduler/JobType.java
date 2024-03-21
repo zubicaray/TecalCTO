@@ -261,7 +261,7 @@ public class JobType {
 			
 			TaskOrdo taskOrdo;
 			if(task.numzone == CST.DECHARGEMENT_NUMZONE ) {
-				taskOrdo = new TaskOrdo(model,horizon,task.duration,zt.derive, minDebut,0,suffix);   
+				taskOrdo = new TaskOrdo(model,horizon,task.duration,zt.derive, minDebut,0,task.egouttage,suffix);   
 			}
 			else {
 				Task taskSuivante = tasksJob.get(taskID+1);
@@ -269,7 +269,7 @@ public class JobType {
 				//System.out.println("task.numzone "+task.numzone);
 				//System.out.println("task.numzone "+taskSuivante.numzone);
 				int tps=SQL_DATA.getTempsDeplacement(task.numzone,taskSuivante.numzone,1);
-				taskOrdo = new TaskOrdo(model,horizon,task.duration,zt.derive, minDebut,tps,suffix);   
+				taskOrdo = new TaskOrdo(model,horizon,task.duration,zt.derive, minDebut,tps,task.egouttage,suffix);   
 			}
 			
 			minDebut+=task.duration;
@@ -313,7 +313,7 @@ public class JobType {
 		int finZone = -1;
 		for (int i = 0; i < zones.size(); i++) {
 			GammeType gt = zones.get(i);
-			tasksJob.add(new Task(gt.time, gt.numzone));
+			tasksJob.add(new Task(gt.time, gt.numzone,gt.egouttage));
 			//System.out.println("debZone: "+gt.codezone);
 			
 			boolean bridgeChanged=false;

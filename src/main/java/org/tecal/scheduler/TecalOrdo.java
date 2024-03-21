@@ -62,9 +62,11 @@ class SortTasks implements Comparator<AssignedTask> {
 class Task {
 	int numzone;
 	int duration;
-	Task( int duration,int numzone) {       
+	int egouttage;
+	Task( int duration,int numzone,int egouttage) {       
 		this.duration = duration;
 		this.numzone=numzone;
+		this.egouttage=egouttage;
 	}
 }
 
@@ -301,9 +303,9 @@ public class TecalOrdo {
 					if(task.numzone != CST.DECHARGEMENT_NUMZONE){
 						
 						List<Integer> keySuivante = Arrays.asList(jobID, taskID+1);
-						derive=(int) solver.value(allTasks.get(keySuivante).startBDD)-allTasks.get(key).tempsDeplacement;
+						derive=(int) solver.value(allTasks.get(keySuivante).startBDD)-allTasks.get(key).tempsDeplacement-allTasks.get(key).egouttage;
 					}
-					else derive=(int) solver.value(allTasks.get(key).finDerive);
+					else derive=(int) solver.value(allTasks.get(key).deriveMax);
 					
 					
 					if( task.numzone == CST.CHARGEMENT_NUMZONE) {
@@ -574,7 +576,7 @@ public class TecalOrdo {
 				//le debut de la zone suivante doit etre compris
 				//entre le début et la fin de la dérive 
 				model.addLessOrEqual(allTasks.get(nextKey).startBDD, allTasks.get(prevKey).fin);				
-				model.addGreaterOrEqual(allTasks.get(nextKey).startBDD, allTasks.get(prevKey).debutDerive);				
+				model.addGreaterOrEqual(allTasks.get(nextKey).startBDD, allTasks.get(prevKey).deriveNulle);				
 				
 
 			}

@@ -10,9 +10,10 @@ public class GammeType {
     public int start;
     public int derive;   
     public int id_regroupement_bdd;
+    public int egouttage;
    
     public GammeType(String numgamme,String codezone,int numligne,int numzone,
-    		int time,int idzone,int derive,   int id_regroupement_bdd) {
+    		int time,int idzone,int derive,   int id_regroupement_bdd,int egouttage) {
         this.numgamme = numgamme;
         this.codezone = codezone;
         this.numligne = numligne;
@@ -21,6 +22,7 @@ public class GammeType {
         this.idzonebdd = idzone;
         this.derive=derive;
         this.id_regroupement_bdd=id_regroupement_bdd;
+        this.egouttage=egouttage;
         
         
       }
