@@ -190,7 +190,7 @@ public class JobType {
 	void makeSafetyBetweenBridges() {
 		
 	}
-	void makeBridgesMoves() {
+	void simulateBridgesMoves() {
 
 		
 		IntVar deb = null;
@@ -240,8 +240,10 @@ public class JobType {
 		}
 	}
 
-	void addIntervalForModel(Map<List<Integer>, TaskOrdo> allTasks,Map<Integer, List<IntervalVar>> zoneToIntervals,Map<Integer, 
-			List<IntervalVar>> zoneCumulToIntervals,int jobID,HashMap<Integer,ZoneType>  zonesBDD) {
+	void addIntervalForModel(Map<List<Integer>, TaskOrdo> allTasks,Map<Integer, List<IntervalVar>> zoneToIntervals,
+			Map<Integer,List<IntervalVar>> multiZoneIntervals,
+			Map<Integer, List<IntervalVar>> cumulDemands,
+			int jobID,HashMap<Integer,ZoneType>  zonesBDD) {
 
 		//System.out.println("Job "+name);
 		
@@ -265,10 +267,13 @@ public class JobType {
 			}
 			else {
 				Task taskSuivante = tasksJob.get(taskID+1);
-				//System.out.println("------------------------------------------------");
-				//System.out.println("task.numzone "+task.numzone);
-				//System.out.println("task.numzone "+taskSuivante.numzone);
-				int tps=SQL_DATA.getTempsDeplacement(task.numzone,taskSuivante.numzone,1);
+				
+				int tps=SQL_DATA.getTempsDeplacement(task.numzone,taskSuivante.numzone,CST.VITESSE);
+				if (tps==0) {
+					System.out.println("---------TPS NUL !!!!---------------");
+					System.out.println("task.numzone "+task.numzone);
+					System.out.println("task.numzone "+taskSuivante.numzone);
+				}
 				taskOrdo = new TaskOrdo(model,horizon,task.duration,zt.derive, minDebut,tps,task.egouttage,suffix);   
 			}
 			
@@ -276,12 +281,21 @@ public class JobType {
 
 
 			if(zt.cumul>1) {
-				zoneCumulToIntervals.computeIfAbsent(task.numzone, (Integer k) -> new ArrayList<>());   
-				zoneCumulToIntervals.get(task.numzone).add(taskOrdo.intervalReel);
+				multiZoneIntervals.computeIfAbsent(task.numzone, (Integer k) -> new ArrayList<>());   
+				multiZoneIntervals.get(task.numzone).add(taskOrdo.intervalReel);
 			}
 			else {
 				zoneToIntervals.computeIfAbsent(task.numzone, (Integer k) -> new ArrayList<>());              
 				zoneToIntervals.get(task.numzone).add(taskOrdo.intervalReel);
+				
+				if(SQL_DATA.relatedZones.containsKey(task.numzone)) {
+					int zoneToAdd=SQL_DATA.relatedZones.get(task.numzone);
+					//cumulDemands.add
+					if(!cumulDemands.containsKey(zoneToAdd)) {
+						cumulDemands.put(zoneToAdd,new ArrayList<IntervalVar>());
+					}
+					cumulDemands.get(zoneToAdd).add(taskOrdo.intervalReel);
+				}
 
 
 			}

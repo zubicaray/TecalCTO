@@ -48,6 +48,7 @@ public class GanttChart extends JFrame {
 	
 
 	ArrayList<String[]>  labelsModel;
+	ArrayList<AssignedTask[]>  tasksTab;
 	ArrayList<String[]> labels;
 	ValueMarker timeBar;
 
@@ -123,6 +124,20 @@ public class GanttChart extends JFrame {
 		new Timer().schedule(mTimer, 0, 1000);	
 		
 	}
+	
+	public String toMinutes(int t) {		
+		return String.format("%02d:%02d",  t / 60, (t % 60));
+	}
+	public String tmpsAvantSortie(int fin) {
+		
+		if(timeBar != null) {
+			int seconds =(int) (fin -timeBar.getValue());
+			return toMinutes(seconds);
+		}
+		
+		return "";
+	}
+	
 	public void  backward(int v) {
 		timeBar.setValue(timeBar.getValue()-v);
 	}
@@ -174,6 +189,7 @@ public class GanttChart extends JFrame {
 		 
 		
 		 labelsModel = new ArrayList<String[]>(jobID);
+		 tasksTab = new ArrayList<AssignedTask[]>(jobID);
 		 for(int i=0; i < jobID; i++) {
 		//	 labelsModel.add(new ArrayList<String>());
 		 }
@@ -263,6 +279,7 @@ public class GanttChart extends JFrame {
 			List<AssignedTask> listeTache=entry.getValue();
 			
 			labelsModel.add(new String[listeTache.size()]);
+			tasksTab.add(new AssignedTask[listeTache.size()]);
 			int cpt1=0;
 		    for(AssignedTask at :listeTache) {	
 			 
@@ -293,15 +310,15 @@ public class GanttChart extends JFrame {
 			    	 series[idjob].add(posteEncours,posteEncours - 0.3,posteEncours +0.3, 
 			    			 dr[0],dr[0] ,dr[1] );
 			    	 
-			    	 if(dr[2]>0) {
-			    		 //hasDerive=true;
-						    
-			    		 //series[idjob].add(posteEncours,posteEncours - 0.3,posteEncours +0.3, dr[1],dr[1] ,dr[2] );
-			    	 }
+			    	
 			    }
 		    
-			    labelsModel.get(idjob)[cpt1]="start:"+at.start+", durée:"+at.duration+"\n, fin:"+(at.derive)
+			    labelsModel.get(idjob)[cpt1]="start:"+at.start+", durée:"+toMinutes(at.duration)+", fin:"+(at.derive)
 			    		+ " dérive: " +(at.derive-dr[1])+", égouttage:"+df.get(at.taskID).egouttage+ ", " +df.get(at.taskID).codezone;
+			    
+			    
+			    tasksTab.get(idjob)[cpt1]=at;
+			    
 			    cpt1++;    
 			    
 			    
@@ -332,8 +349,9 @@ public class GanttChart extends JFrame {
 		 private static final long serialVersionUID = 1L;
 		
 		 public String generateToolTip(XYDataset dataset, int series, int item) {    	
-			//System.out.println("series:"+series+" "+" item:"+item+" val="+labelsModel[series][item]);    		 
-		        return  labelsModel.get(series)[item];
+			//System.out.println("series:"+series+" "+" item:"+item+" val="+labelsModel[series][item]);    	
+			 	
+		        return  labelsModel.get(series)[item]+ " temps avant sortie :"+ tmpsAvantSortie(tasksTab.get(series)[item].derive);
 		    }
 		 };
 	     renderer.setSeriesToolTipGenerator(0, ttgen); 

@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
+import java.util.Map.Entry;
 
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
@@ -100,7 +100,8 @@ public class TecalOrdo {
 	private	List<JobType> allJobs= new ArrayList<JobType>();
 	private	Map<List<Integer>, TaskOrdo> allTasks = new HashMap<>();
 	private	Map<Integer, List<IntervalVar>> zoneToIntervals = new HashMap<>();
-	private	Map<Integer, List<IntervalVar>> zoneCumulToIntervals = new HashMap<>();
+	private	Map<Integer, List<IntervalVar>> multiZoneIntervals = new HashMap<>();
+	private	Map<Integer, List<IntervalVar>> cumulDemands= new HashMap<>();
 	
 	
 	private Map<Integer, List<AssignedTask>> assignedJobs;
@@ -162,7 +163,7 @@ public class TecalOrdo {
 		if(CST.SQLSERVER ==source) {
 			sqlCnx = new SQL_DATA();
 			mGammes=sqlCnx.getLignesGammesAll();
-			zonesBDD=sqlCnx.getZones();
+			zonesBDD=SQL_DATA.zones;
 		}else {
 			
 			try {
@@ -265,6 +266,7 @@ public class TecalOrdo {
 		}
 		
 		//solver.getParameters().setStopAfterRootPropagation(true);
+		solver.getParameters().setMaxTimeInSeconds(180);
 		
 		
 
@@ -444,7 +446,8 @@ public class TecalOrdo {
 		allJobs.clear();
 		allTasks.clear();
 		zoneToIntervals.clear();
-		zoneCumulToIntervals.clear();
+		multiZoneIntervals.clear();
+		cumulDemands.clear();
 		for (Map.Entry<String, ArrayList<GammeType> > entry : mBarres.entrySet()) {
 
 			JobType job = new JobType(cptJob, entry.getKey(),model);
@@ -487,8 +490,8 @@ public class TecalOrdo {
 		
 		for (int jobID = 0; jobID < allJobs.size(); ++jobID) {
 			JobType job = allJobs.get(jobID);
-			job.addIntervalForModel(allTasks,zoneToIntervals,zoneCumulToIntervals,jobID,zonesBDD);
-			job.makeBridgesMoves();
+			job.addIntervalForModel(allTasks,zoneToIntervals,multiZoneIntervals,cumulDemands,jobID,zonesBDD);
+			job.simulateBridgesMoves();
 			
 		}
 
@@ -506,6 +509,9 @@ public class TecalOrdo {
 	 * @param model
 	 */
 	private  void jobConstraints() {
+		
+		HashMap<Integer,CumulativeConstraint> cumulConstr= new HashMap<Integer,CumulativeConstraint>();
+		
 		// Create and add disjunctive constraints.		
 		for (int numzone : numzoneArr) {
 
@@ -513,8 +519,8 @@ public class TecalOrdo {
 				List<IntervalVar> intervalParZone = zoneToIntervals.get(numzone);  
 				model.addNoOverlap(intervalParZone);    	  
 			}
-			if(  zoneCumulToIntervals.containsKey(numzone)) {    	 
-				List<IntervalVar> listCumul = zoneCumulToIntervals.get(numzone);
+			if(  multiZoneIntervals.containsKey(numzone)) {    	 
+				List<IntervalVar> listCumul = multiZoneIntervals.get(numzone);
 				ZoneType zt=zonesBDD.get(numzone);
 				// zone autorisant le "chevauchement" => zone contenant plus de  1 postes
 				IntVar capacity = model.newIntVar(0, zt.cumul, "capacity_of_"+numzone);
@@ -524,10 +530,26 @@ public class TecalOrdo {
 				long[] zoneUsage  = new long[listCumul.size()];
 				Arrays.fill(zoneUsage,1);
 				cumul.addDemands(listCumul.toArray(new IntervalVar[0]), zoneUsage);
+				cumulConstr.put(numzone, cumul);
 				
 			}
 
 		}
+		
+        for (Entry<Integer, List<IntervalVar>> entry : cumulDemands.entrySet()) {
+            int idCumulZone = entry.getKey();
+            CumulativeConstraint cumul=cumulConstr.get(idCumulZone);
+            List<IntervalVar> inters = entry.getValue();
+            for(IntervalVar iv:inters) {
+            	cumul.addDemand(iv, 1);
+            }
+            
+            
+        }
+		    
+		
+
+		
 	}
 	// on impose du temps entre la fin du zone et le début d'une autre
 	private  void zoneCumulConstraints() {
@@ -535,7 +557,7 @@ public class TecalOrdo {
 		if(CST.CSTR_ECART_ZONES_CUMULS)
 		{
 
-			for(List<IntervalVar> intervalParZone :zoneCumulToIntervals.values()) {
+			for(List<IntervalVar> intervalParZone :multiZoneIntervals.values()) {
 				List<IntervalVar> nooverlapAno=new  ArrayList<IntervalVar> ();
 				for( int i=0;i<intervalParZone.size();i++) {
 					

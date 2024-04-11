@@ -43,17 +43,30 @@ public class CST {
 	public final static String testPrioriteC05[] ={"000601","000164"};
 	// pb chevauchage colmatage
 	public final static String test2[] ={"000601","000347","000347","000347"};
+	//gamme de merde: 022
+	public final static String test13fevrier[] ={"000024","000022","000639","000601","000812","000776","000159","000818","000776","000601"};
 	public final static String test1mars[] ={"000686","000212","000818","000818","000812","000811","000022","000601","000109","000818"};
-	public final static String gammesTest[] =test26janvier;
+	public final static String test25mars[] ={"000054","000601","000485","000024","000601","000818","000812","000717","000002","000169"};
+	public final static String testBig[] ={
+			"000054","000601","000485","000024","000601",
+			"000818","000812","000717","000002","000169",
+			"000020","000021","000164","000601","000467",
+			"000347","000169"};
+	public final static String gammesTest[] =test26janvierBig;
 	
 	
 	
-
+	//------------------------------------------------------------
+	// -----------------  VITESSE --------------------------------
+	//------------------------------------------------------------
+	public final static int VITESSE =1;
+	
+	
 	//------------------------------------------------------------
 	// -----------------  CONSTRAINTES ---------------------------
 	//------------------------------------------------------------
-	public final static boolean MODE_ECO = false;
-	public final static int 	PORTION_HORIZON = 4 ;
+	public final static boolean MODE_ECO = true;
+	public final static int 	PORTION_HORIZON = 7;
 	//ancienne méthode
 	public final static boolean CSTR_ECART_ZONES_CUMULS=false;
 	public final static boolean CSTR_NOOVERLAP_ZONES_GROUPEES=false ;

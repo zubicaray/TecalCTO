@@ -83,6 +83,9 @@ public class CSV_DATA {
 	        ZoneType z=new ZoneType(numzone,line[1].trim(),
 	        		Integer.parseInt(line[2].replaceAll(" ","")),
 	        		Integer.parseInt(line[3].replaceAll(" ","")),
+	        		//TODO pas mis dans le CSV
+	        		Integer.parseInt(line[4].replaceAll(" ","")),
+	        		Integer.parseInt(line[5].replaceAll(" ","")),
 	        		idzone);
 	        zones.put(z.numzone,z);
 	        idzone++;
@@ -112,13 +115,14 @@ public class CSV_DATA {
             int numzone=Integer.valueOf(line[2]);
             ZoneType zt=zones.get(numzone);
             
+            //TODO:check
             GammeType gt=new GammeType(line[0].replaceAll(" ",""),	          
             		zt.codezone,	  
             		Integer.parseInt(line[1].replaceAll(" ","")),	            
             		numzone,
             		Integer.parseInt(line[3].replaceAll(" ","")), 
             		zt.idzonebdd,
-            		Integer.parseInt(line[4].replaceAll(" ","")), 0,
+            		Integer.parseInt(line[4].replaceAll(" ","")), 
             		Integer.parseInt(line[5].replaceAll(" ",""))
 		            );
             

@@ -31,10 +31,11 @@ public class SQL_DATA {
 	private Connection mConnection ;
 	private Statement mStatement;
 	
-	private HashMap<Integer,ZoneType>  zones;
+	public static HashMap<Integer,ZoneType>  zones;
+	public static HashMap<Integer,Integer>  relatedZones;
 	private HashMap<String, ArrayList<GammeType> > gammes;		
 	static TempsDeplacement  mTempsDeplacement;		
-	 private static  final SimpleDateFormat FMT =
+	private static  final SimpleDateFormat FMT =
 	            new SimpleDateFormat( "yyyyMMdd" );
 
 	
@@ -102,21 +103,45 @@ public class SQL_DATA {
        
 		
 		setZones();
+		setRelatedZones();
 		setLignesGammes();
 		setTempsDeplacements();
 	
 	}
 	
 
-public HashMap<Integer,ZoneType> getZones() {
-	return zones;
+
+
+/*
+ * permet de relier par exemple la zone C32 qui fait partie d ela multizone C31->C32
+ */
+private void setRelatedZones() {
+	
+	relatedZones = new HashMap<Integer,Integer>();
+	for(ZoneType  z1: zones.values()) {
+		for(ZoneType  z2: zones.values()) {
+			if(z1.numzone == z2.numzone)
+				continue;
+			
+			if( z2.idPosteFin>z2.idPosteDeb &&  // z2 est une multi zone
+				z2.idPosteDeb <= z1.idPosteDeb && z2.idPosteFin >= z1.idPosteFin // z1 est comprise dedans
+			) {
+				relatedZones.put(z1.numzone,z2.numzone);
+			}
+			
+		}
+		
+	}
 }
+
 private  void setZones() {
 		
 	ResultSet resultSet = null;        
 	zones = new HashMap<Integer,ZoneType>();
     // Create and execute a SELECT SQL statement.
-    String selectSql = "select Z.numzone,Z.CodeZone, Z.NumDernierPoste-Z.NumPremierPoste+1 as cumul,derive from   "
+    String selectSql = "select Z.numzone,Z.CodeZone, Z.NumDernierPoste-Z.NumPremierPoste+1 as cumul,derive ,"
+    		+ "NumPremierPoste,NumDernierPoste"
+    		+ " from   "
     		+ "ZONES Z order by numzone";
     
     try {
@@ -125,7 +150,8 @@ private  void setZones() {
 		// Print results from select statement
         while (resultSet.next()) {
             //System.out.println( resultSet.getString(1));
-            ZoneType z=new ZoneType(resultSet.getInt(1),resultSet.getString(2),resultSet.getInt(3),resultSet.getInt(4),idzone);
+            ZoneType z=new ZoneType(resultSet.getInt(1),resultSet.getString(2),resultSet.getInt(3),
+            		resultSet.getInt(4),idzone,resultSet.getInt(5),resultSet.getInt(6));
             zones.put(z.numzone,z);
             idzone++;
         }
@@ -192,7 +218,7 @@ private void  setLignesGammes() {
         		+ "select  "
         		+ "	DG.NumGamme,Z.CodeZone,numligne ,Z.numzone, "
         		+ " TempsAuPosteSecondes,  "
-        		+ " Z.ID_GROUPEMENT,Z.derive,Z.NumDernierPoste-Z.NumPremierPoste+1 as cumul ,TempsEgouttageSecondes "
+        		+ " Z.derive,Z.NumDernierPoste-Z.NumPremierPoste+1 as cumul ,TempsEgouttageSecondes "
         		+ "from   "
         		+ "	[DetailsGammesAnodisation]  DG "
         		+ "	INNER JOIN ZONES Z "
@@ -213,9 +239,9 @@ private void  setLignesGammes() {
 		            numzone,
 		            resultSet.getInt(5),
 		            zones.get(numzone).idzonebdd,
-		            resultSet.getInt(7),
 		            resultSet.getInt(6),
-		            resultSet.getInt(9));
+		           
+		            resultSet.getInt(8));
 	            
 	          
 	            if (!gammes.containsKey(gt.numgamme)) {
