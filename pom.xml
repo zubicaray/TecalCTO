@@ -53,6 +53,7 @@
 </properties>
 
 <dependencies>
+
   <dependency>
     <groupId>com.google.ortools</groupId>
     <artifactId>ortools-java</artifactId>
@@ -120,7 +121,7 @@
       <configuration>
         <archive>
           <manifest>
-            <mainClass>org.tecal.scheduler.TecalOrdo</mainClass>
+            <mainClass>org.tecal.ui.TecalGUI</mainClass>
           </manifest>
         </archive>
         <descriptorRefs>

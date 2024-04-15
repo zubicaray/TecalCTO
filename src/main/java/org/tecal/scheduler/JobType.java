@@ -25,6 +25,7 @@ public class JobType {
 	List<ListeZone> tasksNoOverlapPont;
 	List<ListeZone> debutLonguesZonesPont;
 	ArrayListeZonePonts bridgesMoves;
+	ListeZone mNoOverlapP1P2;
 	
 	List<List<int[]>> idZonesNoOverlapPont;
 	
@@ -81,8 +82,7 @@ public class JobType {
 		
 		tasksNoOverlapPont = new ArrayList<ListeZone> ();
 		debutLonguesZonesPont = new ArrayList<ListeZone> ();		
-		
-		
+		mNoOverlapP1P2 = new ListeZone();
 		
 	
 		
@@ -95,15 +95,11 @@ public class JobType {
 			tasksNoOverlapPont.add(tasksNoOverlapable);
 			
 			ListeZone debutLongue= new ListeZone();		
-			debutLonguesZonesPont.add(debutLongue);
-			
+			debutLonguesZonesPont.add(debutLongue);	
 			
 			
 			ArrayList<int[]> idNoOverlap = new ArrayList<int[]>();
 			idZonesNoOverlapPont.add(idNoOverlap);
-			
-
-			
 			
 	
 	
@@ -188,6 +184,51 @@ public class JobType {
 	}
 
 	void makeSafetyBetweenBridges() {
+		
+		IntVar deb = null;
+		IntVar fin= null;
+	
+		//System.out.println("Job "+name);
+		for (int taskID = 0; taskID < mTaskOrdoList.size(); ++taskID) {
+						
+			if(mTaskOrdoList.get(taskID).zoneSecu) {
+				deb=mTaskOrdoList.get(taskID).startBDD;
+				
+				if(indexAnod > 0 && taskID-1 == indexAnod) {
+					deb=mTaskOrdoList.get(indexAnod).endBDD;
+				}else {
+					deb=mTaskOrdoList.get(taskID).startBDD;
+				}
+				
+				if(taskID+1 == indexAnod) {
+					fin=mTaskOrdoList.get(indexAnod).startBDD;
+					
+				}else {
+					fin=mTaskOrdoList.get(taskID).endBDD;
+				}
+				
+				int taskID2 = taskID+1;
+				while(mTaskOrdoList.get(taskID2).zoneSecu && taskID2 < mTaskOrdoList.size())
+				{
+					taskID2++;
+				}
+				
+				if(taskID2>taskID+1) {
+					if(taskID2 == indexAnod) {
+						fin=mTaskOrdoList.get(indexAnod).startBDD;
+					}else {
+						fin=mTaskOrdoList.get(taskID2-1).endBDD;
+					}
+					
+					taskID=taskID2;
+				}
+				mNoOverlapP1P2.add(model.newIntervalVar( deb,model.newIntVar(0,horizon, "") ,fin, ""));
+				
+				
+			}
+			
+						
+		}
 		
 	}
 	void simulateBridgesMoves() {
@@ -300,7 +341,12 @@ public class JobType {
 
 			}
 
+			if(SQL_DATA.zonesSecu.contains(task.numzone)) {
+				taskOrdo.zoneSecu=true;
+			}
+			
 			List<Integer> key = Arrays.asList(jobID, taskID);
+			
 			allTasks.put(key, taskOrdo);     
 			mTaskOrdoList.add(taskOrdo);
 
@@ -312,7 +358,7 @@ public class JobType {
 
 	// on ajoute les ID BDD pour les zones par poste et les zonesde rincage non
 	// chevauchable
-	void addZones(List<GammeType> inzones) {
+	void computeCoords(List<GammeType> inzones) {
 
 
 
@@ -349,7 +395,7 @@ public class JobType {
 					bridgeChanged=true;
 				else {
 					GammeType next = zones.get(i+1);
-					//la zone d'après est sur lepont 2 on doit changer quoi qu'il arrive
+					//la zone d'après est sur le pont 2 on doit changer quoi qu'il arrive
 					if (next.numzone > CST.NUMZONE_DEBUT_PONT_2) 
 						bridgeChanged=true;
 				}
@@ -517,14 +563,20 @@ public class JobType {
 						}
 						
 						if(groupe) {						
+							IntervalVar v=TecalOrdo.getNoOverlapZone(model,start,end);
 							// on ajoute la zone non chevauchable
-							tasksNoOverlapPont.get(pont).add(TecalOrdo.getNoOverlapZone(model,start,end));											
+							tasksNoOverlapPont.get(pont).add(v);
+							
+							
+							// les zone regroupées d'avant et après anosidation ne doiuvent pas se croiser
+							if(idFinZone+1==indexAnod ||
+									idDebZone-1==indexAnod
+							) {
+								//mNoOverlapP1P2.add(v);
+							}
+							
 						}
-						//TODO
-						//to test
-						if(idFinZone+1==indexAnod) {
-							//debutLonguesZonesPont.get(pont).add(TecalOrdo.getNoOverlapZone(model, taskAnod.endBDD,0,40));
-						}
+						
 						
 					}
 						

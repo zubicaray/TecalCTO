@@ -22,25 +22,13 @@ public class CST {
 	
 	public final static String[] mListeOf26janvier={"00079260","00079261","00079262","00079263","00079264","00079265","00079266"};
 	
-	;
-	
-	
-			
-	
-	
-	//public final static String gammesTest[] ={"000007","000005","000009","000010"};
-	public final static String gammesTestBig[] ={"000022","000210","000021","000164","000601","000467","000347","000169","000347"};
-	public final static String gammesTestBig2[] ={"000021","000164","000601","000467","000347","000169","000021","000164","000601","000601","000467","000467","000347","000169","000021","000164"};
+		
 	public final static String gammesTest_PB_pont2[] ={"000022","000022","000467","000210","000246"};
-	//public final static String gammesTest[] ={"000210","000210","000210","000210","000210"};
-	//public final static String gammesTest[] ={"000022","000246"};
 	public final static String gammesTest1[] ={"000022","000554","000552","000553","000552","000553"};
-	public final static String test26janvierBig[] ={"000020","000021","000164","000601","000467","000347","000169","000020","000021","000164","000601","000467","000347","000169"};
+
 	public final static String test26janvier[] ={"000020","000021","000164","000601","000467","000347","000169"};
 	public final static String test8mars[] ={"000094","000169","000174","000776","000671"};
 	public final static String test8mars2[] ={"000094","000003"};
-	// C10 ne sort pas car il attend C05
-	public final static String testPrioriteC05[] ={"000601","000164"};
 	// pb chevauchage colmatage
 	public final static String test2[] ={"000601","000347","000347","000347"};
 	//gamme de merde: 022
@@ -51,10 +39,10 @@ public class CST {
 			"000054","000601","000485","000024","000601",
 			"000818","000812","000717","000002","000169",
 			"000020","000021","000164","000601","000467",
-			"000347","000169"};
-	public final static String gammesTest[] =test26janvierBig;
+			"000347","000169","000210","000246","000216"};
+	public final static String gammesTest[] =gammesTest_PB_pont2;
 	
-	
+	public final static int TEMPS_MAX_SOLVEUR=20;
 	
 	//------------------------------------------------------------
 	// -----------------  VITESSE --------------------------------
@@ -65,7 +53,7 @@ public class CST {
 	//------------------------------------------------------------
 	// -----------------  CONSTRAINTES ---------------------------
 	//------------------------------------------------------------
-	public final static boolean MODE_ECO = true;
+	public final static boolean MODE_ECO = false;
 	public final static int 	PORTION_HORIZON = 7;
 	//ancienne méthode
 	public final static boolean CSTR_ECART_ZONES_CUMULS=false;
@@ -97,6 +85,7 @@ public class CST {
 	public final static int TEMPS_MVT_PONT =40;		
 	// temps de sécurité entre deux gammes différentes sur un même poste d'ano
 	public final static int TEMPS_ANO_ENTRE_P1_P2 = 60;	
+	
 	
 	
 	//--------------------------------------------------------------

@@ -23,6 +23,7 @@ public class TaskOrdo {
 	IntervalVar minimumDerive;
 	int tempsDeplacement;
 	int egouttage;
+	boolean zoneSecu=false;
 	
 
 	boolean isOverlapable=false;
@@ -43,9 +44,7 @@ public class TaskOrdo {
 		endBDD = model.newIntVar(0, horizon, "end" + suffix);		
 		fin=model.newIntVar(0, horizon, "fin_nooverlap");
 		deriveNulle=model.newIntVar(0, horizon, "fin_nooverlap");
-		deriveMax=model.newIntVar(0, horizon, "fin_nooverlap");
-		
-		
+		deriveMax=model.newIntVar(0, horizon, "fin_nooverlap");		
 		      
 		intervalBDD = model.newIntervalVar(startBDD, LinearExpr.constant(duration),endBDD, "interval" + suffix);
 		  

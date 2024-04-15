@@ -114,6 +114,7 @@ public class TecalGUI {
 	private JRadioButton rdbtnFastModeRadioButton;
 	private JComboBox<Integer> comboDifficult;
 	private ImageIcon img;
+	List<Image> mIcons;
 	
 	private SQL_DATA sqlCnx ;
 	private int mNumBarre=0;
@@ -138,6 +139,7 @@ public class TecalGUI {
 	private JButton btnRun_1;
 	private JButton btnDownButton_1;
 	private JLabel lblBarreLabel_1;
+	private JTextField textTEMPS_MAX_SOLVEUR;
 
 	
 	/**
@@ -207,17 +209,17 @@ public class TecalGUI {
 		frmTecalOrdonnanceur = new JFrame();
 		frmTecalOrdonnanceur.setTitle("Tecal Ordonnanceur");
 		
-		List<Image> icons = new ArrayList<Image>();
+		mIcons = new ArrayList<Image>();
 		try {
 			
 			InputStream in = getClass().getResourceAsStream("/gantt-chart 16.png") ;					
 			BufferedImage someImage = ImageIO.read(in);
 			img = new ImageIcon(someImage);
-			icons.add(img.getImage());
+			mIcons.add(img.getImage());
 			in = getClass().getResourceAsStream("/gantt-chart 32.png") ;
 			someImage = ImageIO.read(in);
 			img = new ImageIcon(someImage);			
-			icons.add(img.getImage());
+			mIcons.add(img.getImage());
 			
 			
 		} catch (IOException e) {
@@ -227,9 +229,9 @@ public class TecalGUI {
 	   
 		
 		
-		frmTecalOrdonnanceur.setIconImages(icons); 
+		frmTecalOrdonnanceur.setIconImages(mIcons); 
 		
-		//gantFrame = new CPO(icons);
+		//gantFrame = new CPO(mIcons);
 		
 		frmTecalOrdonnanceur.setBounds(100, 100, 729, 661);
 		frmTecalOrdonnanceur.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -348,10 +350,11 @@ public class TecalGUI {
 							Integer.valueOf(textTEMPS_MVT_PONT_MIN_JOB.getText()),
 							Integer.valueOf(textGAP_ZONE_NOOVERLAP.getText()),
 							Integer.valueOf(textTEMPS_MVT_PONT.getText()),
-							Integer.valueOf(textTEMPS_ANO_ENTRE_P1_P2.getText()));
+							Integer.valueOf(textTEMPS_ANO_ENTRE_P1_P2.getText()),
+							Integer.valueOf(textTEMPS_MAX_SOLVEUR.getText()));
 					
 					mTecalOrdo.setBarres(gammes);
-					gantFrame=new CPO_IHM(icons);
+					gantFrame=new CPO_IHM(mIcons);
 					frmTecalOrdonnanceur.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					mTecalOrdo.run(rdbtnFastModeRadioButton.isSelected(),(int)comboDifficult.getSelectedItem(),gantFrame);	
 					frmTecalOrdonnanceur.setCursor(Cursor.getDefaultCursor());
@@ -577,7 +580,7 @@ public class TecalGUI {
 
 		
 		
-		JButton btnRunVisuProd = new JButton("Lancer Gantt");
+		JButton btnRunVisuProd = new JButton("Gantt PROD");
 		btnRunVisuProd.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -609,6 +612,46 @@ public class TecalGUI {
 				 
 			}
 		});
+		
+		JButton btnGanttCpo = new JButton("Gantt CPO");
+		btnGanttCpo.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				 int[] sel = tableOF.getSelectedRows();
+				 if(sel.length==0) {			
+					 JOptionPane.showMessageDialog(frmTecalOrdonnanceur, "Pas d'OF choisi !","Visuel CPO", JOptionPane.ERROR_MESSAGE);
+					 return;
+				 }
+				
+				
+				 LinkedHashMap<Integer,String> gammes=new LinkedHashMap <Integer,String>();
+				 for(int i=0;i<sel.length;i++) {					
+					 gammes.put(i,tableOF.getModel().getValueAt(sel[i], 1).toString());
+				 }
+				
+				
+								
+							
+							
+				
+				 
+				 mTecalOrdo.setParams(
+							Integer.valueOf(textTEMPS_ZONE_OVERLAP_MIN.getText()),
+							Integer.valueOf(textTEMPS_MVT_PONT_MIN_JOB.getText()),
+							Integer.valueOf(textGAP_ZONE_NOOVERLAP.getText()),
+							Integer.valueOf(textTEMPS_MVT_PONT.getText()),
+							Integer.valueOf(textTEMPS_ANO_ENTRE_P1_P2.getText()),
+							Integer.valueOf(textTEMPS_MAX_SOLVEUR.getText()));
+					
+					mTecalOrdo.setBarres(gammes);
+					gantFrame=new CPO_IHM(mIcons);
+					frmTecalOrdonnanceur.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+					mTecalOrdo.run(rdbtnFastModeRadioButton.isSelected(),(int)comboDifficult.getSelectedItem(),gantFrame);	
+					frmTecalOrdonnanceur.setCursor(Cursor.getDefaultCursor());
+					textArea.setText(mTecalOrdo.print());
+				
+			}
+		});
 		GroupLayout gl_panelVisuProd = new GroupLayout(panelVisuProd);
 		gl_panelVisuProd.setHorizontalGroup(
 			gl_panelVisuProd.createParallelGroup(Alignment.LEADING)
@@ -618,7 +661,9 @@ public class TecalGUI {
 							.addGap(199)
 							.addComponent(datePicker, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 							.addGap(35)
-							.addComponent(btnRunVisuProd))
+							.addComponent(btnRunVisuProd)
+							.addPreferredGap(ComponentPlacement.UNRELATED)
+							.addComponent(btnGanttCpo, GroupLayout.PREFERRED_SIZE, 91, GroupLayout.PREFERRED_SIZE))
 						.addGroup(gl_panelVisuProd.createSequentialGroup()
 							.addGap(22)
 							.addComponent(scrollPaneVisuProd, GroupLayout.DEFAULT_SIZE, 657, Short.MAX_VALUE)))
@@ -630,7 +675,9 @@ public class TecalGUI {
 					.addGap(5)
 					.addGroup(gl_panelVisuProd.createParallelGroup(Alignment.LEADING)
 						.addComponent(datePicker, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-						.addComponent(btnRunVisuProd))
+						.addGroup(gl_panelVisuProd.createParallelGroup(Alignment.BASELINE)
+							.addComponent(btnRunVisuProd)
+							.addComponent(btnGanttCpo)))
 					.addGap(42)
 					.addComponent(scrollPaneVisuProd, GroupLayout.DEFAULT_SIZE, 487, Short.MAX_VALUE)
 					.addGap(37))
@@ -693,6 +740,13 @@ public class TecalGUI {
 		textNUMZONE_DEBUT_PONT_2.setColumns(10);
 		textNUMZONE_DEBUT_PONT_2.setText(Integer.toString(CST.NUMZONE_DEBUT_PONT_2));
 		
+		JLabel lblNewLabel_2_1 = new JLabel("TEMPS MAX SOLVER");
+		
+		textTEMPS_MAX_SOLVEUR = new JTextField();
+		textTEMPS_MAX_SOLVEUR.setText("40");
+		textTEMPS_MAX_SOLVEUR.setHorizontalAlignment(SwingConstants.RIGHT);
+		textTEMPS_MAX_SOLVEUR.setColumns(10);
+		
 		GroupLayout gl_panel_param = new GroupLayout(panel_param);
 		gl_panel_param.setHorizontalGroup(
 			gl_panel_param.createParallelGroup(Alignment.LEADING)
@@ -705,15 +759,18 @@ public class TecalGUI {
 						.addComponent(lblNewLabel)
 						.addComponent(lblcartGroupes, GroupLayout.PREFERRED_SIZE, 175, GroupLayout.PREFERRED_SIZE)
 						.addComponent(lblNewLabel_1)
-						.addComponent(lblNewLabel_2))
+						.addComponent(lblNewLabel_2)
+						.addComponent(lblNewLabel_2_1, GroupLayout.PREFERRED_SIZE, 132, GroupLayout.PREFERRED_SIZE))
 					.addGap(31)
-					.addGroup(gl_panel_param.createParallelGroup(Alignment.LEADING, false)
-						.addComponent(textNUMZONE_DEBUT_PONT_2, 0, 0, Short.MAX_VALUE)
-						.addComponent(textTEMPS_ANO_ENTRE_P1_P2, 0, 0, Short.MAX_VALUE)
-						.addComponent(textTEMPS_MVT_PONT_MIN_JOB, 0, 0, Short.MAX_VALUE)
-						.addComponent(textTEMPS_MVT_PONT, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 45, Short.MAX_VALUE)
-						.addComponent(textGAP_ZONE_NOOVERLAP, Alignment.TRAILING, 0, 0, Short.MAX_VALUE)
-						.addComponent(textTEMPS_ZONE_OVERLAP_MIN, Alignment.TRAILING, 0, 0, Short.MAX_VALUE))
+					.addGroup(gl_panel_param.createParallelGroup(Alignment.LEADING)
+						.addComponent(textTEMPS_MAX_SOLVEUR, GroupLayout.PREFERRED_SIZE, 45, GroupLayout.PREFERRED_SIZE)
+						.addGroup(gl_panel_param.createParallelGroup(Alignment.LEADING, false)
+							.addComponent(textNUMZONE_DEBUT_PONT_2, 0, 0, Short.MAX_VALUE)
+							.addComponent(textTEMPS_ANO_ENTRE_P1_P2, 0, 0, Short.MAX_VALUE)
+							.addComponent(textTEMPS_MVT_PONT_MIN_JOB, 0, 0, Short.MAX_VALUE)
+							.addComponent(textTEMPS_MVT_PONT, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 45, Short.MAX_VALUE)
+							.addComponent(textGAP_ZONE_NOOVERLAP, Alignment.TRAILING, 0, 0, Short.MAX_VALUE)
+							.addComponent(textTEMPS_ZONE_OVERLAP_MIN, Alignment.TRAILING, 0, 0, Short.MAX_VALUE)))
 					.addContainerGap(447, Short.MAX_VALUE))
 		);
 		gl_panel_param.setVerticalGroup(
@@ -743,7 +800,11 @@ public class TecalGUI {
 					.addGroup(gl_panel_param.createParallelGroup(Alignment.BASELINE)
 						.addComponent(lblNewLabel_2)
 						.addComponent(textNUMZONE_DEBUT_PONT_2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-					.addContainerGap(365, Short.MAX_VALUE))
+					.addPreferredGap(ComponentPlacement.UNRELATED)
+					.addGroup(gl_panel_param.createParallelGroup(Alignment.BASELINE)
+						.addComponent(lblNewLabel_2_1)
+						.addComponent(textTEMPS_MAX_SOLVEUR, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+					.addContainerGap(334, Short.MAX_VALUE))
 		);
 		gl_panel_param.linkSize(SwingConstants.VERTICAL, new Component[] {lblTailleZone, lblScuritEntreZones, lblcartGroupes, lblNewLabel, lblNewLabel_1});
 		gl_panel_param.linkSize(SwingConstants.HORIZONTAL, new Component[] {lblTailleZone, lblScuritEntreZones, lblcartGroupes, lblNewLabel, lblNewLabel_1});

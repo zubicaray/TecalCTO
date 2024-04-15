@@ -126,6 +126,8 @@ public class TecalOrdo {
 	// temps de sécurité entre deux gammes différentes sur un même poste d'ano
 	@SuppressWarnings("unused")
 	private int mTEMPS_ANO_ENTRE_P1_P2=0;
+	@SuppressWarnings("unused")
+	private int mTEMPS_MAX_SOLVEUR=0;
 	
 	public TecalOrdo(int source) {
 		
@@ -141,7 +143,7 @@ public class TecalOrdo {
 	}
 	
 	public void  setParams(int inTEMPS_ZONE_OVERLAP_MIN,int inTEMPS_MVT_PONT_MIN_JOB,int inGAP_ZONE_NOOVERLAP,
-			int inTEMPS_MVT_PONT,int inTEMPS_ANO_ENTRE_P1_P2
+			int inTEMPS_MVT_PONT,int inTEMPS_ANO_ENTRE_P1_P2,int inTEMPS_MAX_SOLVEUR
 			
 			) {
 		
@@ -154,6 +156,8 @@ public class TecalOrdo {
 		mTEMPS_MVT_PONT =inTEMPS_MVT_PONT;		
 		// temps de sécurité entre deux gammes différentes sur un même poste d'ano
 		mTEMPS_ANO_ENTRE_P1_P2=inTEMPS_ANO_ENTRE_P1_P2;	
+		
+		mTEMPS_MAX_SOLVEUR=inTEMPS_MAX_SOLVEUR;
 	}
 	
 	public void  setDataSource(int source) {
@@ -265,8 +269,9 @@ public class TecalOrdo {
 			solver.getParameters().setStopAfterFirstSolution(true);	
 		}
 		
-		//solver.getParameters().setStopAfterRootPropagation(true);
-		solver.getParameters().setMaxTimeInSeconds(180);
+		// PARAM MIRACLE
+		solver.getParameters().setMaxTimeInSeconds(mTEMPS_MAX_SOLVEUR);
+		
 		
 		
 
@@ -279,8 +284,7 @@ public class TecalOrdo {
 		if (status == CpSolverStatus.OPTIMAL || status == CpSolverStatus.FEASIBLE) {
 
 			for (int jobID = 0; jobID < allJobs.size(); ++jobID) {
-				if(CST.PrintZonesTime) allJobs.get(jobID).printZoneTimes(solver);
-				
+				if(CST.PrintZonesTime) allJobs.get(jobID).printZoneTimes(solver);				
 			}
 
 			outputMsg.append("-----------------------------------------------------------------.");
@@ -302,8 +306,7 @@ public class TecalOrdo {
 					// on ne sait pas à quel moment entre le min et le max de dérive
 					// le solveur a choisit => on doit regarde quand commence la tache d'apres
 					// pour calculer la dérive
-					if(task.numzone != CST.DECHARGEMENT_NUMZONE){
-						
+					if(task.numzone != CST.DECHARGEMENT_NUMZONE){						
 						List<Integer> keySuivante = Arrays.asList(jobID, taskID+1);
 						derive=(int) solver.value(allTasks.get(keySuivante).startBDD)-allTasks.get(key).tempsDeplacement-allTasks.get(key).egouttage;
 					}
@@ -418,7 +421,7 @@ public class TecalOrdo {
 		tecalOrdo.setParams(CST.TEMPS_ZONE_OVERLAP_MIN,
 				CST.TEMPS_MVT_PONT_MIN_JOB,
 				CST.GAP_ZONE_NOOVERLAP,
-			CST.TEMPS_MVT_PONT,CST.TEMPS_ANO_ENTRE_P1_P2);
+			CST.TEMPS_MVT_PONT,CST.TEMPS_ANO_ENTRE_P1_P2,CST.TEMPS_MAX_SOLVEUR);
 		tecalOrdo.setBarresTest();
 		
 		CPO_IHM frame=new CPO_IHM(null);
@@ -453,8 +456,8 @@ public class TecalOrdo {
 			JobType job = new JobType(cptJob, entry.getKey(),model);
 			//String lgamme = entry.getKey();
 			List<GammeType>  zones = entry.getValue();
-			//System.out.println("gamme=" + lgamme + ", nb zone Value length=" + zones.size());
-			job.addZones(zones);       
+			// on calcul les indexes des zones a regrouper par pont
+			job.computeCoords(zones);       
 			allJobs.add(job);
 		}
 
@@ -464,8 +467,7 @@ public class TecalOrdo {
 			for (Task task : job.tasksJob) {
 				horizon += task.duration;
 			}
-		}
-		
+		}		
 	
 		
 		if(modeFast) {
@@ -478,10 +480,10 @@ public class TecalOrdo {
 				if(t>max_time_job) max_time_job=t;
 			}
 			
-			horizon=max_time_job+(max_time_job/contrainteLEvel)*allJobs.size();
-			
+			horizon=max_time_job+(max_time_job/contrainteLEvel)*allJobs.size();			
 			
 		}
+		
 		System.out.println("HORIZON=" + horizon);
 
 		for (JobType job : allJobs) job.horizon=horizon;
@@ -490,14 +492,21 @@ public class TecalOrdo {
 		
 		for (int jobID = 0; jobID < allJobs.size(); ++jobID) {
 			JobType job = allJobs.get(jobID);
+			
+			//on créé les zones avec leut temps de déplacement, égouttage, etc ...
 			job.addIntervalForModel(allTasks,zoneToIntervals,multiZoneIntervals,cumulDemands,jobID,zonesBDD);
+			//on créé les zones corespondant a mouvement des ponts
 			job.simulateBridgesMoves();
+			// on identifie et  regroupe les zones trop courte pour autoriser un mvt du pont 
+			job.ComputeZonesNoOverlap(jobID, allTasks);
+			// regroupement des zones qui pourraient être trop proches de zones d'autre jobs sur pont adverses 
+			job.makeSafetyBetweenBridges();
 			
 		}
 
 		for (int jobID = 0; jobID < allJobs.size(); ++jobID) {
 
-			allJobs.get(jobID).ComputeZonesNoOverlap(jobID, allTasks);  
+			//allJobs.get(jobID).ComputeZonesNoOverlap(jobID, allTasks);  
 			//allJobs.get(jobID).printNoOverlapZones();
 			
 		}
@@ -535,9 +544,10 @@ public class TecalOrdo {
 			}
 
 		}
-		
+		// parse the intervals of single task machine that belongs to the "cumulative" machines (multi tasks machine)
         for (Entry<Integer, List<IntervalVar>> entry : cumulDemands.entrySet()) {
             int idCumulZone = entry.getKey();
+            //get the constraint on the current "cumulative" machine
             CumulativeConstraint cumul=cumulConstr.get(idCumulZone);
             List<IntervalVar> inters = entry.getValue();
             for(IntervalVar iv:inters) {
@@ -606,27 +616,7 @@ public class TecalOrdo {
 		}
 
 	}
-	/**
-	 * zone regroupée: ensemble de zone dont la durée est inférieure à TEMPS_ZONE_OVERLAP_MIN=180
-	 * voici l'algo principale
-	 * 1/les zones regroupées ne doivent pas se chevaucher entre job, la marge de sécurité à gauhe et à droite est CST.GAP_ZONE_NOOVERLAP = 90 
-	 * 2/ chaque début de zones longues ne doit pas chevauché le début d'une zone longue d'un autre job
-	 * 3/ une zone regroupée du job ne doit pas chevauché le début d'une zone longue d'un autre job
-	 * 
-	 * partucilarités:
-	 * 1/la zone juste après le chargement est élargie sur sa gauche de 30 secondes
-	 * pour tenir compte du temps à venir chercher la chage au chargement
-	 * car le début de la zone de chargement n'est pas à considérer pour les mvts du pont
-	 * 
-	 * TODO: check si cette zone est une zone groupée
-	 * 
-	 * comme la zone d'ano est commune au deux pont
-	 * on élargie la fin de la dernière zone groupéé pour qu'elle corresponde à l'arrivée du pont 1 en ano
-	 * 
-	 * 
-	 * TODO: check quoi si cette zone est une zone longue ??
-	 * @param model
-	 */
+
 	private  void machineConstraints() {
 	
 
@@ -692,11 +682,13 @@ public class TecalOrdo {
 			for(int j=0;j<allJobs.size();j++) {
 				JobType job=allJobs.get(j);
 				
-		    	 
+		    	 /*
 		    	 IntervalVar z1=getNoOverlapZone(model,job.mTaskOrdoList.get(job.indexLastZoneP1).intervalBDD);
 		    	 zonesAutourAnodisation.add(z1);
 		    	 IntervalVar z2=getNoOverlapZone(model,job.mTaskOrdoList.get(job.indexFirstZoneP2).intervalBDD);
 		    	 zonesAutourAnodisation.add(z2);
+		    	 */
+		    	 zonesAutourAnodisation.addAll(job.mNoOverlapP1P2);
 		    	
 		    	
 			}

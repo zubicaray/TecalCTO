@@ -1,3 +1,5 @@
 target/
 *.swp
 .settings
+CPO_1.0.exe
+launch4j.log

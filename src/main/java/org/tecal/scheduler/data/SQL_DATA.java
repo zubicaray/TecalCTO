@@ -24,6 +24,8 @@ import org.tecal.scheduler.types.PosteBDD;
 import org.tecal.scheduler.types.PosteProd;
 import org.tecal.scheduler.types.ZoneType;
 
+import com.google.ortools.sat.IntervalVar;
+
 
 class TempsDeplacement 		extends HashMap<List<Integer>,Integer[]>	{	private static final long serialVersionUID = 1L;}
 
@@ -32,6 +34,8 @@ public class SQL_DATA {
 	private Statement mStatement;
 	
 	public static HashMap<Integer,ZoneType>  zones;
+	
+	public static ArrayList<Integer>   zonesSecu;
 	public static HashMap<Integer,Integer>  relatedZones;
 	private HashMap<String, ArrayList<GammeType> > gammes;		
 	static TempsDeplacement  mTempsDeplacement;		
@@ -60,7 +64,7 @@ public class SQL_DATA {
 	public  SQL_DATA()  {
 		
 		String connectionUrl = null;
-		File fileToParse = new File("tecalCPO.ini");
+		File fileToParse = new File("TecalCPO.ini");
 		
 		try {
 			Ini ini = new Ini(fileToParse);
@@ -103,6 +107,7 @@ public class SQL_DATA {
        
 		
 		setZones();
+		setZonesSecu();
 		setRelatedZones();
 		setLignesGammes();
 		setTempsDeplacements();
@@ -133,6 +138,35 @@ private void setRelatedZones() {
 		
 	}
 }
+
+
+private  void setZonesSecu() {
+	
+	ResultSet resultSet = null;   
+	zonesSecu = new ArrayList<Integer>();
+	
+    // Create and execute a SELECT SQL statement.
+    String selectSql = "select Z.numzone "
+    		+ " from  ZONES Z  where SecuritePonts=1 "
+    		+ "order by numzone";
+    
+    try {
+		resultSet = mStatement.executeQuery(selectSql);
+	
+		// Print results from select statement
+        while (resultSet.next()) {
+           
+            zonesSecu.add(resultSet.getInt(1));
+            
+        }
+	} catch (SQLException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+
+	
+}
+	
 
 private  void setZones() {
 		
@@ -425,7 +459,7 @@ public void setTempsDeplacements() {
         		+ "INNER JOIN POSTES P "
         		+ "on P.Numposte=DF.Numposte "
         		+ " and DF.numficheproduction in ("+toClause(listeOF)+") " 
-        		+ "  where DF.DateEntreePoste < DF.DateSortiePoste order by DG.numficheproduction, DF.Numposte,DG.NumLigne";
+        		+ "  order by DG.numficheproduction, DF.Numposte,DG.NumLigne";
         
         try {
 			resultSet = mStatement.executeQuery(selectSql);
