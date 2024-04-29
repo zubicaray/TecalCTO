@@ -21,10 +21,13 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.EventObject;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.Vector;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import javax.imageio.ImageIO;
 import javax.swing.DefaultCellEditor;
 import javax.swing.GroupLayout;
@@ -47,6 +50,7 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowFilter;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
@@ -71,6 +75,7 @@ import javax.swing.UIManager;
 import java.awt.Font;
 import java.awt.Component;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.JCheckBox;
 
@@ -117,7 +122,7 @@ public class TecalGUI {
 	List<Image> mIcons;
 	
 	private SQL_DATA sqlCnx ;
-	private int mNumBarre=0;
+	private AtomicInteger mNumBarre;
 	private TecalOrdo mTecalOrdo;
 	private JTextField textTEMPS_ZONE_OVERLAP_MIN;
 	private JTextField textGAP_ZONE_NOOVERLAP;
@@ -130,15 +135,15 @@ public class TecalGUI {
 	private JDatePickerImpl datePicker;
 	JPanel panelVisuProd; 
 	JScrollPane scrollPaneVisuProd;
-	private JScrollPane scrollPaneMsg_1;
+	private JScrollPane scrollPaneMsg;
 	private JLabel lblGammes;
 	private JLabel lblHardynessLabel;
-	private JScrollPane scrollPane_1;
+	private JScrollPane scrollPane_gamme;
 	private JScrollPane scrollPaneBarres;
 	private JButton btnUpButton;
-	private JButton btnRun_1;
-	private JButton btnDownButton_1;
-	private JLabel lblBarreLabel_1;
+	private JButton btnRun;
+	private JButton btnDownButton;
+	private JLabel lblBarreLabel;
 	private JTextField textTEMPS_MAX_SOLVEUR;
 
 	
@@ -181,7 +186,7 @@ public class TecalGUI {
 	 */
 	public TecalGUI() {
 		
-		sqlCnx = new SQL_DATA();
+		sqlCnx = SQL_DATA.getInstance();
 		initialize();
 		
 		
@@ -207,6 +212,7 @@ public class TecalGUI {
 		
 		
 		frmTecalOrdonnanceur = new JFrame();
+		mNumBarre=new AtomicInteger(0);
 		frmTecalOrdonnanceur.setTitle("Tecal Ordonnanceur");
 		
 		mIcons = new ArrayList<Image>();
@@ -250,7 +256,7 @@ public class TecalGUI {
 		JPanel panelCPO = new JPanel();
 		tabbedPane_1.addTab("Choix des gammes", null, panelCPO, null);
 		
-		scrollPane_1 = new JScrollPane();
+		scrollPane_gamme = new JScrollPane();
 		
 		scrollPaneBarres = new JScrollPane();
 		
@@ -271,8 +277,8 @@ public class TecalGUI {
 		});
 		textFiltre.setColumns(10);
 		
-		lblBarreLabel_1 = new JLabel("barres:                     vitesses:");
-		lblBarreLabel_1.setFont(new Font("Tahoma", Font.PLAIN, 13));
+		lblBarreLabel = new JLabel("barres:                     vitesses:");
+		lblBarreLabel.setFont(new Font("Tahoma", Font.PLAIN, 13));
 		
 		lblGammes = new JLabel("gammes:");
 		lblGammes.setFont(new Font("Tahoma", Font.PLAIN, 13));
@@ -284,16 +290,16 @@ public class TecalGUI {
 				moveRowBy(-1);
 			}
 		});
-		btnDownButton_1 = new JButton();
-		btnDownButton_1.setHorizontalAlignment(SwingConstants.CENTER);
-		btnDownButton_1.addActionListener(new ActionListener() {
+		btnDownButton = new JButton();
+		btnDownButton.setHorizontalAlignment(SwingConstants.CENTER);
+		btnDownButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				moveRowBy(1);
 			}
 		});
 		
 		setIconButton(btnUpButton,"icons8-up-16.png");
-		setIconButton(btnDownButton_1,"icons8-down-16.png");
+		setIconButton(btnDownButton,"icons8-down-16.png");
 		
 		
 	
@@ -321,18 +327,18 @@ public class TecalGUI {
 		
 		lblHardynessLabel = new JLabel("difficulté");
 		
-		scrollPaneMsg_1 = new JScrollPane();
+		scrollPaneMsg = new JScrollPane();
 		
-		btnRun_1 = new JButton("GO");
-		btnRun_1.setHorizontalAlignment(SwingConstants.LEFT);
-		setIconButton(btnRun_1,"icons8-play-16.png");
-		
-		
-		GroupLayout gl_panel = mainGuiGrouping(panelCPO, scrollPane_1, scrollPaneBarres, lblBarreLabel_1, lblGammes,
-				btnUpButton, btnDownButton_1, lblHardynessLabel, scrollPaneMsg_1, btnRun_1);
+		btnRun = new JButton("GO");
+		btnRun.setHorizontalAlignment(SwingConstants.LEFT);
+		setIconButton(btnRun,"icons8-play-16.png");
 		
 		
-		btnRun_1.addActionListener(new ActionListener() {
+		GroupLayout gl_panel = mainGuiGrouping(panelCPO, scrollPane_gamme, scrollPaneBarres, lblBarreLabel, lblGammes,
+				btnUpButton, btnDownButton, lblHardynessLabel, scrollPaneMsg, btnRun);
+		
+		
+		btnRun.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				
 				LinkedHashMap<Integer,String> gammes=new LinkedHashMap <Integer,String>();
@@ -369,13 +375,12 @@ public class TecalGUI {
 		});
 		
 		textArea = new JTextArea();
-		scrollPaneMsg_1.setViewportView(textArea);
+		scrollPaneMsg.setViewportView(textArea);
 		
 		try {
-			
-			
-			buildTableModelBarre();
-			tableBarres = new JTable(modelBarres) {
+			modelBarres= new DefaultTableModel() ;
+		    	
+		    tableBarres = new JTable() {
 
 	            private static final long serialVersionUID = 1L;
 
@@ -386,37 +391,9 @@ public class TecalGUI {
 	          
 			
 	        };
-	        
-	        TableColumn colMontee =tableBarres.getColumnModel().getColumn(2);
-	        // créer un ComboBox
-	        JComboBox<String> cb = new JComboBox<>();
-	        cb.addItem("lente");
-	        cb.addItem("normale");
-	        cb.addItem("rapide");
-	        //définir l'éditeur par défaut
-	        colMontee.setCellEditor(new DefaultCellEditor(cb));
-	        
-	        TableColumn colDescente =tableBarres.getColumnModel().getColumn(3);	
-	        //définir l'éditeur par défaut
-	        colDescente.setCellEditor(new DefaultCellEditor(cb));
-	        
-	        
-			tableBarres.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-	    	TableColumnModel columnModel = tableBarres.getColumnModel();
-	        columnModel.getColumn(0).setPreferredWidth(40);
-	        columnModel.getColumn(0).setMaxWidth(40);	          	
-	        tableBarres.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
-	        
-	        tableBarres.addMouseListener(new MouseAdapter() {
-	    	    public void mousePressed(MouseEvent mouseEvent) {
-	    	        JTable table =(JTable) mouseEvent.getSource();
-	    	        Point point = mouseEvent.getPoint();
-	    	        int row = table.rowAtPoint(point);
-	    	        if (mouseEvent.getClickCount() == 2 && table.getSelectedRow() != -1) {	    	        	
-	    	        	modelBarres.removeRow(row);	         	
-	    	        }
-	    	    }
-	    	});
+	     
+			buildTableModelBarre(modelBarres,tableBarres);
+			
 	        
 	        
 	        
@@ -427,46 +404,37 @@ public class TecalGUI {
 		scrollPaneBarres.setViewportView(tableBarres);
 		
 		
-		ResultSet rs =sqlCnx.getEnteteGammes();
-		
-
 	    // It creates and displays the table
 	    try {
-	    	buildTableModelGamme(rs);
-	    	tableGammes = new JTable(modelGammes);
+	    	
+	    	
+	    	 modelGammes = new DefaultTableModel() {
+
+	     	
+	 			private static final long serialVersionUID = 1L;
+
+	 			@Override
+	     	    public boolean isCellEditable(int row, int column) {
+	     	       //all cells false
+	     	       return false;
+	     	    }
+	     	};
+	     	
+	     	tableGammes = new JTable();
+	     	
+	    	
+	    	buildTableModelGamme(modelGammes,tableGammes,modelBarres,mNumBarre);
 	    	
 	    	
 	    	
 	    	
-	    	tableGammes.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-	    	TableColumnModel columnModel = tableGammes.getColumnModel();
-	        columnModel.getColumn(0).setPreferredWidth(70);
-	        columnModel.getColumn(0).setMaxWidth(400);
-	          	
-	    	tableGammes.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
-	    	
-	    	tableGammes.addMouseListener(new MouseAdapter() {
-	    	    public void mousePressed(MouseEvent mouseEvent) {
-	    	        JTable table =(JTable) mouseEvent.getSource();
-	    	        Point point = mouseEvent.getPoint();
-	    	        int row = table.rowAtPoint(point);
-	    	        row=table.convertRowIndexToModel(row); 	  
-	    	        if (mouseEvent.getClickCount() == 2 && table.getSelectedRow() != -1) {
-	    	        	String gamme=table.getModel().getValueAt(row, 0).toString();
-	    	        	mNumBarre++;
-	    	        	Object[] rowO = { mNumBarre, gamme,"normale","normale" };
-	    	        	modelBarres.addRow(rowO);
-	    	        	
-	    	        }
-	    	    }
-	    	});
 	    	
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
-		scrollPane_1.setViewportView(tableGammes);
+		scrollPane_gamme.setViewportView(tableGammes);
 		panelCPO.setLayout(gl_panel);
 		buildVisuProd();
 		buildParamsTab(tabbedPane_1);
@@ -486,7 +454,7 @@ public class TecalGUI {
 				.addGroup(gl_panelCPO.createSequentialGroup()
 					.addContainerGap()
 					.addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING)
-						.addComponent(scrollPaneMsg_1, GroupLayout.DEFAULT_SIZE, 688, Short.MAX_VALUE)
+						.addComponent(scrollPaneMsg, GroupLayout.DEFAULT_SIZE, 688, Short.MAX_VALUE)
 						.addGroup(gl_panelCPO.createSequentialGroup()
 							.addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING)
 								.addGroup(gl_panelCPO.createSequentialGroup()
@@ -499,18 +467,18 @@ public class TecalGUI {
 									.addComponent(lblHardynessLabel, GroupLayout.PREFERRED_SIZE, 64, GroupLayout.PREFERRED_SIZE)
 									.addPreferredGap(ComponentPlacement.RELATED)
 									.addComponent(comboDifficult, GroupLayout.PREFERRED_SIZE, 56, GroupLayout.PREFERRED_SIZE))
-								.addComponent(scrollPane_1, GroupLayout.DEFAULT_SIZE, 364, Short.MAX_VALUE))
+								.addComponent(scrollPane_gamme, GroupLayout.DEFAULT_SIZE, 364, Short.MAX_VALUE))
 							.addGap(18)
 							.addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING, false)
-								.addComponent(lblBarreLabel_1, Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 204, GroupLayout.PREFERRED_SIZE)
+								.addComponent(lblBarreLabel, Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 204, GroupLayout.PREFERRED_SIZE)
 								.addComponent(scrollPaneBarres, Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 207, GroupLayout.PREFERRED_SIZE))
 							.addGap(18)
 							.addGroup(gl_panelCPO.createParallelGroup(Alignment.TRAILING)
-								.addComponent(btnRun_1, GroupLayout.PREFERRED_SIZE, 81, GroupLayout.PREFERRED_SIZE)
+								.addComponent(btnRun, GroupLayout.PREFERRED_SIZE, 81, GroupLayout.PREFERRED_SIZE)
 								.addComponent(chckbxPrio, GroupLayout.PREFERRED_SIZE, 81, GroupLayout.PREFERRED_SIZE)
 								.addGroup(gl_panelCPO.createSequentialGroup()
 									.addGroup(gl_panelCPO.createParallelGroup(Alignment.TRAILING)
-										.addComponent(btnDownButton_1, GroupLayout.PREFERRED_SIZE, 31, GroupLayout.PREFERRED_SIZE)
+										.addComponent(btnDownButton, GroupLayout.PREFERRED_SIZE, 31, GroupLayout.PREFERRED_SIZE)
 										.addComponent(btnUpButton, GroupLayout.PREFERRED_SIZE, 30, GroupLayout.PREFERRED_SIZE))
 									.addGap(50)))))
 					.addContainerGap())
@@ -522,28 +490,28 @@ public class TecalGUI {
 					.addGroup(gl_panelCPO.createParallelGroup(Alignment.BASELINE)
 						.addComponent(lblGammes, GroupLayout.PREFERRED_SIZE, 20, GroupLayout.PREFERRED_SIZE)
 						.addComponent(textFiltre, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-						.addComponent(lblBarreLabel_1))
+						.addComponent(lblBarreLabel))
 					.addPreferredGap(ComponentPlacement.UNRELATED)
 					.addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING)
 						.addGroup(gl_panelCPO.createParallelGroup(Alignment.BASELINE)
-							.addComponent(scrollPane_1, GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
+							.addComponent(scrollPane_gamme, GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
 							.addComponent(scrollPaneBarres, GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE))
 						.addGroup(gl_panelCPO.createSequentialGroup()
 							.addGap(35)
 							.addComponent(btnUpButton)
 							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(btnDownButton_1)
+							.addComponent(btnDownButton)
 							.addPreferredGap(ComponentPlacement.UNRELATED)
 							.addComponent(chckbxPrio)
 							.addPreferredGap(ComponentPlacement.RELATED, 144, Short.MAX_VALUE)
-							.addComponent(btnRun_1)))
+							.addComponent(btnRun)))
 					.addPreferredGap(ComponentPlacement.UNRELATED)
 					.addGroup(gl_panelCPO.createParallelGroup(Alignment.BASELINE)
 						.addComponent(rdbtnFastModeRadioButton)
 						.addComponent(lblHardynessLabel)
 						.addComponent(comboDifficult, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
 					.addGap(18)
-					.addComponent(scrollPaneMsg_1, GroupLayout.PREFERRED_SIZE, 149, GroupLayout.PREFERRED_SIZE)
+					.addComponent(scrollPaneMsg, GroupLayout.PREFERRED_SIZE, 149, GroupLayout.PREFERRED_SIZE)
 					.addGap(24))
 		);
 		return gl_panelCPO;
@@ -811,7 +779,7 @@ public class TecalGUI {
 		panel_param.setLayout(gl_panel_param);
 	}
 
-	private void setIconButton(JButton btnButton,String fileName) {
+	public void setIconButton(JButton btnButton,String fileName) {
 		try {
 			
 			InputStream in = getClass().getResourceAsStream("/"+fileName) ;					
@@ -823,7 +791,7 @@ public class TecalGUI {
 		  }
 	}
 
-	public void buildTableModelBarre()
+	public static   void buildTableModelBarre(DefaultTableModel inModelBarres,JTable inTableBarres)
 	        throws SQLException {
 
 	   
@@ -836,30 +804,53 @@ public class TecalGUI {
 	    columnNames.add("montée");
 	    columnNames.add("desc.");
 	    
-
-
-	    modelBarres= new DefaultTableModel(null, columnNames) {
-
-    	    /**
-			 * 
-			 */
-			private static final long serialVersionUID = 1L;
-
-			@Override
-    	    public boolean isCellEditable(int row, int column) {
-    	       //all cells false
-    	       return false;
+	    inModelBarres.setColumnIdentifiers(columnNames);   
+       
+        
+        inTableBarres.setModel(inModelBarres);
+        
+        TableColumn colMontee =inTableBarres.getColumnModel().getColumn(2);
+        // créer un ComboBox
+        JComboBox<String> cb = new JComboBox<>();
+        cb.addItem("lente");
+        cb.addItem("normale");
+        cb.addItem("rapide");
+        //définir l'éditeur par défaut
+        colMontee.setCellEditor(new DefaultCellEditor(cb));
+        
+        TableColumn colDescente =inTableBarres.getColumnModel().getColumn(3);	
+        //définir l'éditeur par défaut
+        colDescente.setCellEditor(new DefaultCellEditor(cb));
+        
+        
+        inTableBarres.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+    	TableColumnModel columnModel = inTableBarres.getColumnModel();
+        columnModel.getColumn(0).setPreferredWidth(40);
+        columnModel.getColumn(0).setMaxWidth(40);	          	
+        inTableBarres.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+        
+        inTableBarres.addMouseListener(new MouseAdapter() {
+    	    public void mousePressed(MouseEvent mouseEvent) {
+    	        JTable table =(JTable) mouseEvent.getSource();
+    	        DefaultTableModel model=(DefaultTableModel) table.getModel();
+    	        Point point = mouseEvent.getPoint();
+    	        int row = table.rowAtPoint(point);
+    	        if (mouseEvent.getClickCount() == 2 && table.getSelectedRow() != -1) {	    	        	
+    	        	model.removeRow(row);	         	
+    	        }
     	    }
-    	};
+    	});
    
 
 
 	}
 	
-	public   void buildTableModelGamme(ResultSet rs)
+	public static  void buildTableModelGamme(DefaultTableModel model,JTable inTableGammes,DefaultTableModel modelBarre,AtomicInteger numBarre)
 	        throws SQLException {
 
-	    ResultSetMetaData metaData = rs.getMetaData();
+		SQL_DATA sqlData=SQL_DATA.getInstance();
+		ResultSet rs= sqlData.getEnteteGammes();
+	    ResultSetMetaData metaData =rs.getMetaData();
 
 	    // names of columns
 	    Vector<String> columnNames = new Vector<String>();
@@ -877,20 +868,35 @@ public class TecalGUI {
 	        }
 	        data.add(vector);
 	    }
+	    model.setDataVector(data, columnNames);
 	    
-	    modelGammes = new DefaultTableModel(data, columnNames) {
+	    inTableGammes.setModel(model);
 
-    	    /**
-			 * 
-			 */
-			private static final long serialVersionUID = 1L;
-
-			@Override
-    	    public boolean isCellEditable(int row, int column) {
-    	       //all cells false
-    	       return false;
+	    inTableGammes.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+    	TableColumnModel columnModel = inTableGammes.getColumnModel();
+        columnModel.getColumn(0).setPreferredWidth(70);
+        columnModel.getColumn(0).setMaxWidth(400);
+          	
+        inTableGammes.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+    	
+        inTableGammes.addMouseListener(new MouseAdapter() {
+    	    public void mousePressed(MouseEvent mouseEvent) {
+    	        JTable table =(JTable) mouseEvent.getSource();    	       
+    	        Point point = mouseEvent.getPoint();
+    	        int row = table.rowAtPoint(point);
+    	        row=table.convertRowIndexToModel(row); 	  
+    	        int a = table.getSelectedRow();
+    	        int b = mouseEvent.getClickCount();
+    	        if (mouseEvent.getClickCount() == 2 && table.getSelectedRow() != -1) {
+    	        	String gamme=table.getModel().getValueAt(row, 0).toString();
+    	        	numBarre.set(numBarre.get()+1);
+    	        	Object[] rowO = { numBarre.get(), gamme,"normale","normale" };
+    	        	modelBarre.addRow(rowO);
+    	        	
+    	        }
     	    }
-    	};
+    	});
+	   
    
 
 	}

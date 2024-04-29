@@ -49,6 +49,7 @@ public class JobType {
 
 	List<GammeType> zones;
 	
+	private SQL_DATA sqlData;
 
 	
 
@@ -65,7 +66,7 @@ public class JobType {
 		jobId = jobid;
 		name = inname;
 		model=inM;
-		
+		sqlData=SQL_DATA.getInstance();
 		// dates d'entrée et de sortie du pont 2 sur toutes les zones après ANODISATION
 		//tasksOverlapablePont =new ArrayList<ListeTaskOrdo>();		
 
@@ -195,7 +196,7 @@ public class JobType {
 				deb=mTaskOrdoList.get(taskID).startBDD;
 				
 				if(indexAnod > 0 && taskID-1 == indexAnod) {
-					deb=mTaskOrdoList.get(indexAnod).endBDD;
+					deb=TecalOrdo.getBackward(model,mTaskOrdoList.get(indexAnod).endBDD,30);
 				}else {
 					deb=mTaskOrdoList.get(taskID).startBDD;
 				}
@@ -215,7 +216,8 @@ public class JobType {
 				
 				if(taskID2>taskID+1) {
 					if(taskID2 == indexAnod) {
-						fin=mTaskOrdoList.get(indexAnod).startBDD;
+						fin=TecalOrdo.getForeward(model,mTaskOrdoList.get(indexAnod).startBDD,30);;
+						
 					}else {
 						fin=mTaskOrdoList.get(taskID2-1).endBDD;
 					}
@@ -329,8 +331,8 @@ public class JobType {
 				zoneToIntervals.computeIfAbsent(task.numzone, (Integer k) -> new ArrayList<>());              
 				zoneToIntervals.get(task.numzone).add(taskOrdo.intervalReel);
 				
-				if(SQL_DATA.relatedZones.containsKey(task.numzone)) {
-					int zoneToAdd=SQL_DATA.relatedZones.get(task.numzone);
+				if(sqlData.relatedZones.containsKey(task.numzone)) {
+					int zoneToAdd=sqlData.relatedZones.get(task.numzone);
 					//cumulDemands.add
 					if(!cumulDemands.containsKey(zoneToAdd)) {
 						cumulDemands.put(zoneToAdd,new ArrayList<IntervalVar>());
@@ -341,7 +343,7 @@ public class JobType {
 
 			}
 
-			if(SQL_DATA.zonesSecu.contains(task.numzone)) {
+			if(sqlData.zonesSecu.contains(task.numzone)) {
 				taskOrdo.zoneSecu=true;
 			}
 			

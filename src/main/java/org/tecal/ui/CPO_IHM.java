@@ -8,8 +8,11 @@ import java.awt.event.ActionListener;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -26,6 +29,7 @@ import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.ui.RectangleEdge;
 import org.tecal.scheduler.GanttChart;
+import org.tecal.scheduler.data.SQL_DATA;
 
 import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
@@ -41,6 +45,16 @@ import javax.swing.JTable;
 import javax.swing.SortOrder;
 import javax.swing.JScrollPane;
 import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.JLabel;
+import java.awt.Font;
+import javax.swing.JTextField;
+import javax.swing.JRadioButton;
+import javax.swing.JComboBox;
+import javax.swing.SwingConstants;
+import javax.swing.JCheckBox;
+import javax.swing.ListSelectionModel;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 
 
 public class CPO_IHM extends JFrame {
@@ -54,6 +68,10 @@ public class CPO_IHM extends JFrame {
 	JPanel panelGantt ;
 	private DefaultTableModel modelDerives;
 	private JTable tableDerives;
+	private JPanel GammePanel;	
+		
+	private CPO_Panel cpoPanel;
+	static SQL_DATA sqlData=SQL_DATA.getInstance();
 	/**
 	 * Launch the application.
 	 */
@@ -77,6 +95,12 @@ public class CPO_IHM extends JFrame {
 	public CPO_IHM(List<Image> icons) {
 		
 		setIconImages(icons); 
+		
+		
+		
+		cpoPanel=new CPO_Panel();
+		
+		
 		//setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 985, 650);
 		contentPane = new JPanel();
@@ -89,6 +113,7 @@ public class CPO_IHM extends JFrame {
 	
 		
 		panelGantt = new JPanel();
+		
 		tabbedPane.addTab("Gantt", null, panelGantt, null);
 		JPanel panelDerives = new JPanel();
 		tabbedPane.addTab("Dérives", null, panelDerives, null);
@@ -138,60 +163,51 @@ public class CPO_IHM extends JFrame {
 		panelDerives.setLayout(gl_panelDerives);
 		
 		gl_panelGantt = new GroupLayout(panelGantt);
+		
+		GammePanel = new JPanel();
+		tabbedPane.addTab("Gammes", null, GammePanel, null);
+		
+		//panelCPO = new JPanel();
+		GammePanel.add(cpoPanel);
+		
+		
+		
+		//createPanelCPO(panelCPO);
 		UIManager.put( "Panel.foreground", new Color(255,255,255) );
+		
+		this.addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentShown(ComponentEvent e) {
+				SQL_DATA sql=SQL_DATA.getInstance();
+				ResultSet rs= sql.getEnteteGammes();
+				try {
+					cpoPanel.setRessource(rs);
+				} catch (SQLException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+		});
 		
 		
 		
 	}
 	
+	
+	
 	public   DefaultTableModel getDerives()
-	{
-		
-		return modelDerives;
-		
-		
-		
+	{		
+		return modelDerives;				
 	}
 	
 	public  void  addGantt(ChartPanel  cp,GanttChart ganttTecalOR ) {
 		
-		cp.addChartMouseListener((ChartMouseListener) new ChartMouseListener(){
-		    public void chartMouseClicked(ChartMouseEvent event){
-		    	
-		    	 int mouseX = event.getTrigger().getX();
-		         int mouseY = event.getTrigger().getY();
-		         //System.out.println("x = " + mouseX + ", y = " + mouseY);
-		         Point2D p =cp.translateScreenToJava2D(
-		                 new Point(mouseX, mouseY));
-		         XYPlot plot = (XYPlot) cp.getChart().getPlot();
-		         org.jfree.chart.ChartRenderingInfo info = cp.getChartRenderingInfo();
-		         Rectangle2D dataArea = info.getPlotInfo().getDataArea();
-
-		         ValueAxis domainAxis = plot.getDomainAxis();
-		         RectangleEdge domainAxisEdge = plot.getDomainAxisEdge();
-		         ValueAxis rangeAxis = plot.getRangeAxis();
-		         RectangleEdge rangeAxisEdge = plot.getRangeAxisEdge();
-		         double chartX = domainAxis.java2DToValue(p.getX(), dataArea,
-		                 domainAxisEdge);
-		         double chartY = rangeAxis.java2DToValue(p.getY(), dataArea,
-		                 rangeAxisEdge);
-		    	
-		    	//ganttTecalOR.setTime(chartX*10.0);
-		    }
-
-			@Override
-			public void chartMouseMoved(ChartMouseEvent event) {
-				// TODO Auto-generated method stub
-				
-			}
-		  
-		});
 		
 		JButton btnStartButton = new JButton("Start");
 		
 		btnStartButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				ganttTecalOR.setTime((double) 2222);
+				ganttTecalOR.startTime();
 				btnStartButton.setEnabled(false);
 			}
 		});
@@ -274,4 +290,7 @@ public class CPO_IHM extends JFrame {
 	public void setPanel_chart(JPanel panel_chart) {
 		this.panel_chart = panel_chart;
 	}
+
+
+
 }

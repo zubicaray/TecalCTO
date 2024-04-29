@@ -33,13 +33,13 @@ public class SQL_DATA {
 	private Connection mConnection ;
 	private Statement mStatement;
 	
-	public static HashMap<Integer,ZoneType>  zones;
+	public  HashMap<Integer,ZoneType>  zones;
 	
-	public static ArrayList<Integer>   zonesSecu;
-	public static HashMap<Integer,Integer>  relatedZones;
+	public  ArrayList<Integer>   zonesSecu;
+	public  HashMap<Integer,Integer>  relatedZones;
 	private HashMap<String, ArrayList<GammeType> > gammes;		
 	static TempsDeplacement  mTempsDeplacement;		
-	private static  final SimpleDateFormat FMT =
+	private   final SimpleDateFormat FMT =
 	            new SimpleDateFormat( "yyyyMMdd" );
 
 	
@@ -60,8 +60,15 @@ public class SQL_DATA {
 		}
 		return joiner.toString();
 	}
+	private static final SQL_DATA instance = new SQL_DATA();
 	
-	public  SQL_DATA()  {
+	public static SQL_DATA getInstance() {
+
+		return instance;
+
+	}
+	
+	private  SQL_DATA()  {
 		
 		String connectionUrl = null;
 		File fileToParse = new File("TecalCPO.ini");
@@ -291,7 +298,7 @@ private void  setLignesGammes() {
 
 		
 	}
-public ResultSet getEnteteGammes() {
+public  ResultSet getEnteteGammes() {
 	ResultSet resultSet = null;    
 	
 	
@@ -304,6 +311,7 @@ public ResultSet getEnteteGammes() {
     		+ "order by NumGamme "
     		;
     try {
+    	
 		resultSet = mStatement.executeQuery(selectSql);
 		// Print results from select statement
     

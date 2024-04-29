@@ -40,7 +40,7 @@ public class CST {
 			"000818","000812","000717","000002","000169",
 			"000020","000021","000164","000601","000467",
 			"000347","000169","000210","000246","000216"};
-	public final static String gammesTest[] =gammesTest_PB_pont2;
+	public final static String gammesTest[] =test26janvier;
 	
 	public final static int TEMPS_MAX_SOLVEUR=20;
 	

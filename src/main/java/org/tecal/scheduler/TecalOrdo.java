@@ -112,6 +112,7 @@ public class TecalOrdo {
 	
 	private StringBuilder outputMsg;
 	private int mSource;
+	private SQL_DATA sqlData;
 	
 	@SuppressWarnings("unused")
 	private int mTEMPS_ZONE_OVERLAP_MIN=0;	
@@ -132,6 +133,7 @@ public class TecalOrdo {
 	public TecalOrdo(int source) {
 		
 		mBarres=new  HashMap<String, ArrayList<GammeType> >();		
+		sqlData=SQL_DATA.getInstance();
 		
 		Loader.loadNativeLibraries();
 		//model = new CpModel();
@@ -165,9 +167,9 @@ public class TecalOrdo {
 		setSource(source);
 		
 		if(CST.SQLSERVER ==source) {
-			sqlCnx = new SQL_DATA();
+			sqlCnx = SQL_DATA.getInstance();
 			mGammes=sqlCnx.getLignesGammesAll();
-			zonesBDD=SQL_DATA.zones;
+			zonesBDD=sqlData.zones;
 		}else {
 			
 			try {

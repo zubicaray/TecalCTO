@@ -119,7 +119,7 @@ public class GanttChart extends JFrame {
 	       
 	    }
 	}
-	public void setTime(Double val) {
+	public void startTime() {
 		
 		new Timer().schedule(mTimer, 0, 1000);	
 		
@@ -349,9 +349,8 @@ public class GanttChart extends JFrame {
 		 private static final long serialVersionUID = 1L;
 		
 		 public String generateToolTip(XYDataset dataset, int series, int item) {    	
-			//System.out.println("series:"+series+" "+" item:"+item+" val="+labelsModel[series][item]);    	
-			 	
-		        return  labelsModel.get(series)[item]+ " temps avant sortie :"+ tmpsAvantSortie(tasksTab.get(series)[item].derive);
+			 	//System.out.println("series:"+series+" "+" item:"+item+" val="+labelsModel[series][item]);    	
+			 	return  labelsModel.get(series)[item]+ " temps avant sortie :"+ tmpsAvantSortie(tasksTab.get(series)[item].derive);
 		    }
 		 };
 	     renderer.setSeriesToolTipGenerator(0, ttgen); 
@@ -364,7 +363,7 @@ public class GanttChart extends JFrame {
 	     timeBar = new ValueMarker(1500);  // position is the value on the axis
 	     timeBar.setPaint(Color.red);
 	     //marker.setLabel("here"); // see JavaDoc for labels, colors, strokes
-	     timeBar.setValue(163);
+	     timeBar.setValue(100);
 	    
 	     plot.addRangeMarker(timeBar);
 	     	   
@@ -455,7 +454,7 @@ public class GanttChart extends JFrame {
 	 
 				  PosteProd posteProd=set.getValue();	
 				  
-				  labels.get(currentFiche)[cptt]="start:"+posteProd.start+", durée:"+(posteProd.stop-posteProd.start)+"end:"+posteProd.stop ;
+				  labels.get(currentFiche)[cptt]="start:"+(posteProd.start-offset)+", durée:"+(posteProd.stop-posteProd.start)+"end:"+(posteProd.stop-offset) ;
 				  cptt++;
 				  
 				  //System.out.println( "------------------------------------------------");
