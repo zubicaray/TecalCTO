@@ -1,60 +1,42 @@
 package org.tecal.ui;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.EventQueue;
-import java.awt.Image;
-import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
-
-import org.jfree.chart.ChartMouseEvent;
-import org.jfree.chart.ChartMouseListener;
-import org.jfree.chart.ChartPanel;
-
-import org.jfree.chart.axis.ValueAxis;
-import org.jfree.chart.plot.XYPlot;
-import org.jfree.ui.RectangleEdge;
-import org.tecal.scheduler.GanttChart;
-import org.tecal.scheduler.data.SQL_DATA;
-
-import javax.swing.JTabbedPane;
-import javax.swing.UIManager;
-
-import java.awt.BorderLayout;
-import java.awt.Color;
 
 import javax.swing.DefaultRowSorter;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.SortOrder;
-import javax.swing.JScrollPane;
-import javax.swing.LayoutStyle.ComponentPlacement;
-import javax.swing.JLabel;
-import java.awt.Font;
-import javax.swing.JTextField;
-import javax.swing.JRadioButton;
-import javax.swing.JComboBox;
 import javax.swing.SwingConstants;
-import javax.swing.JCheckBox;
-import javax.swing.ListSelectionModel;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
+import javax.swing.UIManager;
+import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
+
+import org.jfree.chart.ChartPanel;
+import org.tecal.scheduler.CST;
+import org.tecal.scheduler.GanttChart;
+import org.tecal.scheduler.TecalOrdo;
+import org.tecal.scheduler.data.SQL_DATA;
+import org.tecal.scheduler.types.AssignedTask;
 
 
 public class CPO_IHM extends JFrame {
@@ -64,23 +46,49 @@ public class CPO_IHM extends JFrame {
 	private JTabbedPane tabbedPaneGantt;
 	private JTabbedPane tabbedPane ;
 	private JPanel panel_chart;
-	private GroupLayout gl_panelGantt ; 
 	JPanel panelGantt ;
 	private DefaultTableModel modelDerives;
 	private JTable tableDerives;
-	private JPanel GammePanel;	
-		
-	private CPO_Panel cpoPanel;
+	private JPanel GammePanel;
+	private GroupLayout gl_panelGantt;
+	private GanttChart mGanttTecalOR;
+
+	private TecalOrdo mTecalOrdo;
+
+	private LinkedHashMap<Integer,String> mGammes;
+
+	public LinkedHashMap<Integer, String> getGammes() {
+		return mGammes;
+	}
+	public void setGammes(LinkedHashMap<Integer, String> mGammes) {
+		this.mGammes = mGammes;
+	}
+	public TecalOrdo getmTecalOrdo() {
+		return mTecalOrdo;
+	}
+	public void setmTecalOrdo(TecalOrdo mTecalOrdo) {
+		this.mTecalOrdo = mTecalOrdo;
+	}
+
+	private CPO_Panel mCPO_PANEL;
+	public CPO_Panel getCpoPanel() {
+		return mCPO_PANEL;
+	}
+	public void setCpoPanel(CPO_Panel mCPO_PANEL) {
+		this.mCPO_PANEL = mCPO_PANEL;
+	}
+
 	static SQL_DATA sqlData=SQL_DATA.getInstance();
 	/**
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
+			@Override
 			public void run() {
 				try {
-					CPO_IHM frame = new CPO_IHM(null);
-					//frame.addGantt(null) ;
+					CPO_IHM frame = new CPO_IHM();
+
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -89,18 +97,88 @@ public class CPO_IHM extends JFrame {
 		});
 	}
 
+	public void run (LinkedHashMap<Integer,String> gammes) {
+		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		//TODO
+
+		if(gammes==null) {
+			mTecalOrdo.run(mGammes);
+		} else {
+			mTecalOrdo.run(gammes);
+		}
+
+		mGanttTecalOR = new GanttChart("Diagramme Gantt de la production");
+		SQL_DATA sqlCnx=SQL_DATA.getInstance();
+
+		ChartPanel cp = mGanttTecalOR.model_diag(mTecalOrdo);
+
+		mCPO_PANEL.setText(mTecalOrdo.getOutputMsg().toString());
+
+
+		DefaultTableModel modelDerives =getDerives();
+
+		for(List<AssignedTask> lat : mTecalOrdo.getAssignedJobs().values()) {
+			for(AssignedTask at :lat) {
+				if(at.derive>at.start+at.duration) {
+
+					int t=at.derive-at.start;
+					String minutes=String.format("%02d:%02d",  t / 60, (t % 60));
+					Object[] rowO = {
+							mTecalOrdo.getAllJobs().get(at.jobID).name,
+							sqlCnx.getZones().get(at.numzone).codezone,
+							minutes };
+					modelDerives.addRow(rowO);
+				}
+			}
+		}
+
+
+		panelGantt.setLayout(new BorderLayout());
+		panelGantt.add(cp, BorderLayout.NORTH);
+
+		//panelGantt.add(new ChartPanel(chart));
+
+
+
+		setCursor(Cursor.getDefaultCursor());
+	}
+
+
+	public CPO_IHM() {
+		mTecalOrdo=new TecalOrdo(CST.SQLSERVER);
+		int[] params= {
+				CST.TEMPS_ZONE_OVERLAP_MIN,
+				CST.TEMPS_MVT_PONT_MIN_JOB,
+				CST.GAP_ZONE_NOOVERLAP,
+			CST.TEMPS_MVT_PONT,CST.TEMPS_ANO_ENTRE_P1_P2,CST.TEMPS_MAX_SOLVEUR
+		};
+
+		mTecalOrdo.setParams(params);
+		init();
+		// TODO Auto-generated constructor stub
+	}
+
 	/**
 	 * Create the frame.
 	 */
-	public CPO_IHM(List<Image> icons) {
-		
-		setIconImages(icons); 
-		
-		
-		
-		cpoPanel=new CPO_Panel();
-		
-		
+	public CPO_IHM(LinkedHashMap<Integer,String> gammes,int[] params) {
+
+
+		mGammes=gammes;
+
+		mTecalOrdo=new TecalOrdo(CST.SQLSERVER);
+		mTecalOrdo.setParams(params);
+		mTecalOrdo.setBarres(gammes);
+
+		init();
+
+
+
+	}
+	private void init() {
+
+		mCPO_PANEL= new CPO_Panel(this);
+		setIconImages(TecalGUI.loadIcons(this));
 		//setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 985, 650);
 		contentPane = new JPanel();
@@ -108,18 +186,44 @@ public class CPO_IHM extends JFrame {
 
 		setContentPane(contentPane);
 		contentPane.setLayout(new BorderLayout(0, 0));
-		
-		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-	
-		
+
+		tabbedPane = new JTabbedPane(SwingConstants.TOP);
+
+		GammePanel = new JPanel();
+		tabbedPane.addTab("Gammes", null, GammePanel, null);
+
+		//panelCPO = new JPanel();
+		GammePanel.add(mCPO_PANEL);
+
+
+
+
 		panelGantt = new JPanel();
-		
+
 		tabbedPane.addTab("Gantt", null, panelGantt, null);
+
+		JButton btnStartButton = new JButton("Start");
+		gl_panelGantt = new GroupLayout(panelGantt);
+		gl_panelGantt.setHorizontalGroup(
+			gl_panelGantt.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_panelGantt.createSequentialGroup()
+					.addContainerGap(887, Short.MAX_VALUE)
+					.addComponent(btnStartButton)
+					.addContainerGap())
+		);
+		gl_panelGantt.setVerticalGroup(
+			gl_panelGantt.createParallelGroup(Alignment.LEADING)
+				.addGroup(Alignment.TRAILING, gl_panelGantt.createSequentialGroup()
+					.addContainerGap(576, Short.MAX_VALUE)
+					.addComponent(btnStartButton)
+					.addGap(19))
+		);
+		panelGantt.setLayout(gl_panelGantt);
 		JPanel panelDerives = new JPanel();
 		tabbedPane.addTab("Dérives", null, panelDerives, null);
-		
 
-	    
+
+
 	    modelDerives=new DefaultTableModel(
 				new Object[][] {
 				},
@@ -127,10 +231,10 @@ public class CPO_IHM extends JFrame {
 					"barre", "zone", "dérive"
 				}
 			);
-		
+
 		JScrollPane scrollPane = new JScrollPane();
-		
-		
+
+
 		GroupLayout gl_panelDerives = new GroupLayout(panelDerives);
 		gl_panelDerives.setHorizontalGroup(
 			gl_panelDerives.createParallelGroup(Alignment.TRAILING)
@@ -146,133 +250,92 @@ public class CPO_IHM extends JFrame {
 					.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 198, Short.MAX_VALUE)
 					.addGap(40))
 		);
-		
+
 		tableDerives = new JTable(modelDerives);
-		
-		
-		TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(tableDerives.getModel());
+
+
+		TableRowSorter<TableModel> sorter = new TableRowSorter<>(tableDerives.getModel());
 		tableDerives.setRowSorter(sorter);
 
 		List<DefaultRowSorter.SortKey> sortKeys = new ArrayList<>(2);
 		sortKeys.add(new DefaultRowSorter.SortKey(0, SortOrder.ASCENDING));
 		sortKeys.add(new DefaultRowSorter.SortKey(1, SortOrder.ASCENDING));
 		sorter.setSortKeys(sortKeys);
-		
-		
+
+
 		scrollPane.setViewportView(tableDerives);
 		panelDerives.setLayout(gl_panelDerives);
-		
-		gl_panelGantt = new GroupLayout(panelGantt);
-		
-		GammePanel = new JPanel();
-		tabbedPane.addTab("Gammes", null, GammePanel, null);
-		
-		//panelCPO = new JPanel();
-		GammePanel.add(cpoPanel);
-		
-		
-		
+
+		contentPane.add(tabbedPane);
+
 		//createPanelCPO(panelCPO);
 		UIManager.put( "Panel.foreground", new Color(255,255,255) );
-		
+
 		this.addComponentListener(new ComponentAdapter() {
 			@Override
 			public void componentShown(ComponentEvent e) {
 				SQL_DATA sql=SQL_DATA.getInstance();
 				ResultSet rs= sql.getEnteteGammes();
 				try {
-					cpoPanel.setRessource(rs);
+					mCPO_PANEL.setRessource(rs);
 				} catch (SQLException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
 			}
 		});
-		
-		
-		
 	}
-	
-	
-	
+
+
+
+
 	public   DefaultTableModel getDerives()
-	{		
-		return modelDerives;				
+	{
+		return modelDerives;
 	}
-	
+
 	public  void  addGantt(ChartPanel  cp,GanttChart ganttTecalOR ) {
-		
-		
+
+
 		JButton btnStartButton = new JButton("Start");
-		
+
 		btnStartButton.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				ganttTecalOR.startTime();
 				btnStartButton.setEnabled(false);
 			}
 		});
 		JButton btnForeButton = new JButton("avancer");
-		
+
 		btnForeButton.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				ganttTecalOR.foreward(2);
 			}
 		});
-		
+
 		JButton btnBackButton = new JButton("reculer");
-		
+
 		btnBackButton.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				ganttTecalOR.backward(2);
 			}
 		});
-	
-		
-		gl_panelGantt = new GroupLayout(panelGantt);
-		gl_panelGantt.setHorizontalGroup(
-				gl_panelGantt.createParallelGroup(Alignment.TRAILING)
-				.addGroup(gl_panelGantt.createSequentialGroup()
-					
-					.addComponent(cp, GroupLayout.PREFERRED_SIZE, 919, Short.MAX_VALUE)
-					.addGap(58))
-					//.addContainerGap(68, Short.MAX_VALUE))
-				.addGroup(Alignment.TRAILING, gl_panelGantt.createSequentialGroup()
-					.addContainerGap(212, Short.MAX_VALUE)
-					.addComponent(btnBackButton)
-					.addGap(45)
-					.addComponent(btnForeButton)
-					.addGap(45)
-					.addComponent(btnStartButton)
-					.addContainerGap())
-		);
 
-		
-		gl_panelGantt.setVerticalGroup(
-				gl_panelGantt.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_panelGantt.createSequentialGroup()
-					.addGap(34)
-					.addComponent(cp, GroupLayout.DEFAULT_SIZE, 531, Short.MAX_VALUE)
-					.addPreferredGap(ComponentPlacement.UNRELATED)
-					.addGroup(gl_panelGantt.createParallelGroup(Alignment.BASELINE)
-						.addComponent(btnBackButton)
-						.addComponent(btnForeButton)
-						.addComponent(btnStartButton))
-					.addContainerGap())
-		);
-		
-	
-		
-		
+
+
+
+
+
+
 		cp.setForeground(new Color(255,255,255));
-		
-	
-		
-			
-			
-			
-		
-		panelGantt.setLayout(gl_panelGantt);
-		contentPane.add(tabbedPane);			;
+
+
+
+
+
 	}
 
 	public JTabbedPane getTabbedPaneGantt() {
@@ -290,7 +353,4 @@ public class CPO_IHM extends JFrame {
 	public void setPanel_chart(JPanel panel_chart) {
 		this.panel_chart = panel_chart;
 	}
-
-
-
 }

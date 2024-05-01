@@ -53,8 +53,7 @@ public class CST {
 	//------------------------------------------------------------
 	// -----------------  CONSTRAINTES ---------------------------
 	//------------------------------------------------------------
-	public final static boolean MODE_ECO = false;
-	public final static int 	PORTION_HORIZON = 7;
+
 	//ancienne méthode
 	public final static boolean CSTR_ECART_ZONES_CUMULS=false;
 	public final static boolean CSTR_NOOVERLAP_ZONES_GROUPEES=false ;

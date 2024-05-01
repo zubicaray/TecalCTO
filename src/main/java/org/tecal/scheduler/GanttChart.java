@@ -52,10 +52,10 @@ public class GanttChart extends JFrame {
 	ArrayList<String[]> labels;
 	ValueMarker timeBar;
 
-	public GanttChart(SQL_DATA sqlCnx,final String title) {
+	public GanttChart(final String title) {
 
 		super(title);
-		mSqlCnx=sqlCnx;
+		mSqlCnx=SQL_DATA.getInstance();;
 		
 		setTimer(new timerGantt());
 		   
@@ -145,11 +145,13 @@ public class GanttChart extends JFrame {
 		timeBar.setValue(timeBar.getValue()+v);
 	}
 	
-	public JFreeChart model_diag(
-			Map<Integer, List<AssignedTask>> assignedJobs ,HashMap<Integer,ZoneType> inZonesBDD, 
-			HashMap<String, ArrayList<GammeType> > ficheToZones) {
+	public ChartPanel model_diag(TecalOrdo  inTecalOrdo){
 		
+		HashMap<Integer,ZoneType> inZonesBDD=mSqlCnx.getZones();
+		HashMap<String, ArrayList<GammeType> > ficheToZones		= inTecalOrdo.getBarres();
+		Map<Integer, List<AssignedTask>> assignedJobs=inTecalOrdo.getAssignedJobs();
 		
+		 
 		 XYIntervalSeriesCollection dataset = new XYIntervalSeriesCollection();
 		 int nbZones=inZonesBDD.keySet().size();
 		 
@@ -367,9 +369,10 @@ public class GanttChart extends JFrame {
 	    
 	     plot.addRangeMarker(timeBar);
 	     	   
-	     JFreeChart j= new JFreeChart(plot);	     
+	     JFreeChart j= new JFreeChart(plot);	
+	     
 	    
-	     return  j;
+	     return  new ChartPanel(j);
 	
 	}
 

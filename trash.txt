@@ -1,5 +1,1 @@
-Statistiques:
-  conflits: 33484
-  branches : 40684
-  
-  
+ gammes  78 et 119 => no solution

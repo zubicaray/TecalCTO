@@ -24,17 +24,20 @@ import org.tecal.scheduler.types.PosteBDD;
 import org.tecal.scheduler.types.PosteProd;
 import org.tecal.scheduler.types.ZoneType;
 
-import com.google.ortools.sat.IntervalVar;
-
-
 class TempsDeplacement 		extends HashMap<List<Integer>,Integer[]>	{	private static final long serialVersionUID = 1L;}
 
 public class SQL_DATA {
 	private Connection mConnection ;
 	private Statement mStatement;
 	
-	public  HashMap<Integer,ZoneType>  zones;
+	private  HashMap<Integer,ZoneType>  zones;
 	
+	public HashMap<Integer, ZoneType> getZones() {
+		return zones;
+	}
+	public void setZones(HashMap<Integer, ZoneType> zones) {
+		this.zones = zones;
+	}
 	public  ArrayList<Integer>   zonesSecu;
 	public  HashMap<Integer,Integer>  relatedZones;
 	private HashMap<String, ArrayList<GammeType> > gammes;		

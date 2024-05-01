@@ -1,18 +1,20 @@
 package org.tecal.ui;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
-
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -21,40 +23,32 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.EventObject;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.Vector;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.imageio.ImageIO;
-import javax.swing.DefaultCellEditor;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
-
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField.AbstractFormatter;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ListSelectionModel;
-import javax.swing.RowFilter;
+import javax.swing.SwingConstants;
+import javax.swing.UIManager;
+import javax.swing.WindowConstants;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
-import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
 
 import org.jdatepicker.impl.JDatePanelImpl;
 import org.jdatepicker.impl.JDatePickerImpl;
@@ -62,27 +56,14 @@ import org.jdatepicker.impl.UtilDateModel;
 import org.jfree.ui.RefineryUtilities;
 import org.tecal.scheduler.CST;
 import org.tecal.scheduler.GanttChart;
-import org.tecal.scheduler.TecalOrdo;
 import org.tecal.scheduler.data.SQL_DATA;
-import org.tecal.scheduler.types.GammeType;
 
 import com.formdev.flatlaf.FlatDarkLaf;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import javax.swing.JTextArea;
-import javax.swing.SwingConstants;
-import javax.swing.UIManager;
-import java.awt.Font;
-import java.awt.Component;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.CellEditorListener;
-import javax.swing.event.ChangeEvent;
-import javax.swing.JCheckBox;
 
  class DateLabelFormatter extends AbstractFormatter {
 
     /**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 1L;
 	private String datePattern = "yyyy-MM-dd";
@@ -107,53 +88,41 @@ import javax.swing.JCheckBox;
 public class TecalGUI {
 
 	private JFrame frmTecalOrdonnanceur;
-	//private JFrame gantFrame;
-	private CPO_IHM   gantFrame;
-	private JTable tableGammes;
-	private DefaultTableModel modelGammes ;
+	//private JFrame mCPO_IHM;
+	private CPO_IHM   mCPO_IHM;
+
 	private DefaultTableModel modelVisuProd ;
-	private JTable tableBarres;
-	private DefaultTableModel modelBarres;
-	private JTextField textFiltre;
+
 	private JTextArea textArea;
-	private JRadioButton rdbtnFastModeRadioButton;
-	private JComboBox<Integer> comboDifficult;
-	private ImageIcon img;
+
 	List<Image> mIcons;
-	
+
 	private SQL_DATA sqlCnx ;
-	private AtomicInteger mNumBarre;
-	private TecalOrdo mTecalOrdo;
+	private CPO_Panel mPanelCPO;
+
+
 	private JTextField textTEMPS_ZONE_OVERLAP_MIN;
 	private JTextField textGAP_ZONE_NOOVERLAP;
 	private JTextField textTEMPS_MVT_PONT_MIN_JOB;
 	private JTextField textTEMPS_MVT_PONT;
 	private JTextField textTEMPS_ANO_ENTRE_P1_P2;
 	private JTextField textNUMZONE_DEBUT_PONT_2;
-	private JTabbedPane tabbedPane_1;
+	private JTabbedPane tabbedPaneMain;
 	private JTable tableOF;
 	private JDatePickerImpl datePicker;
-	JPanel panelVisuProd; 
+	JPanel panelVisuProd;
 	JScrollPane scrollPaneVisuProd;
-	private JScrollPane scrollPaneMsg;
-	private JLabel lblGammes;
-	private JLabel lblHardynessLabel;
-	private JScrollPane scrollPane_gamme;
-	private JScrollPane scrollPaneBarres;
-	private JButton btnUpButton;
-	private JButton btnRun;
-	private JButton btnDownButton;
-	private JLabel lblBarreLabel;
+
 	private JTextField textTEMPS_MAX_SOLVEUR;
 
-	
+
 	/**
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
-		
+
 		FlatDarkLaf.setup();
-		
+
 		Color back=new Color(255, 248, 223);
 		Color fore=new Color(1,1,1);
 		UIManager.put( "Table.background", back );
@@ -168,8 +137,9 @@ public class TecalGUI {
 		UIManager.put( "Component.arc", 999 );
 		UIManager.put( "ProgressBar.arc", 999 );
 		UIManager.put( "TextComponent.arc", 999 );
-		
+
 		EventQueue.invokeLater(new Runnable() {
+			@Override
 			public void run() {
 				try {
 					TecalGUI window = new TecalGUI();
@@ -185,340 +155,104 @@ public class TecalGUI {
 	 * Create the application.
 	 */
 	public TecalGUI() {
-		
+
 		sqlCnx = SQL_DATA.getInstance();
 		initialize();
-		
-		
-		mTecalOrdo=new TecalOrdo(CST.SQLSERVER);
-		
-		
-	}
-	
-	public void initTable(ArrayList<GammeType> gammeList, JTable table) {
 
-		  DefaultTableModel model = (DefaultTableModel)table.getModel();
-		     for(GammeType gamme : gammeList){
-		          model.addRow(new Object[]{gamme.numgamme, gamme.numgamme });
-		     }
-		     table.setModel(model);
-		}
+	}
+
 
 
 	/**
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
-		
-		
+
+
 		frmTecalOrdonnanceur = new JFrame();
-		mNumBarre=new AtomicInteger(0);
+
 		frmTecalOrdonnanceur.setTitle("Tecal Ordonnanceur");
-		
-		mIcons = new ArrayList<Image>();
+
+		mIcons=loadIcons(this);
+
+
+
+		frmTecalOrdonnanceur.setIconImages(mIcons);
+
+		//mCPO_IHM = new CPO(mIcons);
+
+		frmTecalOrdonnanceur.setBounds(100, 100, 729, 661);
+		frmTecalOrdonnanceur.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+
+		tabbedPaneMain = new JTabbedPane(SwingConstants.TOP);
+		GroupLayout groupLayout = new GroupLayout(frmTecalOrdonnanceur.getContentPane());
+		groupLayout.setHorizontalGroup(
+			groupLayout.createParallelGroup(Alignment.LEADING)
+				.addComponent(tabbedPaneMain, GroupLayout.DEFAULT_SIZE, 686, Short.MAX_VALUE)
+		);
+		groupLayout.setVerticalGroup(
+			groupLayout.createParallelGroup(Alignment.LEADING)
+				.addComponent(tabbedPaneMain, GroupLayout.DEFAULT_SIZE, 542, Short.MAX_VALUE)
+		);
+
+
+
+		mPanelCPO = new CPO_Panel();
+		tabbedPaneMain.addTab("Choix des gammes", null, mPanelCPO, null);
+
+
+		frmTecalOrdonnanceur.addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentShown(ComponentEvent e) {
+
+				ResultSet rs= sqlCnx.getEnteteGammes();
+				try {
+					mPanelCPO.setRessource(rs);
+				} catch (SQLException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+		});
+
+
+
+		//scrollPane_gamme.setViewportView(tableGammes);
+		//panelCPO.setLayout(gl_panel);
+		buildVisuProd();
+		buildParamsTab(tabbedPaneMain);
+
+		frmTecalOrdonnanceur.getContentPane().setLayout(groupLayout);
+	}
+
+	public static  List<Image>  loadIcons( Object o) {
+		List<Image>  lIcons = new ArrayList<>();
 		try {
-			
-			InputStream in = getClass().getResourceAsStream("/gantt-chart 16.png") ;					
+
+			InputStream in = o.getClass().getResourceAsStream("/gantt-chart 16.png") ;
 			BufferedImage someImage = ImageIO.read(in);
+			ImageIcon img;
 			img = new ImageIcon(someImage);
-			mIcons.add(img.getImage());
-			in = getClass().getResourceAsStream("/gantt-chart 32.png") ;
+			lIcons.add(img.getImage());
+			in = o.getClass().getResourceAsStream("/gantt-chart 32.png") ;
 			someImage = ImageIO.read(in);
-			img = new ImageIcon(someImage);			
-			mIcons.add(img.getImage());
-			
-			
+			img = new ImageIcon(someImage);
+			lIcons.add(img.getImage());
+
+
+
+
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} // usable in Java 9+
-	   
-		
-		
-		frmTecalOrdonnanceur.setIconImages(mIcons); 
-		
-		//gantFrame = new CPO(mIcons);
-		
-		frmTecalOrdonnanceur.setBounds(100, 100, 729, 661);
-		frmTecalOrdonnanceur.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		
-		tabbedPane_1 = new JTabbedPane(JTabbedPane.TOP);
-		GroupLayout groupLayout = new GroupLayout(frmTecalOrdonnanceur.getContentPane());
-		groupLayout.setHorizontalGroup(
-			groupLayout.createParallelGroup(Alignment.LEADING)
-				.addComponent(tabbedPane_1, GroupLayout.DEFAULT_SIZE, 686, Short.MAX_VALUE)
-		);
-		groupLayout.setVerticalGroup(
-			groupLayout.createParallelGroup(Alignment.LEADING)
-				.addComponent(tabbedPane_1, GroupLayout.DEFAULT_SIZE, 542, Short.MAX_VALUE)
-		);
-		
-		JPanel panelCPO = new JPanel();
-		tabbedPane_1.addTab("Choix des gammes", null, panelCPO, null);
-		
-		scrollPane_gamme = new JScrollPane();
-		
-		scrollPaneBarres = new JScrollPane();
-		
-		textFiltre = new JTextField();
-		textFiltre.addKeyListener(new KeyAdapter() {
-			@Override
-			public void keyReleased(KeyEvent e) {
-				TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(((DefaultTableModel) tableGammes.getModel())); 
-			    sorter.setRowFilter(RowFilter.regexFilter(textFiltre.getText()));
 
-			    tableGammes.setRowSorter(sorter);
-			}
-		});
-		textFiltre.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				
-			}
-		});
-		textFiltre.setColumns(10);
-		
-		lblBarreLabel = new JLabel("barres:                     vitesses:");
-		lblBarreLabel.setFont(new Font("Tahoma", Font.PLAIN, 13));
-		
-		lblGammes = new JLabel("gammes:");
-		lblGammes.setFont(new Font("Tahoma", Font.PLAIN, 13));
-		
-		btnUpButton = new JButton();
-		btnUpButton.setHorizontalAlignment(SwingConstants.CENTER);
-		btnUpButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				moveRowBy(-1);
-			}
-		});
-		btnDownButton = new JButton();
-		btnDownButton.setHorizontalAlignment(SwingConstants.CENTER);
-		btnDownButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				moveRowBy(1);
-			}
-		});
-		
-		setIconButton(btnUpButton,"icons8-up-16.png");
-		setIconButton(btnDownButton,"icons8-down-16.png");
-		
-		
-	
-		
-		rdbtnFastModeRadioButton = new JRadioButton("mode approx.");
-		
-		rdbtnFastModeRadioButton.setSelected(CST.MODE_ECO);
-		
-
-		
-		Integer [] comboVals= {3,4,5,6,7,8,9,10,11,12,13};
-		comboDifficult = new JComboBox<Integer>(comboVals);
-		comboDifficult.setSelectedItem(7);
-		if(! rdbtnFastModeRadioButton.isSelected()) {
-			comboDifficult.setEnabled(false);
-		}
-		
-		rdbtnFastModeRadioButton.addChangeListener(new ChangeListener() {
-			public void stateChanged(ChangeEvent e) {
-				
-				comboDifficult.setEnabled(rdbtnFastModeRadioButton.isSelected());
-				
-			}
-		});
-		
-		lblHardynessLabel = new JLabel("difficulté");
-		
-		scrollPaneMsg = new JScrollPane();
-		
-		btnRun = new JButton("GO");
-		btnRun.setHorizontalAlignment(SwingConstants.LEFT);
-		setIconButton(btnRun,"icons8-play-16.png");
-		
-		
-		GroupLayout gl_panel = mainGuiGrouping(panelCPO, scrollPane_gamme, scrollPaneBarres, lblBarreLabel, lblGammes,
-				btnUpButton, btnDownButton, lblHardynessLabel, scrollPaneMsg, btnRun);
-		
-		
-		btnRun.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				
-				LinkedHashMap<Integer,String> gammes=new LinkedHashMap <Integer,String>();
-				if(tableBarres.getRowCount()<2) {
-					JOptionPane.showMessageDialog(frmTecalOrdonnanceur, "Minimum deux barres requises !","Tecal CPO", JOptionPane.ERROR_MESSAGE);
-				}else {
-					
-					gammes.clear();
-					for (int count = 0; count < tableBarres.getRowCount(); count++){
-						gammes.put((int)tableBarres.getValueAt(count, 0),tableBarres.getValueAt(count, 1).toString());
-					}
-					
-					mTecalOrdo.setParams(
-							Integer.valueOf(textTEMPS_ZONE_OVERLAP_MIN.getText()),
-							Integer.valueOf(textTEMPS_MVT_PONT_MIN_JOB.getText()),
-							Integer.valueOf(textGAP_ZONE_NOOVERLAP.getText()),
-							Integer.valueOf(textTEMPS_MVT_PONT.getText()),
-							Integer.valueOf(textTEMPS_ANO_ENTRE_P1_P2.getText()),
-							Integer.valueOf(textTEMPS_MAX_SOLVEUR.getText()));
-					
-					mTecalOrdo.setBarres(gammes);
-					gantFrame=new CPO_IHM(mIcons);
-					frmTecalOrdonnanceur.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-					mTecalOrdo.run(rdbtnFastModeRadioButton.isSelected(),(int)comboDifficult.getSelectedItem(),gantFrame);	
-					frmTecalOrdonnanceur.setCursor(Cursor.getDefaultCursor());
-					textArea.setText(mTecalOrdo.print());
-					
-					
-					
-				}
-				
-				
-			}
-		});
-		
-		textArea = new JTextArea();
-		scrollPaneMsg.setViewportView(textArea);
-		
-		try {
-			modelBarres= new DefaultTableModel() ;
-		    	
-		    tableBarres = new JTable() {
-
-	            private static final long serialVersionUID = 1L;
-
-	            @Override
-	            public boolean isCellEditable(int row, int column) {
-	              return column == 2 || column == 3;
-	            }
-	          
-			
-	        };
-	     
-			buildTableModelBarre(modelBarres,tableBarres);
-			
-	        
-	        
-	        
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		scrollPaneBarres.setViewportView(tableBarres);
-		
-		
-	    // It creates and displays the table
-	    try {
-	    	
-	    	
-	    	 modelGammes = new DefaultTableModel() {
-
-	     	
-	 			private static final long serialVersionUID = 1L;
-
-	 			@Override
-	     	    public boolean isCellEditable(int row, int column) {
-	     	       //all cells false
-	     	       return false;
-	     	    }
-	     	};
-	     	
-	     	tableGammes = new JTable();
-	     	
-	    	
-	    	buildTableModelGamme(modelGammes,tableGammes,modelBarres,mNumBarre);
-	    	
-	    	
-	    	
-	    	
-	    	
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		scrollPane_gamme.setViewportView(tableGammes);
-		panelCPO.setLayout(gl_panel);
-		buildVisuProd();
-		buildParamsTab(tabbedPane_1);
-		
-		frmTecalOrdonnanceur.getContentPane().setLayout(groupLayout);
+		return lIcons;
 	}
 
-	private GroupLayout mainGuiGrouping(JPanel panel, JScrollPane scrollPane, JScrollPane scrollPaneBarres,
-			JLabel lblBarreLabel, JLabel lblGammes, JButton btnUpButton, JButton btnDownButton,
-			JLabel lblHardynessLabel, JScrollPane scrollPaneMsg, JButton btnRun) {
-		
-		JCheckBox chckbxPrio = new JCheckBox(" prioriser");
-		chckbxPrio.setFont(new Font("Tahoma", Font.PLAIN, 13));
-		GroupLayout gl_panelCPO = new GroupLayout(panel);
-		gl_panelCPO.setHorizontalGroup(
-			gl_panelCPO.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_panelCPO.createSequentialGroup()
-					.addContainerGap()
-					.addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING)
-						.addComponent(scrollPaneMsg, GroupLayout.DEFAULT_SIZE, 688, Short.MAX_VALUE)
-						.addGroup(gl_panelCPO.createSequentialGroup()
-							.addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING)
-								.addGroup(gl_panelCPO.createSequentialGroup()
-									.addComponent(lblGammes, GroupLayout.PREFERRED_SIZE, 67, GroupLayout.PREFERRED_SIZE)
-									.addGap(111)
-									.addComponent(textFiltre, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-								.addGroup(gl_panelCPO.createSequentialGroup()
-									.addComponent(rdbtnFastModeRadioButton)
-									.addGap(34)
-									.addComponent(lblHardynessLabel, GroupLayout.PREFERRED_SIZE, 64, GroupLayout.PREFERRED_SIZE)
-									.addPreferredGap(ComponentPlacement.RELATED)
-									.addComponent(comboDifficult, GroupLayout.PREFERRED_SIZE, 56, GroupLayout.PREFERRED_SIZE))
-								.addComponent(scrollPane_gamme, GroupLayout.DEFAULT_SIZE, 364, Short.MAX_VALUE))
-							.addGap(18)
-							.addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING, false)
-								.addComponent(lblBarreLabel, Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 204, GroupLayout.PREFERRED_SIZE)
-								.addComponent(scrollPaneBarres, Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 207, GroupLayout.PREFERRED_SIZE))
-							.addGap(18)
-							.addGroup(gl_panelCPO.createParallelGroup(Alignment.TRAILING)
-								.addComponent(btnRun, GroupLayout.PREFERRED_SIZE, 81, GroupLayout.PREFERRED_SIZE)
-								.addComponent(chckbxPrio, GroupLayout.PREFERRED_SIZE, 81, GroupLayout.PREFERRED_SIZE)
-								.addGroup(gl_panelCPO.createSequentialGroup()
-									.addGroup(gl_panelCPO.createParallelGroup(Alignment.TRAILING)
-										.addComponent(btnDownButton, GroupLayout.PREFERRED_SIZE, 31, GroupLayout.PREFERRED_SIZE)
-										.addComponent(btnUpButton, GroupLayout.PREFERRED_SIZE, 30, GroupLayout.PREFERRED_SIZE))
-									.addGap(50)))))
-					.addContainerGap())
-		);
-		gl_panelCPO.setVerticalGroup(
-			gl_panelCPO.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_panelCPO.createSequentialGroup()
-					.addGap(50)
-					.addGroup(gl_panelCPO.createParallelGroup(Alignment.BASELINE)
-						.addComponent(lblGammes, GroupLayout.PREFERRED_SIZE, 20, GroupLayout.PREFERRED_SIZE)
-						.addComponent(textFiltre, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-						.addComponent(lblBarreLabel))
-					.addPreferredGap(ComponentPlacement.UNRELATED)
-					.addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING)
-						.addGroup(gl_panelCPO.createParallelGroup(Alignment.BASELINE)
-							.addComponent(scrollPane_gamme, GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
-							.addComponent(scrollPaneBarres, GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE))
-						.addGroup(gl_panelCPO.createSequentialGroup()
-							.addGap(35)
-							.addComponent(btnUpButton)
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(btnDownButton)
-							.addPreferredGap(ComponentPlacement.UNRELATED)
-							.addComponent(chckbxPrio)
-							.addPreferredGap(ComponentPlacement.RELATED, 144, Short.MAX_VALUE)
-							.addComponent(btnRun)))
-					.addPreferredGap(ComponentPlacement.UNRELATED)
-					.addGroup(gl_panelCPO.createParallelGroup(Alignment.BASELINE)
-						.addComponent(rdbtnFastModeRadioButton)
-						.addComponent(lblHardynessLabel)
-						.addComponent(comboDifficult, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-					.addGap(18)
-					.addComponent(scrollPaneMsg, GroupLayout.PREFERRED_SIZE, 149, GroupLayout.PREFERRED_SIZE)
-					.addGap(24))
-		);
-		return gl_panelCPO;
-	}
-	
+
 	private void  buildVisuProd() {
-		
+
 		panelVisuProd = new JPanel();
 		UtilDateModel model = new UtilDateModel();
 		//model.setDate(20,04,2014);
@@ -530,8 +264,9 @@ public class TecalGUI {
 		JDatePanelImpl datePanel = new JDatePanelImpl(model, p);
 		// Don't know about the formatter, but there it is...
 		datePicker = new JDatePickerImpl(datePanel, new DateLabelFormatter());
-		
+
 		datePicker.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
 					buildTableModelVisuProd();
@@ -541,83 +276,85 @@ public class TecalGUI {
 				}
 			}
 		});
-		
-		tabbedPane_1.addTab("Visuel de prod", null, panelVisuProd, null);
-		
+
+		tabbedPaneMain.addTab("Visuel de prod", null, panelVisuProd, null);
+
 		scrollPaneVisuProd = new JScrollPane();
 
-		
-		
+
+
 		JButton btnRunVisuProd = new JButton("Gantt PROD");
 		btnRunVisuProd.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				 int[] sel = tableOF.getSelectedRows();
-				 if(sel.length==0) {			
+				 if(sel.length==0) {
 					 JOptionPane.showMessageDialog(frmTecalOrdonnanceur, "Pas d'OF choisi !","Visuel de prod", JOptionPane.ERROR_MESSAGE);
 					 return;
 				 }
-				
+
 				 String lOF[]=new String[sel.length];
 				 for(int i=0;i<sel.length;i++) {
 					 lOF[i]=tableOF.getModel().getValueAt(sel[i], 0).toString();
 				 }
-				 
-				  
+
+
 				 frmTecalOrdonnanceur.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				 Date d=(Date)datePicker.getModel().getValue();
-				 final GanttChart ganttTecal = new GanttChart(sqlCnx,"Prod du "+d);
+				 final GanttChart ganttTecal = new GanttChart("Prod du "+d);
 				 ganttTecal.prod_diag(lOF,d);
 				 ganttTecal.pack();
 				 ganttTecal.setSize(new java.awt.Dimension(1500, 870));
 			     RefineryUtilities.centerFrameOnScreen(ganttTecal);
 			     ganttTecal.setVisible(true);
-			     ganttTecal.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+			     ganttTecal.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 			     frmTecalOrdonnanceur.setCursor(Cursor.getDefaultCursor());
 
-				
-				
-				 
+
+
+
 			}
 		});
-		
+
 		JButton btnGanttCpo = new JButton("Gantt CPO");
 		btnGanttCpo.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
-				
+
 				 int[] sel = tableOF.getSelectedRows();
-				 if(sel.length==0) {			
+				 if(sel.length==0) {
 					 JOptionPane.showMessageDialog(frmTecalOrdonnanceur, "Pas d'OF choisi !","Visuel CPO", JOptionPane.ERROR_MESSAGE);
 					 return;
 				 }
-				
-				
-				 LinkedHashMap<Integer,String> gammes=new LinkedHashMap <Integer,String>();
-				 for(int i=0;i<sel.length;i++) {					
+
+
+				 LinkedHashMap<Integer,String> gammes=new LinkedHashMap <>();
+				 for(int i=0;i<sel.length;i++) {
 					 gammes.put(i,tableOF.getModel().getValueAt(sel[i], 1).toString());
 				 }
-				
-				
-								
-							
-							
-				
-				 
-				 mTecalOrdo.setParams(
-							Integer.valueOf(textTEMPS_ZONE_OVERLAP_MIN.getText()),
-							Integer.valueOf(textTEMPS_MVT_PONT_MIN_JOB.getText()),
-							Integer.valueOf(textGAP_ZONE_NOOVERLAP.getText()),
-							Integer.valueOf(textTEMPS_MVT_PONT.getText()),
-							Integer.valueOf(textTEMPS_ANO_ENTRE_P1_P2.getText()),
-							Integer.valueOf(textTEMPS_MAX_SOLVEUR.getText()));
-					
-					mTecalOrdo.setBarres(gammes);
-					gantFrame=new CPO_IHM(mIcons);
-					frmTecalOrdonnanceur.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-					mTecalOrdo.run(rdbtnFastModeRadioButton.isSelected(),(int)comboDifficult.getSelectedItem(),gantFrame);	
-					frmTecalOrdonnanceur.setCursor(Cursor.getDefaultCursor());
-					textArea.setText(mTecalOrdo.print());
-				
+
+
+
+
+				int [] params={
+						Integer.valueOf(textTEMPS_ZONE_OVERLAP_MIN.getText()),
+						Integer.valueOf(textTEMPS_MVT_PONT_MIN_JOB.getText()),
+						Integer.valueOf(textGAP_ZONE_NOOVERLAP.getText()),
+						Integer.valueOf(textTEMPS_MVT_PONT.getText()),
+						Integer.valueOf(textTEMPS_ANO_ENTRE_P1_P2.getText()),
+						Integer.valueOf(textTEMPS_MAX_SOLVEUR.getText())};
+
+
+
+
+				//mTecalOrdo.setBarres(gammes);
+				mCPO_IHM=new CPO_IHM(gammes,params);
+				frmTecalOrdonnanceur.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+				//mTecalOrdo.run(mCPO_IHM);
+				mCPO_IHM.run(null);
+				frmTecalOrdonnanceur.setCursor(Cursor.getDefaultCursor());
+				textArea.setText(mCPO_IHM.getmTecalOrdo().print());
+
 			}
 		});
 		GroupLayout gl_panelVisuProd = new GroupLayout(panelVisuProd);
@@ -650,71 +387,71 @@ public class TecalGUI {
 					.addComponent(scrollPaneVisuProd, GroupLayout.DEFAULT_SIZE, 487, Short.MAX_VALUE)
 					.addGap(37))
 		);
-		
-		
+
+
 		panelVisuProd.setLayout(gl_panelVisuProd);
-		
-		
-		
-		
+
+
+
+
 	}
 
 	private void buildParamsTab(JTabbedPane tabbedPane) {
-		
-	
-		
+
+
+
 		JPanel panel_param = new JPanel();
 		tabbedPane.addTab("Paramètres", null, panel_param, null);
-		
+
 		JLabel lblTailleZone = new JLabel("TEMPS_ZONE_OVERLAP_MIN");
-		
+
 		textTEMPS_ZONE_OVERLAP_MIN = new JTextField();
 		textTEMPS_ZONE_OVERLAP_MIN.setHorizontalAlignment(SwingConstants.RIGHT);
 		textTEMPS_ZONE_OVERLAP_MIN.setColumns(10);
 		textTEMPS_ZONE_OVERLAP_MIN.setText(Integer.toString(CST.TEMPS_ZONE_OVERLAP_MIN));
-		
+
 		JLabel lblScuritEntreZones = new JLabel("GAP_ZONE_NOOVERLAP");
-		
+
 		textGAP_ZONE_NOOVERLAP = new JTextField();
 		textGAP_ZONE_NOOVERLAP.setHorizontalAlignment(SwingConstants.RIGHT);
 		textGAP_ZONE_NOOVERLAP.setColumns(10);
 		textGAP_ZONE_NOOVERLAP.setText(Integer.toString(CST.GAP_ZONE_NOOVERLAP));
-		
+
 		JLabel lblcartGroupes = new JLabel("TEMPS_MVT_PONT_MIN_JOB");
-		
+
 		textTEMPS_MVT_PONT_MIN_JOB = new JTextField();
 		textTEMPS_MVT_PONT_MIN_JOB.setHorizontalAlignment(SwingConstants.RIGHT);
 		textTEMPS_MVT_PONT_MIN_JOB.setColumns(10);
 		textTEMPS_MVT_PONT_MIN_JOB.setText(Integer.toString(CST.TEMPS_MVT_PONT_MIN_JOB));
-		
+
 		JLabel lblNewLabel = new JLabel("TEMPS_MVT_PONT");
-		
+
 		JLabel lblNewLabel_1 = new JLabel("TEMPS_ANO_ENTRE_P1_P2");
-		
+
 		textTEMPS_MVT_PONT = new JTextField();
 		textTEMPS_MVT_PONT.setHorizontalAlignment(SwingConstants.RIGHT);
 		textTEMPS_MVT_PONT.setColumns(10);
 		textTEMPS_MVT_PONT.setText(Integer.toString(CST.TEMPS_MVT_PONT));
-		
+
 		textTEMPS_ANO_ENTRE_P1_P2 = new JTextField();
 		textTEMPS_ANO_ENTRE_P1_P2.setHorizontalAlignment(SwingConstants.RIGHT);
 		textTEMPS_ANO_ENTRE_P1_P2.setColumns(10);
 		textTEMPS_ANO_ENTRE_P1_P2.setText(Integer.toString(CST.TEMPS_ANO_ENTRE_P1_P2));
-		
+
 		JLabel lblNewLabel_2 = new JLabel("NUMZONE_DEBUT_PONT_2");
-		
+
 		textNUMZONE_DEBUT_PONT_2 = new JTextField();
 		textNUMZONE_DEBUT_PONT_2.setHorizontalAlignment(SwingConstants.RIGHT);
 		textNUMZONE_DEBUT_PONT_2.setColumns(10);
 		textNUMZONE_DEBUT_PONT_2.setText(Integer.toString(CST.NUMZONE_DEBUT_PONT_2));
-		
+
 		JLabel lblNewLabel_2_1 = new JLabel("TEMPS MAX SOLVER");
-		
+
 		textTEMPS_MAX_SOLVEUR = new JTextField();
 		textTEMPS_MAX_SOLVEUR.setText("40");
 		textTEMPS_MAX_SOLVEUR.setHorizontalAlignment(SwingConstants.RIGHT);
 		textTEMPS_MAX_SOLVEUR.setColumns(10);
-		
+
 		GroupLayout gl_panel_param = new GroupLayout(panel_param);
 		gl_panel_param.setHorizontalGroup(
 			gl_panel_param.createParallelGroup(Alignment.LEADING)
@@ -781,126 +518,17 @@ public class TecalGUI {
 
 	public void setIconButton(JButton btnButton,String fileName) {
 		try {
-			
-			InputStream in = getClass().getResourceAsStream("/"+fileName) ;					
+
+			InputStream in = getClass().getResourceAsStream("/"+fileName) ;
 			BufferedImage someImage = ImageIO.read(in);
-			img = new ImageIcon(someImage);		
-		    btnButton.setIcon(  img);		    
+			ImageIcon img = new ImageIcon(someImage);
+		    btnButton.setIcon(  img);
 		  } catch (Exception ex) {
 		    System.out.println(ex);
 		  }
 	}
 
-	public static   void buildTableModelBarre(DefaultTableModel inModelBarres,JTable inTableBarres)
-	        throws SQLException {
 
-	   
-
-	    // names of columns
-	    Vector<String> columnNames = new Vector<String>();
-	   
-	    columnNames.add("barre");
-	    columnNames.add("gamme");
-	    columnNames.add("montée");
-	    columnNames.add("desc.");
-	    
-	    inModelBarres.setColumnIdentifiers(columnNames);   
-       
-        
-        inTableBarres.setModel(inModelBarres);
-        
-        TableColumn colMontee =inTableBarres.getColumnModel().getColumn(2);
-        // créer un ComboBox
-        JComboBox<String> cb = new JComboBox<>();
-        cb.addItem("lente");
-        cb.addItem("normale");
-        cb.addItem("rapide");
-        //définir l'éditeur par défaut
-        colMontee.setCellEditor(new DefaultCellEditor(cb));
-        
-        TableColumn colDescente =inTableBarres.getColumnModel().getColumn(3);	
-        //définir l'éditeur par défaut
-        colDescente.setCellEditor(new DefaultCellEditor(cb));
-        
-        
-        inTableBarres.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-    	TableColumnModel columnModel = inTableBarres.getColumnModel();
-        columnModel.getColumn(0).setPreferredWidth(40);
-        columnModel.getColumn(0).setMaxWidth(40);	          	
-        inTableBarres.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
-        
-        inTableBarres.addMouseListener(new MouseAdapter() {
-    	    public void mousePressed(MouseEvent mouseEvent) {
-    	        JTable table =(JTable) mouseEvent.getSource();
-    	        DefaultTableModel model=(DefaultTableModel) table.getModel();
-    	        Point point = mouseEvent.getPoint();
-    	        int row = table.rowAtPoint(point);
-    	        if (mouseEvent.getClickCount() == 2 && table.getSelectedRow() != -1) {	    	        	
-    	        	model.removeRow(row);	         	
-    	        }
-    	    }
-    	});
-   
-
-
-	}
-	
-	public static  void buildTableModelGamme(DefaultTableModel model,JTable inTableGammes,DefaultTableModel modelBarre,AtomicInteger numBarre)
-	        throws SQLException {
-
-		SQL_DATA sqlData=SQL_DATA.getInstance();
-		ResultSet rs= sqlData.getEnteteGammes();
-	    ResultSetMetaData metaData =rs.getMetaData();
-
-	    // names of columns
-	    Vector<String> columnNames = new Vector<String>();
-	    int columnCount = metaData.getColumnCount();
-	    for (int column = 1; column <= columnCount; column++) {
-	        columnNames.add(metaData.getColumnName(column));
-	    }
-
-	    // data of the table
-	    Vector<Vector<Object>> data = new Vector<Vector<Object>>();
-	    while (rs.next()) {
-	        Vector<Object> vector = new Vector<Object>();
-	        for (int columnIndex = 1; columnIndex <= columnCount; columnIndex++) {
-	            vector.add(rs.getObject(columnIndex));
-	        }
-	        data.add(vector);
-	    }
-	    model.setDataVector(data, columnNames);
-	    
-	    inTableGammes.setModel(model);
-
-	    inTableGammes.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-    	TableColumnModel columnModel = inTableGammes.getColumnModel();
-        columnModel.getColumn(0).setPreferredWidth(70);
-        columnModel.getColumn(0).setMaxWidth(400);
-          	
-        inTableGammes.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
-    	
-        inTableGammes.addMouseListener(new MouseAdapter() {
-    	    public void mousePressed(MouseEvent mouseEvent) {
-    	        JTable table =(JTable) mouseEvent.getSource();    	       
-    	        Point point = mouseEvent.getPoint();
-    	        int row = table.rowAtPoint(point);
-    	        row=table.convertRowIndexToModel(row); 	  
-    	        int a = table.getSelectedRow();
-    	        int b = mouseEvent.getClickCount();
-    	        if (mouseEvent.getClickCount() == 2 && table.getSelectedRow() != -1) {
-    	        	String gamme=table.getModel().getValueAt(row, 0).toString();
-    	        	numBarre.set(numBarre.get()+1);
-    	        	Object[] rowO = { numBarre.get(), gamme,"normale","normale" };
-    	        	modelBarre.addRow(rowO);
-    	        	
-    	        }
-    	    }
-    	});
-	   
-   
-
-	}
-	
 	public   void buildTableModelVisuProd()
 	        throws SQLException {
 
@@ -909,26 +537,26 @@ public class TecalGUI {
 	    ResultSetMetaData metaData = rs.getMetaData();
 
 	    // names of columns
-	    Vector<String> columnNames = new Vector<String>();
+	    Vector<String> columnNames = new Vector<>();
 	    int columnCount = metaData.getColumnCount();
 	    for (int column = 1; column <= columnCount; column++) {
 	        columnNames.add(metaData.getColumnName(column));
 	    }
 
 	    // data of the table
-	    Vector<Vector<Object>> data = new Vector<Vector<Object>>();
+	    Vector<Vector<Object>> data = new Vector<>();
 	    while (rs.next()) {
-	        Vector<Object> vector = new Vector<Object>();
+	        Vector<Object> vector = new Vector<>();
 	        for (int columnIndex = 1; columnIndex <= columnCount; columnIndex++) {
 	            vector.add(rs.getObject(columnIndex));
 	        }
 	        data.add(vector);
 	    }
-	    
+
 	    modelVisuProd = new DefaultTableModel(data, columnNames) {
 
     	    /**
-			 * 
+			 *
 			 */
 			private static final long serialVersionUID = 1L;
 
@@ -938,42 +566,28 @@ public class TecalGUI {
     	       return false;
     	    }
     	};
-   
+
     	tableOF = new JTable(modelVisuProd);
 		scrollPaneVisuProd.setViewportView(tableOF);
 		//panelVisuProd.setLayout(gl_panelVisuProd);
-		
-		
+
+
 		tableOF.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-		
-	
+
+
 		tableOF.addMouseListener(new MouseAdapter() {
-		    public void mousePressed(MouseEvent mouseEvent) {
+		    @Override
+			public void mousePressed(MouseEvent mouseEvent) {
 		        JTable table =(JTable) mouseEvent.getSource();
 		        Point point = mouseEvent.getPoint();
 		        int row = table.rowAtPoint(point);
-		        if (mouseEvent.getClickCount() == 2 && table.getSelectedRow() != -1) {	    	        	
-		        	modelVisuProd.removeRow(row);	         	
+		        if (mouseEvent.getClickCount() == 2 && table.getSelectedRow() != -1) {
+		        	modelVisuProd.removeRow(row);
 		        }
 		    }
 		});
 		scrollPaneVisuProd.setViewportView(tableOF);
 
 	}
-	
-	private void moveRowBy(int by)
-	{
-	    DefaultTableModel model = (DefaultTableModel) tableBarres.getModel();
-	    int[] rows = tableBarres.getSelectedRows();
-	    int destination = rows[0] + by;
-	    int rowCount = model.getRowCount();
 
-	    if (destination < 0 || destination >= rowCount)
-	    {
-	        return;
-	    }
-
-	    model.moveRow(rows[0], rows[rows.length - 1], destination);
-	    tableBarres.setRowSelectionInterval(rows[0] + by, rows[rows.length - 1] + by);
-	}
 }

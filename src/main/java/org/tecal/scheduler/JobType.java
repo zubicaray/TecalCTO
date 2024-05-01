@@ -38,7 +38,7 @@ public class JobType {
 	int horizon;
 
 	int jobId;
-	String name;
+	public String name;
 	int indexAnod=-1;
 	int indexColmatage=-1;
 	int indexDechargement=-1;
