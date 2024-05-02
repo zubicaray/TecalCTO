@@ -13,13 +13,10 @@ import java.io.InputStream;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.Vector;
+
 import javax.imageio.ImageIO;
 import javax.swing.DefaultCellEditor;
 import javax.swing.GroupLayout;
@@ -45,8 +42,6 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
-import org.tecal.scheduler.types.GammeType;
-
 
 public class CPO_Panel extends JPanel {
 
@@ -57,7 +52,7 @@ public class CPO_Panel extends JPanel {
 	private JTable mTableGammes;
 	private JTable mTableBarres;
 	private DefaultTableModel mModelBarres;
-	private JButton btnRun;	
+	private JButton btnRun;
 	private JTextArea textArea;
 	private DefaultTableModel mModelGammes;
 	private Integer mNumBarre;
@@ -66,7 +61,7 @@ public class CPO_Panel extends JPanel {
 	@SuppressWarnings("unused")
 	private CPO_IHM mCPO_IHM;
 
-	
+
 	public CPO_Panel(CPO_IHM cpoIhm) {
 
 		mCPO_IHM=cpoIhm;
@@ -75,7 +70,7 @@ public class CPO_Panel extends JPanel {
 
 	}
 
-	
+
 
 
 	private void createPanelCPO() {
@@ -275,7 +270,7 @@ public class CPO_Panel extends JPanel {
 		scrollPane_gamme.setViewportView(mTableGammes);
 		setLayout(gl_panelCPO);
 	}
-	
+
 	public JCheckBox getChckbxPrio() {
 		return chckbxPrio;
 	}
@@ -286,9 +281,7 @@ public class CPO_Panel extends JPanel {
 		return mModelBarres;
 	}
 	public void setModelBarres(LinkedHashMap<Integer, String> set) {
-		
-		
-		
+		mModelBarres.setRowCount(0);
         for (Map.Entry<Integer, String> entry : set.entrySet()) {
         	Integer key = entry.getKey();
             String value = entry.getValue();
@@ -296,15 +289,12 @@ public class CPO_Panel extends JPanel {
 			mNumBarre++;
 			mModelBarres.addRow(rowO);
         }
-   
-		
-		
-    	
+
 	}
 	public void setModelBarres(DefaultTableModel mModelBarres) {
 		this.mModelBarres = mModelBarres;
 	}
-	
+
 	public void setText(String s) {
 		textArea.setText(textArea.getText()+s);
 	}
@@ -420,7 +410,7 @@ public class CPO_Panel extends JPanel {
 
     	        if (mouseEvent.getClickCount() == 2 && table.getSelectedRow() != -1) {
     	        	String gamme=table.getModel().getValueAt(row, 0).toString();
-    	        	
+
     	        	Object[] rowO = { ++mNumBarre, gamme,"normale","normale" };
     	        	mModelBarres.addRow(rowO);
 

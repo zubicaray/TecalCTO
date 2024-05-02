@@ -50,12 +50,20 @@ public class GanttChart extends JFrame {
 	private XYIntervalSeriesCollection mDataset;
 	private HashMap<Integer,ZoneType> mZonesBDD;
 	private XYPlot mPlot;
+	private ChartPanel  mChartPanel;
 	
 
+	public ChartPanel getChartPanel() {
+		return mChartPanel;
+	}
 	ArrayList<String[]>  labelsModel;
 	ArrayList<AssignedTask[]>  tasksTab;
 	ArrayList<String[]> labels;
-	ValueMarker timeBar;
+	private ValueMarker timeBar;
+
+	public ValueMarker getTimeBar() {
+		return timeBar;
+	}
 
 	public GanttChart(final String title) {
 
@@ -156,7 +164,7 @@ public class GanttChart extends JFrame {
 		timeBar.setValue(timeBar.getValue()+v);
 	}
 	
-	public ChartPanel model_diag(TecalOrdo  inTecalOrdo){
+	public void model_diag(TecalOrdo  inTecalOrdo){
 		
 		
 		HashMap<Integer, ArrayList<GammeType> > ficheToZones		= inTecalOrdo.getBarres();
@@ -341,14 +349,8 @@ public class GanttChart extends JFrame {
 	   
 	     
 	     	   
-	     JFreeChart j= new JFreeChart(mPlot);	
 	     
-	     //LegendTitle sl = j.getLegend();	     sl.setItemPaint(Color.white);
-	     
-	     mPlot.getRangeAxis().setTickLabelPaint(Color.WHITE);
-	     mPlot.getDomainAxis().setTickLabelPaint(Color.WHITE);
-	     mPlot.getDomainAxis().setLabelPaint(Color.WHITE);
-	     return  new ChartPanel(j);
+	    
 	
 	}
 
@@ -391,6 +393,17 @@ public class GanttChart extends JFrame {
 	     timeBar.setValue(CST.CPT_GANTT_OFFET);
 	    
 	     mPlot.addRangeMarker(timeBar);
+	     
+	     JFreeChart j= new JFreeChart(mPlot);	
+	     
+	     //LegendTitle sl = j.getLegend();	     sl.setItemPaint(Color.white);
+	     
+	     mPlot.getRangeAxis().setTickLabelPaint(Color.WHITE);
+	     mPlot.getDomainAxis().setTickLabelPaint(Color.WHITE);
+	     mPlot.getDomainAxis().setLabelPaint(Color.WHITE);
+	     
+	     mChartPanel=  new ChartPanel(j);
+	     
 	}
 
 	

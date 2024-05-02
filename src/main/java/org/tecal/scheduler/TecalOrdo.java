@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -30,6 +29,7 @@ import com.google.ortools.sat.IntVar;
 import com.google.ortools.sat.IntervalVar;
 import com.google.ortools.sat.LinearExpr;
 import com.opencsv.exceptions.CsvException;
+import java.util.Collections;
 
 
 
@@ -71,6 +71,7 @@ public class TecalOrdo {
 	private HashMap<String, ArrayList<GammeType> > mGammes;
 	private HashMap<Integer, ArrayList<GammeType> > mBarreZones;
 	private LinkedHashMap<Integer,String> mBarreGammes;
+	private HashMap<Integer, ArrayList<IntVar> > mDebutZones;
 	private SQL_DATA sqlCnx ;
 	@SuppressWarnings("unused")
 	private  SQL_DATA getSqlCnx() {return sqlCnx;}
@@ -99,6 +100,9 @@ public class TecalOrdo {
 
 	private Map<Integer, List<AssignedTask>> assignedTasksByNumzone;
 	private Map<Integer, List<AssignedTask>> assignedTasksByJobId;
+	//AssignedTask des génération précédentes et qu sont en cours de production
+	@SuppressWarnings("unused")
+	private Map<Integer, List<AssignedTask>> ongoingTasksByJobId;
 	
 	
 	public Map<Integer, List<AssignedTask>> getAssignedTasksByJobId() {
@@ -137,6 +141,7 @@ public class TecalOrdo {
 	public TecalOrdo(int source) {
 
 		mBarreZones=new  HashMap< >();
+		mDebutZones=new  HashMap< >();
 		sqlCnx=SQL_DATA.getInstance();
 
 		Loader.loadNativeLibraries();
@@ -246,8 +251,9 @@ public class TecalOrdo {
 		return res;
 	}
 
-	public void  run(LinkedHashMap<Integer,String> inBarres) {
+	public void  run(LinkedHashMap<Integer,String> inBarres,Map<Integer, List<AssignedTask>> ongoingJob) {
 	
+		ongoingTasksByJobId=ongoingJob;
 		setBarres(inBarres);		
 		execute();
 	}
@@ -263,6 +269,8 @@ public class TecalOrdo {
 		// PRECEDENCES
 		//--------------------------------------------------------------------------------------------
 		jobsPrecedence();
+		// les nouveaux job ne doivent pas chevaucher les jobs précédent qui sont déjà en prod
+		priseEnCompteOngoingJobs();
 		//--------------------------------------------------------------------------------------------
 		// CONSTRAINTES SUR CHAQUE POSTE
 		//--------------------------------------------------------------------------------------------
@@ -308,6 +316,7 @@ public class TecalOrdo {
 
 		assignedTasksByNumzone = new HashMap<>();
 		assignedTasksByJobId = new HashMap<>();
+		
 		CpSolverStatus status = solver.solve(model);
 
 		hasSolution=false;
@@ -450,19 +459,20 @@ public class TecalOrdo {
 
 	private  void prepareZones() {
 
-		int cptJob=0;
+		
 		allJobs.clear();
 		allTasks.clear();
 		zoneToIntervals.clear();
 		multiZoneIntervals.clear();
 		cumulDemands.clear();
+		mDebutZones.clear();
 		for (Map.Entry<Integer, ArrayList<GammeType> > entry : mBarreZones.entrySet()) {
 
 			int numBarre=entry.getKey();
 			String name=numBarre+"-"+mBarreGammes.get(numBarre);
 			
-			JobType job = new JobType(cptJob, name,model);
-			cptJob++;
+			JobType job = new JobType(numBarre, name,model);
+			
 			//String lgamme = entry.getKey();
 			List<GammeType>  zones = entry.getValue();
 			// on calcul les indexes des zones a regrouper par pont
@@ -471,12 +481,11 @@ public class TecalOrdo {
 		}
 
 		// Computes horizon dynamically as the sum of all durations.
-		horizon=0;
-		for (JobType job : allJobs) {
-			for (Task task : job.tasksJob) {
-				horizon += task.duration;
-			}
-		}
+		computeHorizon();
+			
+		
+		 
+		
 
 		System.out.println("HORIZON=" + horizon);
 
@@ -508,6 +517,31 @@ public class TecalOrdo {
 		}
 
 
+	}
+
+
+
+
+	private void computeHorizon() {
+		horizon=0;
+		for (JobType job : allJobs) {
+			for (Task task : job.tasksJob) {
+				horizon += task.duration;
+			}
+		}
+		
+		 if(ongoingTasksByJobId !=null && !ongoingTasksByJobId.isEmpty() ) {
+			 for(Entry<Integer, List<AssignedTask>>  entry:ongoingTasksByJobId.entrySet()  ) {
+				 
+				 for(AssignedTask t:entry.getValue()) {
+					 
+					 horizon += t.duration;
+					 
+					 
+				 }
+				 
+			 }
+		 }
 	}
 	/**
 	 * certaines zones peuvent avoir plusieurs barres en même temps
@@ -605,6 +639,77 @@ public class TecalOrdo {
 				//entre le début et la fin de la dérive
 				model.addLessOrEqual(allTasks.get(nextKey).startBDD, allTasks.get(prevKey).fin);
 				model.addGreaterOrEqual(allTasks.get(nextKey).startBDD, allTasks.get(prevKey).deriveNulle);
+				
+				
+
+
+			}
+
+		}
+		
+		
+	}
+	
+	//regroupent des debut d'interval par numzone
+	private  void priseEnCompteOngoingJobs () {
+		
+		 if(ongoingTasksByJobId ==null||  ongoingTasksByJobId.isEmpty() ) return;	
+		
+		 computeDebutByZone ();
+		 HashMap<Integer,Integer> zoneEndings=new HashMap<>();
+		 
+		 for(Entry<Integer, List<AssignedTask>>  entry:ongoingTasksByJobId.entrySet()  ) {
+			 
+			 for(AssignedTask t:entry.getValue()) {
+				 
+				 zoneEndings.computeIfAbsent(t.numzone,(Integer k) -> t.end);   
+				 
+				 if(zoneEndings.get(t.numzone)>t.end) 
+					 zoneEndings.put(t.numzone,t.end);
+				 
+				 
+			 }
+			 
+		 }
+		
+		 for(Entry<Integer, Integer>  entry:zoneEndings.entrySet()  ) {
+			int numzone=entry.getKey();
+			int end=entry.getValue();
+			
+			if(mDebutZones.containsKey(numzone)) {
+				for(IntVar var:mDebutZones.get(numzone)) {
+					
+					model.addGreaterOrEqual(var, end);
+					
+				}
+			}
+		
+			
+			 
+		 }
+		 
+		 
+		 
+		
+	}
+		
+	
+	//regroupent des debut d'interval par numzone
+	private  void computeDebutByZone () {
+
+		// Precedences inside a job.
+		for (int jobID = 0; jobID < allJobs.size(); ++jobID) {
+			List<Task> jobTasks = allJobs.get(jobID).tasksJob;
+
+			for (int taskID = 0; taskID < jobTasks.size() ; ++taskID) {
+				List<Integer> key = Arrays.asList(jobID, taskID);		
+
+				TaskOrdo t=allTasks.get(key);
+				int numzone=jobTasks.get(taskID).numzone;
+				
+				mDebutZones.computeIfAbsent(numzone, (Integer k) -> new ArrayList<>());   
+				mDebutZones.get(numzone).add(t.startBDD);
+				
 
 
 			}

@@ -54,10 +54,7 @@ public class JobType {
 
 	List<GammeType> zones;
 	
-	private SQL_DATA sqlData;
-
 	
-
 
 	// groupement de zones non chevauchable sur le pont 1:
 	// liste qui contient , par exemple, des tableaux du type [date arrivée C3, date
@@ -71,7 +68,7 @@ public class JobType {
 		mBarreId = barre;
 		name = inname;
 		model=inM;
-		sqlData=SQL_DATA.getInstance();
+		
 		// dates d'entrée et de sortie du pont 2 sur toutes les zones après ANODISATION
 		//tasksOverlapablePont =new ArrayList<ListeTaskOrdo>();		
 
@@ -271,14 +268,9 @@ public class JobType {
 				
 				if(taskID ==indexAnod) {
 					//bridgesMoves.get(0).add(TecalOrdo.getNoOverlapZone(model, taskOrdo.endBDD,0,40));
-				}
+				}				
 				
-				
-			}
-			
-			
-			
-			
+			}			
 			
 		}
 	}
@@ -331,8 +323,8 @@ public class JobType {
 				zoneToIntervals.computeIfAbsent(task.numzone, (Integer k) -> new ArrayList<>());              
 				zoneToIntervals.get(task.numzone).add(taskOrdo.intervalReel);
 				
-				if(sqlData.relatedZones.containsKey(task.numzone)) {
-					int zoneToAdd=sqlData.relatedZones.get(task.numzone);
+				if(SQL_DATA.getInstance().relatedZones.containsKey(task.numzone)) {
+					int zoneToAdd=SQL_DATA.getInstance().relatedZones.get(task.numzone);
 					//cumulDemands.add
 					if(!cumulDemands.containsKey(zoneToAdd)) {
 						cumulDemands.put(zoneToAdd,new ArrayList<IntervalVar>());
@@ -343,7 +335,7 @@ public class JobType {
 
 			}
 
-			if(sqlData.zonesSecu.contains(task.numzone)) {
+			if(SQL_DATA.getInstance().zonesSecu.contains(task.numzone)) {
 				taskOrdo.zoneSecu=true;
 			}
 			

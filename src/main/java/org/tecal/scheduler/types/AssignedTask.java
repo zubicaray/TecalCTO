@@ -10,6 +10,7 @@ public class AssignedTask {
 	// numzone de la table ZONE
 	public int numzone;
 	public int start;
+	public int end;
 	public int duration;    
 	public int derive;    
 	// offset pour les zones cumul
@@ -20,6 +21,7 @@ public class AssignedTask {
 		this.taskID = taskID;
 		this.start = start;
 		this.duration = duration;
+		this.end = duration+start;
 		this.numzone=numzone;
 		this.derive=derive;
 	}

@@ -114,6 +114,14 @@ public class CPO_IHM extends JFrame {
 	public void runTest () {
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		mGammes=mTecalOrdo.runTest();
+		
+		if(mTecalOrdo.hasSolution()) {
+			for( Entry<Integer, List<AssignedTask>> entry  :mTecalOrdo.getAssignedTasksByJobId().entrySet()) {				
+				ongoingTasksByJobId.put(entry.getKey(),entry.getValue());			
+			}		
+		}
+		
+		
 		mCPO_PANEL.setModelBarres(mGammes);
 		execute();
 		setCursor(Cursor.getDefaultCursor());
@@ -123,8 +131,10 @@ public class CPO_IHM extends JFrame {
 
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		mGammes=gammes;
-		//filter(gammes);
-		mTecalOrdo.run(gammes);
+		
+		filter();
+		mCPO_PANEL.setModelBarres(mGammes);
+		mTecalOrdo.run(gammes,ongoingTasksByJobId);
 		
 		if(mTecalOrdo.hasSolution()) {
 			for( Entry<Integer, List<AssignedTask>> entry  :mTecalOrdo.getAssignedTasksByJobId().entrySet()) {				
@@ -135,21 +145,48 @@ public class CPO_IHM extends JFrame {
 		setCursor(Cursor.getDefaultCursor());
 
 	}
-
-
-
-	private void execute() {
-
+	private void filter() {
+		ArrayList<Integer> jobToKeep=new ArrayList<Integer>();
+		ArrayList<Integer> barresToRemove=new ArrayList<Integer>();
+		ArrayList<Integer> jobToRemove=new ArrayList<Integer>();
 		
+		
+		if(ongoingTasksByJobId.isEmpty()==false) {
+			double current_time=mGanttTecalOR.getTimeBar().getValue();
+			for( Entry<Integer, List<AssignedTask>> entry  :ongoingTasksByJobId.entrySet()) {				
+				AssignedTask first=entry.getValue().get(0);
+				int jobid=entry.getKey();
+				if(first.end>=current_time) {
+					// on ne garde pas les taches du job car il n'a pas encore commencé
+					jobToRemove.add(jobid);
+				}else {
+					
+					jobToKeep.add(jobid);
+					int barre=mTecalOrdo.getAllJobs().get(jobid).getmBarreId();
+					barresToRemove.add(barre);
+				}
+			}	
+		}
+		for(Integer jobId:jobToRemove) {
+			ongoingTasksByJobId.remove(jobId);
+		}
+		
+		for(Integer barreId:barresToRemove) {
+			mGammes.remove(barreId);
+		}
+	}
 
-		ChartPanel cp = mGanttTecalOR.model_diag(mTecalOrdo);
+
+
+	private void execute() {		
+
+		mGanttTecalOR.model_diag(mTecalOrdo);
 
 		mCPO_PANEL.setText(mTecalOrdo.getOutputMsg().toString());
 
 		setDerives();
 
-		panel.setLayout(new BorderLayout());
-		panel.add(cp,BorderLayout.CENTER);
+		
 
 
 
@@ -172,7 +209,7 @@ public class CPO_IHM extends JFrame {
 
 		for(List<AssignedTask> lat : mTecalOrdo.getAssignedJobs().values()) {
 			for(AssignedTask at :lat) {
-				if(at.derive>at.start+at.duration) {
+				if(at.derive>at.end) {
 
 					int t=at.derive-at.start;
 					String minutes=String.format("%02d:%02d",  t / 60, (t % 60));
@@ -201,7 +238,7 @@ public class CPO_IHM extends JFrame {
 	}
 
 	/**
-	 * Create the frame.
+	 * Create the frame based on production 
 	 */
 	public CPO_IHM(LinkedHashMap<Integer,String> gammes,int[] params) {
 
@@ -223,6 +260,8 @@ public class CPO_IHM extends JFrame {
 		ongoingTasksByJobId = new HashMap<Integer, List<AssignedTask>>();
 		TecalGUI.cosmeticGUI();
 		mGanttTecalOR = new GanttChart("Diagramme Gantt de la production");
+		
+		
 
 		sqlCnx=SQL_DATA.getInstance();
 		mCPO_PANEL= new CPO_Panel(this);
@@ -246,6 +285,9 @@ public class CPO_IHM extends JFrame {
 		tabbedPane.addTab("Gantt", null, panelGantt, null);
 
 		panel = new JPanel();
+		
+		panel.setLayout(new BorderLayout());
+		panel.add(mGanttTecalOR.getChartPanel(),BorderLayout.CENTER);
 
 		JPanel panelButtons = new JPanel();
 
@@ -286,6 +328,7 @@ public class CPO_IHM extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				startTime();
+				btnStartButton.setEnabled(false);
 
 			}
 		});
