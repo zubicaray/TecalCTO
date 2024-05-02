@@ -3,7 +3,9 @@ package org.tecal.ui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -23,6 +25,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SortOrder;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
@@ -34,6 +37,7 @@ import javax.swing.table.TableRowSorter;
 import org.jfree.chart.ChartPanel;
 import org.tecal.scheduler.CST;
 import org.tecal.scheduler.GanttChart;
+import org.tecal.scheduler.GanttChart.timerGantt;
 import org.tecal.scheduler.TecalOrdo;
 import org.tecal.scheduler.data.SQL_DATA;
 import org.tecal.scheduler.types.AssignedTask;
@@ -46,14 +50,16 @@ public class CPO_IHM extends JFrame {
 	private JTabbedPane tabbedPaneGantt;
 	private JTabbedPane tabbedPane ;
 	private JPanel panel_chart;
-	JPanel panelGantt ;
+	private JPanel panelGantt ;
 	private DefaultTableModel modelDerives;
 	private JTable tableDerives;
-	private JPanel GammePanel;
-	private GroupLayout gl_panelGantt;
+	private JPanel panel;
 	private GanttChart mGanttTecalOR;
 
 	private TecalOrdo mTecalOrdo;
+	private SQL_DATA sqlCnx;
+	@SuppressWarnings("unused")
+	private timerGantt mTimer;
 
 	private LinkedHashMap<Integer,String> mGammes;
 
@@ -71,14 +77,14 @@ public class CPO_IHM extends JFrame {
 	}
 
 	private CPO_Panel mCPO_PANEL;
+	private JButton btnForeButton;
+	private JButton btnBackButton;
+	private JButton btnStartButton;
 	public CPO_Panel getCpoPanel() {
 		return mCPO_PANEL;
 	}
-	public void setCpoPanel(CPO_Panel mCPO_PANEL) {
-		this.mCPO_PANEL = mCPO_PANEL;
-	}
 
-	static SQL_DATA sqlData=SQL_DATA.getInstance();
+
 	/**
 	 * Launch the application.
 	 */
@@ -88,6 +94,9 @@ public class CPO_IHM extends JFrame {
 			public void run() {
 				try {
 					CPO_IHM frame = new CPO_IHM();
+					frame.setTitle("Tecal Ordonnanceur");
+
+					frame.runTest();
 
 					frame.setVisible(true);
 				} catch (Exception e) {
@@ -97,24 +106,55 @@ public class CPO_IHM extends JFrame {
 		});
 	}
 
-	public void run (LinkedHashMap<Integer,String> gammes) {
+	public void runTest () {
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-		//TODO
+		mTecalOrdo.runTest();
+		mCPO_PANEL.setModelBarres(mTecalOrdo.getBarres().keySet());
+		execute();
+		setCursor(Cursor.getDefaultCursor());
+	}
 
-		if(gammes==null) {
-			mTecalOrdo.run(mGammes);
-		} else {
-			mTecalOrdo.run(gammes);
-		}
+	public void run (LinkedHashMap<Integer,String> gammes) {
 
-		mGanttTecalOR = new GanttChart("Diagramme Gantt de la production");
-		SQL_DATA sqlCnx=SQL_DATA.getInstance();
+		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		mTecalOrdo.run(gammes);
+		execute();
+		setCursor(Cursor.getDefaultCursor());
+
+	}
+
+
+
+	private void execute() {
+
+		
 
 		ChartPanel cp = mGanttTecalOR.model_diag(mTecalOrdo);
 
 		mCPO_PANEL.setText(mTecalOrdo.getOutputMsg().toString());
 
+		setDerives();
 
+		panel.setLayout(new BorderLayout());
+		panel.add(cp,BorderLayout.CENTER);
+
+
+
+	}
+
+	public void startTime() {
+
+		if(mTecalOrdo.hasSolution()) {
+			mGanttTecalOR.startTime();
+			setTimer(mGanttTecalOR.getTimer());
+
+		}
+
+
+	}
+
+
+	private void setDerives() {
 		DefaultTableModel modelDerives =getDerives();
 
 		for(List<AssignedTask> lat : mTecalOrdo.getAssignedJobs().values()) {
@@ -131,16 +171,6 @@ public class CPO_IHM extends JFrame {
 				}
 			}
 		}
-
-
-		panelGantt.setLayout(new BorderLayout());
-		panelGantt.add(cp, BorderLayout.NORTH);
-
-		//panelGantt.add(new ChartPanel(chart));
-
-
-
-		setCursor(Cursor.getDefaultCursor());
 	}
 
 
@@ -150,18 +180,18 @@ public class CPO_IHM extends JFrame {
 				CST.TEMPS_ZONE_OVERLAP_MIN,
 				CST.TEMPS_MVT_PONT_MIN_JOB,
 				CST.GAP_ZONE_NOOVERLAP,
-			CST.TEMPS_MVT_PONT,CST.TEMPS_ANO_ENTRE_P1_P2,CST.TEMPS_MAX_SOLVEUR
+			CST.TEMPS_MVT_PONT,CST.TEMPS_ANO_ENTRE_P1_P2,5//CST.TEMPS_MAX_SOLVEUR
 		};
 
 		mTecalOrdo.setParams(params);
 		init();
-		// TODO Auto-generated constructor stub
 	}
 
 	/**
 	 * Create the frame.
 	 */
 	public CPO_IHM(LinkedHashMap<Integer,String> gammes,int[] params) {
+
 
 
 		mGammes=gammes;
@@ -177,6 +207,10 @@ public class CPO_IHM extends JFrame {
 	}
 	private void init() {
 
+		TecalGUI.cosmeticGUI();
+		mGanttTecalOR = new GanttChart("Diagramme Gantt de la production");
+
+		sqlCnx=SQL_DATA.getInstance();
 		mCPO_PANEL= new CPO_Panel(this);
 		setIconImages(TecalGUI.loadIcons(this));
 		//setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -189,12 +223,7 @@ public class CPO_IHM extends JFrame {
 
 		tabbedPane = new JTabbedPane(SwingConstants.TOP);
 
-		GammePanel = new JPanel();
-		tabbedPane.addTab("Gammes", null, GammePanel, null);
-
-		//panelCPO = new JPanel();
-		GammePanel.add(mCPO_PANEL);
-
+		tabbedPane.addTab("Gammes", null, mCPO_PANEL, null);
 
 
 
@@ -202,23 +231,72 @@ public class CPO_IHM extends JFrame {
 
 		tabbedPane.addTab("Gantt", null, panelGantt, null);
 
-		JButton btnStartButton = new JButton("Start");
-		gl_panelGantt = new GroupLayout(panelGantt);
+		panel = new JPanel();
+
+		JPanel panelButtons = new JPanel();
+
+		GroupLayout gl_panelGantt = new GroupLayout(panelGantt);
 		gl_panelGantt.setHorizontalGroup(
-			gl_panelGantt.createParallelGroup(Alignment.LEADING)
+			gl_panelGantt.createParallelGroup(Alignment.TRAILING)
+				.addComponent(panel, GroupLayout.DEFAULT_SIZE, 954, Short.MAX_VALUE)
 				.addGroup(gl_panelGantt.createSequentialGroup()
-					.addContainerGap(887, Short.MAX_VALUE)
-					.addComponent(btnStartButton)
-					.addContainerGap())
+					.addGap(263)
+					.addComponent(panelButtons, GroupLayout.PREFERRED_SIZE, 164, Short.MAX_VALUE)
+					.addGap(239))
 		);
 		gl_panelGantt.setVerticalGroup(
 			gl_panelGantt.createParallelGroup(Alignment.LEADING)
-				.addGroup(Alignment.TRAILING, gl_panelGantt.createSequentialGroup()
-					.addContainerGap(576, Short.MAX_VALUE)
-					.addComponent(btnStartButton)
-					.addGap(19))
+				.addGroup(gl_panelGantt.createSequentialGroup()
+					.addComponent(panel, GroupLayout.DEFAULT_SIZE, 564, Short.MAX_VALUE)
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addComponent(panelButtons, GroupLayout.PREFERRED_SIZE, 37, GroupLayout.PREFERRED_SIZE)
+					.addContainerGap())
 		);
+		panelButtons.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+
+		btnBackButton = new JButton();
+		panelButtons.add(btnBackButton);
+		CPO_Panel.setIconButton(this,btnBackButton,"icons8-back-16.png");
+
+		btnStartButton = new JButton();
+		panelButtons.add(btnStartButton);
+		CPO_Panel.setIconButton(this,btnStartButton,"icons8-jouer-16.png");
+
+		btnForeButton = new JButton();
+		panelButtons.add(btnForeButton);
 		panelGantt.setLayout(gl_panelGantt);
+		CPO_Panel.setIconButton(this,btnForeButton,"icons8-fore-16.png");
+
+
+		btnStartButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				startTime();
+
+			}
+		});
+
+
+		btnForeButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if(mGanttTecalOR !=null)  mGanttTecalOR.foreward(2);
+			}
+		});
+
+
+
+		btnBackButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if(mGanttTecalOR !=null) 	mGanttTecalOR.backward(2);
+			}
+		});
+
+
+
+
+
 		JPanel panelDerives = new JPanel();
 		tabbedPane.addTab("Dérives", null, panelDerives, null);
 
@@ -234,24 +312,8 @@ public class CPO_IHM extends JFrame {
 
 		JScrollPane scrollPane = new JScrollPane();
 
-
-		GroupLayout gl_panelDerives = new GroupLayout(panelDerives);
-		gl_panelDerives.setHorizontalGroup(
-			gl_panelDerives.createParallelGroup(Alignment.TRAILING)
-				.addGroup(gl_panelDerives.createSequentialGroup()
-					.addGap(58)
-					.addComponent(scrollPane, GroupLayout.PREFERRED_SIZE, 319, GroupLayout.PREFERRED_SIZE)
-					.addContainerGap(68, Short.MAX_VALUE))
-		);
-		gl_panelDerives.setVerticalGroup(
-			gl_panelDerives.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_panelDerives.createSequentialGroup()
-					.addGap(34)
-					.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 198, Short.MAX_VALUE)
-					.addGap(40))
-		);
-
 		tableDerives = new JTable(modelDerives);
+		tableDerives.setSize(new Dimension(32000, 50000));
 
 
 		TableRowSorter<TableModel> sorter = new TableRowSorter<>(tableDerives.getModel());
@@ -261,10 +323,11 @@ public class CPO_IHM extends JFrame {
 		sortKeys.add(new DefaultRowSorter.SortKey(0, SortOrder.ASCENDING));
 		sortKeys.add(new DefaultRowSorter.SortKey(1, SortOrder.ASCENDING));
 		sorter.setSortKeys(sortKeys);
+		panelDerives.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 
 
 		scrollPane.setViewportView(tableDerives);
-		panelDerives.setLayout(gl_panelDerives);
+		panelDerives.add(scrollPane);
 
 		contentPane.add(tabbedPane);
 
@@ -294,49 +357,7 @@ public class CPO_IHM extends JFrame {
 		return modelDerives;
 	}
 
-	public  void  addGantt(ChartPanel  cp,GanttChart ganttTecalOR ) {
 
-
-		JButton btnStartButton = new JButton("Start");
-
-		btnStartButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				ganttTecalOR.startTime();
-				btnStartButton.setEnabled(false);
-			}
-		});
-		JButton btnForeButton = new JButton("avancer");
-
-		btnForeButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				ganttTecalOR.foreward(2);
-			}
-		});
-
-		JButton btnBackButton = new JButton("reculer");
-
-		btnBackButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				ganttTecalOR.backward(2);
-			}
-		});
-
-
-
-
-
-
-
-		cp.setForeground(new Color(255,255,255));
-
-
-
-
-
-	}
 
 	public JTabbedPane getTabbedPaneGantt() {
 		return tabbedPaneGantt;
@@ -352,5 +373,8 @@ public class CPO_IHM extends JFrame {
 
 	public void setPanel_chart(JPanel panel_chart) {
 		this.panel_chart = panel_chart;
+	}
+	public void setTimer(timerGantt mTimer) {
+		this.mTimer = mTimer;
 	}
 }

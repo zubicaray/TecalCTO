@@ -37,7 +37,7 @@ public class JobType {
 
 	int horizon;
 
-	int jobId;
+	int mJobId;
 	public String name;
 	int indexAnod=-1;
 	int indexColmatage=-1;
@@ -63,7 +63,7 @@ public class JobType {
 	
 
 	JobType(int jobid, String inname,CpModel inM) {
-		jobId = jobid;
+		mJobId = jobid;
 		name = inname;
 		model=inM;
 		sqlData=SQL_DATA.getInstance();
@@ -75,11 +75,6 @@ public class JobType {
 		tasksJob = new ArrayList<Task>();
 		mTaskOrdoList= new ArrayList<TaskOrdo>();
 		bridgesMoves = new ArrayListeZonePonts();
-		
-		
-		
-		
-		
 		
 		tasksNoOverlapPont = new ArrayList<ListeZone> ();
 		debutLonguesZonesPont = new ArrayList<ListeZone> ();		

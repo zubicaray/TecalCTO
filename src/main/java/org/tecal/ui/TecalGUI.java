@@ -8,8 +8,6 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -98,7 +96,6 @@ public class TecalGUI {
 	List<Image> mIcons;
 
 	private SQL_DATA sqlCnx ;
-	private CPO_Panel mPanelCPO;
 
 
 	private JTextField textTEMPS_ZONE_OVERLAP_MIN;
@@ -121,6 +118,22 @@ public class TecalGUI {
 	 */
 	public static void main(String[] args) {
 
+		cosmeticGUI();
+
+		EventQueue.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					TecalGUI window = new TecalGUI();
+					window.frmTecalOrdonnanceur.setVisible(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+
+	public static void cosmeticGUI() {
 		FlatDarkLaf.setup();
 
 		Color back=new Color(255, 248, 223);
@@ -137,18 +150,6 @@ public class TecalGUI {
 		UIManager.put( "Component.arc", 999 );
 		UIManager.put( "ProgressBar.arc", 999 );
 		UIManager.put( "TextComponent.arc", 999 );
-
-		EventQueue.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					TecalGUI window = new TecalGUI();
-					window.frmTecalOrdonnanceur.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
 	}
 
 	/**
@@ -196,25 +197,7 @@ public class TecalGUI {
 		);
 
 
-
-		mPanelCPO = new CPO_Panel();
-		tabbedPaneMain.addTab("Choix des gammes", null, mPanelCPO, null);
-
-
-		frmTecalOrdonnanceur.addComponentListener(new ComponentAdapter() {
-			@Override
-			public void componentShown(ComponentEvent e) {
-
-				ResultSet rs= sqlCnx.getEnteteGammes();
-				try {
-					mPanelCPO.setRessource(rs);
-				} catch (SQLException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-			}
-		});
-
+		
 
 
 		//scrollPane_gamme.setViewportView(tableGammes);

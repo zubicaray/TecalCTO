@@ -43,8 +43,13 @@ public class GanttChart extends JFrame {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	private SQL_DATA mSqlCnx ;
+	
 	private timerGantt mTimer;
+	@SuppressWarnings("unused")
+	private String[] mZonesAllGamme;
+	private XYIntervalSeriesCollection mDataset;
+	private HashMap<Integer,ZoneType> mZonesBDD;
+	private XYPlot mPlot;
 	
 
 	ArrayList<String[]>  labelsModel;
@@ -55,9 +60,15 @@ public class GanttChart extends JFrame {
 	public GanttChart(final String title) {
 
 		super(title);
-		mSqlCnx=SQL_DATA.getInstance();;
+				
 		
-		setTimer(new timerGantt());
+		 mZonesBDD=SQL_DATA.getInstance().getZones();
+		 int nbZones=mZonesBDD.keySet().size();		 
+		 mZonesAllGamme =  new String[nbZones];
+		 mDataset = new XYIntervalSeriesCollection();
+		 
+		 buildPlot();
+		 setTimer(new timerGantt());
 		   
 	}
 	
@@ -147,25 +158,21 @@ public class GanttChart extends JFrame {
 	
 	public ChartPanel model_diag(TecalOrdo  inTecalOrdo){
 		
-		HashMap<Integer,ZoneType> inZonesBDD=mSqlCnx.getZones();
-		HashMap<String, ArrayList<GammeType> > ficheToZones		= inTecalOrdo.getBarres();
-		Map<Integer, List<AssignedTask>> assignedJobs=inTecalOrdo.getAssignedJobs();
 		
+		HashMap<String, ArrayList<GammeType> > ficheToZones		= inTecalOrdo.getBarres();
+		Map<Integer, List<AssignedTask>> assignedTasksByNumzone=inTecalOrdo.getAssignedJobs();
 		 
-		 XYIntervalSeriesCollection dataset = new XYIntervalSeriesCollection();
-		 int nbZones=inZonesBDD.keySet().size();
-		 
-		 String[] zonesAllGamme =  new String[nbZones];
+		mDataset.removeAllSeries();
 		 		 
 		 
 		 HashMap<Integer,ZoneCumul> zonesCumul=new HashMap<Integer,ZoneCumul>();
 		 
 		 int cpt=0;
 		 // on crée les labels des zones
-		 for (Map.Entry<Integer,ZoneType > entry : inZonesBDD.entrySet()) {
+		 for (Map.Entry<Integer,ZoneType > entry : mZonesBDD.entrySet()) {
 			 ZoneType zt = entry.getValue();
 			         
-			 zonesAllGamme[cpt]=zt.codezone;
+			 mZonesAllGamme[cpt]=zt.codezone;
 			 if(zt.cumul>1) {
 				 zonesCumul.put(zt.numzone, new ZoneCumul(zt.cumul));
 			 };
@@ -184,7 +191,7 @@ public class GanttChart extends JFrame {
 			String lgamme = entry.getKey();			         
 			series[jobID] = new XYIntervalSeries(lgamme);
 			gammes[jobID] = lgamme;
-			dataset.addSeries(series[jobID]);
+			mDataset.addSeries(series[jobID]);
 			jobID++;
 		 }
 	
@@ -204,7 +211,7 @@ public class GanttChart extends JFrame {
 		 
 		 Map<Integer, List<AssignedTask>> cumulTask=new HashMap<Integer, List<AssignedTask>>();;
 		 //réorga par jobid/list zones
-		 assignedJobs.values().forEach( taskArr->{
+		 assignedTasksByNumzone.values().forEach( taskArr->{
 			
 			taskArr.forEach( task->{
 				
@@ -329,8 +336,22 @@ public class GanttChart extends JFrame {
 			
 		 };
 			 
-		 
 		
+	   
+	     
+	     	   
+	     JFreeChart j= new JFreeChart(mPlot);	
+	     
+	     //LegendTitle sl = j.getLegend();	     sl.setItemPaint(Color.white);
+	     
+	     mPlot.getRangeAxis().setTickLabelPaint(Color.WHITE);
+	     mPlot.getDomainAxis().setTickLabelPaint(Color.WHITE);
+	     mPlot.getDomainAxis().setLabelPaint(Color.WHITE);
+	     return  new ChartPanel(j);
+	
+	}
+
+	private void buildPlot() {
 		 XYBarRenderer renderer = new XYBarRenderer();
 		 renderer.setUseYInterval(true);
 		 renderer.setShadowXOffset(0);
@@ -359,21 +380,16 @@ public class GanttChart extends JFrame {
 	
 	     renderer.setBaseToolTipGenerator(ttgen);	 
 		 
-		 XYPlot plot = new XYPlot(dataset, new SymbolAxis("zones", zonesAllGamme), new NumberAxis(), renderer);
-	     plot.setOrientation(PlotOrientation.HORIZONTAL);
+		 mPlot = new XYPlot(mDataset, new SymbolAxis("zones", mZonesAllGamme), new NumberAxis(), renderer);
+		 
+		 mPlot.setOrientation(PlotOrientation.HORIZONTAL);
 	     
 	     timeBar = new ValueMarker(1500);  // position is the value on the axis
 	     timeBar.setPaint(Color.red);
 	     //marker.setLabel("here"); // see JavaDoc for labels, colors, strokes
-	     timeBar.setValue(100);
+	     timeBar.setValue(CST.CPT_GANTT_OFFET);
 	    
-	     plot.addRangeMarker(timeBar);
-	     	   
-	     JFreeChart j= new JFreeChart(plot);	
-	     
-	    
-	     return  new ChartPanel(j);
-	
+	     mPlot.addRangeMarker(timeBar);
 	}
 
 	
@@ -382,7 +398,7 @@ public class GanttChart extends JFrame {
 		
 		 ArrayList<PosteBDD> posteAllOF = new ArrayList <PosteBDD>();
 		 
-		 HashMap<Integer,PosteBDD> mapPosteBDD= mSqlCnx.getPostes(listeOF);
+		 HashMap<Integer,PosteBDD> mapPosteBDD= SQL_DATA.getInstance().getPostes(listeOF);
 		 
 		 mapPosteBDD.values().forEach( v->{ posteAllOF.add(v); });		 
 		 
@@ -399,7 +415,7 @@ public class GanttChart extends JFrame {
 		String[] labelPosteAllOF=labelPosteAllOFTmp.toArray(new String[0]);
 		 
 		 //gamme par fiche production (on peut avoir une  même gamme pour deux fichesProd
-		 HashMap<String, String> ficheGamme=  mSqlCnx.getFicheGamme(listeOF);
+		 HashMap<String, String> ficheGamme=  SQL_DATA.getInstance().getFicheGamme(listeOF);
 		 
 		 String[] ficheToZones=ficheGamme.values().toArray(new String[0]);
 		 
@@ -414,7 +430,7 @@ public class GanttChart extends JFrame {
 		 }
 
 		 //temps aux postes par fiches production
-		 HashMap<String, LinkedHashMap<Integer,PosteProd> > tempsAuPostes=mSqlCnx.getTempsAuPostes(listeOF,date) ;
+		 HashMap<String, LinkedHashMap<Integer,PosteProd> > tempsAuPostes=SQL_DATA.getInstance().getTempsAuPostes(listeOF,date) ;
 		 
 		
 		 
@@ -509,6 +525,9 @@ public class GanttChart extends JFrame {
 		 
 		 XYPlot plot = new XYPlot(dataset, new SymbolAxis("zones", labelPosteAllOF), new NumberAxis(), renderer);
 	     plot.setOrientation(PlotOrientation.HORIZONTAL);
+	     plot.getRangeAxis().setTickLabelPaint(Color.WHITE);
+	     plot.getDomainAxis().setTickLabelPaint(Color.WHITE);
+	     plot.getDomainAxis().setLabelPaint(Color.WHITE);
 	    
 	     JFreeChart chart = new JFreeChart(plot);
 	     getContentPane().add(new ChartPanel(chart));

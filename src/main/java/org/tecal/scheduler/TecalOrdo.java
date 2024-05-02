@@ -64,25 +64,19 @@ class Task {
 	}
 }
 
-
-
-
-/** Minimal Jobshop problem. */
 public class TecalOrdo {
 
 
 	// map de toutes les gammes
-	HashMap<String, ArrayList<GammeType> > mGammes;
+	private HashMap<String, ArrayList<GammeType> > mGammes;
 	// map des barres associé à leut gamme
 	private HashMap<String, ArrayList<GammeType> > mBarres;
 	private SQL_DATA sqlCnx ;
-	public SQL_DATA getSqlCnx() {
-		return sqlCnx;
-	}
+	@SuppressWarnings("unused")
+	private  SQL_DATA getSqlCnx() {return sqlCnx;}
+	
+	private boolean hasSolution;
 
-	public void setSqlCnx(SQL_DATA sqlCnx) {
-		this.sqlCnx = sqlCnx;
-	}
 
 	private CSV_DATA csv ;
 
@@ -97,17 +91,20 @@ public class TecalOrdo {
 	}
 
 
-	private	Map<List<Integer>, TaskOrdo> allTasks = new HashMap<>();
-	private	Map<Integer, List<IntervalVar>> zoneToIntervals = new HashMap<>();
-	private	Map<Integer, List<IntervalVar>> multiZoneIntervals = new HashMap<>();
-	private	Map<Integer, List<IntervalVar>> cumulDemands= new HashMap<>();
+	private	Map<List<Integer>, TaskOrdo> 	allTasks 			= new HashMap<>();
+	private	Map<Integer, List<IntervalVar>> zoneToIntervals 	= new HashMap<>();
+	private	Map<Integer, List<IntervalVar>> multiZoneIntervals 	= new HashMap<>();
+	private	Map<Integer, List<IntervalVar>> cumulDemands		= new HashMap<>();
 
 
-	private Map<Integer, List<AssignedTask>> assignedJobs;
+	private Map<Integer, List<AssignedTask>> assignedTasksByNumzone;
+	private Map<Integer, List<AssignedTask>> assignedTasksByJobId;
 
-	public void setAssignedJobs(Map<Integer, List<AssignedTask>> assignedJobs) {
-		this.assignedJobs = assignedJobs;
+	
+	public Map<Integer, List<AssignedTask>> getAssignedTasksByJobId() {
+		return assignedTasksByJobId;
 	}
+
 
 	private CpModel model;
 
@@ -205,7 +202,7 @@ public class TecalOrdo {
 	}
 
 	public Map<Integer, List<AssignedTask>> getAssignedJobs() {
-		return assignedJobs;
+		return assignedTasksByNumzone;
 	}
 
 	public HashMap<String, ArrayList<GammeType>> getBarres() {
@@ -225,26 +222,31 @@ public class TecalOrdo {
 
 	}
 
+
 	public void  runTest() {
+
+		
+		setBarresTest();
 		int[] params= {
 				CST.TEMPS_ZONE_OVERLAP_MIN,
 				CST.TEMPS_MVT_PONT_MIN_JOB,
 				CST.GAP_ZONE_NOOVERLAP,
-			CST.TEMPS_MVT_PONT,CST.TEMPS_ANO_ENTRE_P1_P2,CST.TEMPS_MAX_SOLVEUR
+				CST.TEMPS_MVT_PONT,CST.TEMPS_ANO_ENTRE_P1_P2,5//CST.TEMPS_MAX_SOLVEUR
 		};
 
 		setParams(params);
-		run(null);
+	
+
+		execute();
 	}
 
 	public void  run(LinkedHashMap<Integer,String> inBarres) {
+	
+		setBarres(inBarres);		
+		execute();
+	}
 
-		if(inBarres == null) {
-			setBarresTest();
-		}else {
-			setBarres(inBarres);
-		}
-
+	private void execute() {
 		model=new CpModel();
 		prepareZones();
 		//--------------------------------------------------------------------------------------------
@@ -298,12 +300,15 @@ public class TecalOrdo {
 		solver.getParameters().setMaxTimeInSeconds(mTEMPS_MAX_SOLVEUR);
 
 
-		assignedJobs = new HashMap<>();
+		assignedTasksByNumzone = new HashMap<>();
+		assignedTasksByJobId = new HashMap<>();
 		CpSolverStatus status = solver.solve(model);
 
-
+		hasSolution=false;
 
 		if (status == CpSolverStatus.OPTIMAL || status == CpSolverStatus.FEASIBLE) {
+			
+			hasSolution=true;
 
 			for (JobType job : allJobs) {
 				if(CST.PrintZonesTime) {
@@ -325,16 +330,16 @@ public class TecalOrdo {
 				String output = "";
 				for (int numzone : numzoneArr) {
 
-					if(assignedJobs.get(numzone) == null) {
+					if(assignedTasksByNumzone.get(numzone) == null) {
 						continue;
 					}
 
 					// Sort by starting time.
-					Collections.sort(assignedJobs.get(numzone), new SortTasks());
+					Collections.sort(assignedTasksByNumzone.get(numzone), new SortTasks());
 					String solLineTasks = "Zone " + numzone + ": ";
 					String solLine = "           ";
 
-					for (AssignedTask assignedTask : assignedJobs.get(numzone)) {
+					for (AssignedTask assignedTask : assignedTasksByNumzone.get(numzone)) {
 						String name = "job_" + assignedTask.jobID + "_task_" + assignedTask.taskID;
 						// Add spaces to output to align columns.
 						solLineTasks += String.format("%-15s", name);
@@ -368,14 +373,6 @@ public class TecalOrdo {
 		outputMsg.append(String.format("  conflits: %d%n", solver.numConflicts()));
 		outputMsg.append(String.format("  branches : %d%n", solver.numBranches()));
 		outputMsg.append(String.format("  temps %f s%n", solver.wallTime()));
-
-
-
-
-
-
-
-
 	}
 
 	private void createAssignedTasks(CpSolver solver) {
@@ -390,7 +387,7 @@ public class TecalOrdo {
 
 				int derive;
 				// on ne sait pas à quel moment entre le min et le max de dérive
-				// le solveur a choisit => on doit regarde quand commence la tache d'apres
+				// le solveur a choisit => on doit regarder quand commence la tache d'apres
 				// pour calculer la dérive
 				if(task.numzone != CST.DECHARGEMENT_NUMZONE){
 					List<Integer> keySuivante = Arrays.asList(jobID, taskID+1);
@@ -408,8 +405,12 @@ public class TecalOrdo {
 						jobID, taskID, task.numzone,
 						debut,
 						fin-debut,derive);
-				assignedJobs.computeIfAbsent(task.numzone, (Integer k) -> new ArrayList<>());
-				assignedJobs.get(task.numzone).add(assignedTask);
+				assignedTasksByNumzone.computeIfAbsent(task.numzone, (Integer k) -> new ArrayList<>());
+				assignedTasksByNumzone.get(task.numzone).add(assignedTask);
+				
+				assignedTasksByJobId.computeIfAbsent(jobID, (Integer k) -> new ArrayList<>());
+				assignedTasksByJobId.get(jobID).add(assignedTask);
+				
 			}
 		}
 	}
@@ -452,6 +453,7 @@ public class TecalOrdo {
 		for (Map.Entry<String, ArrayList<GammeType> > entry : mBarres.entrySet()) {
 
 			JobType job = new JobType(cptJob, entry.getKey(),model);
+			cptJob++;
 			//String lgamme = entry.getKey();
 			List<GammeType>  zones = entry.getValue();
 			// on calcul les indexes des zones a regrouper par pont
@@ -466,8 +468,6 @@ public class TecalOrdo {
 				horizon += task.duration;
 			}
 		}
-
-
 
 		System.out.println("HORIZON=" + horizon);
 
@@ -694,7 +694,6 @@ public class TecalOrdo {
 
 		if(CST.CSTR_NOOVERLAP_BRIDGES)
 		{
-
 			ArrayList<ZonesIntervalVar> listZonesNoOverlapParPont  = new  ArrayList<>();
 			listZonesNoOverlapParPont.add( new  ZonesIntervalVar()); // add zones pont 1
 			listZonesNoOverlapParPont.add( new  ZonesIntervalVar()); // add zones pont 2
@@ -705,15 +704,11 @@ public class TecalOrdo {
 					p++;
 				}
 				p=0;
-
 			}
-
 
 			for(ArrayList<IntervalVar> listZonesNoOverlap: listZonesNoOverlapParPont) {
 				model.addNoOverlap(listZonesNoOverlap);
 			}
-
-
 		}
 	}
 
@@ -851,6 +846,13 @@ static IntervalVar getNoOverlapZone(CpModel model,IntervalVar mvt){
 
 	public void setSource(int mSource) {
 		this.mSource = mSource;
+	}
+
+
+
+
+	public boolean hasSolution() {
+		return hasSolution;
 	}
 }
 

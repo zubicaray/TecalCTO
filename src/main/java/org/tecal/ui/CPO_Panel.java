@@ -13,10 +13,10 @@ import java.io.InputStream;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.Set;
 import java.util.Vector;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import javax.imageio.ImageIO;
 import javax.swing.DefaultCellEditor;
 import javax.swing.GroupLayout;
@@ -43,7 +43,6 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
 
-
 public class CPO_Panel extends JPanel {
 
 	/**
@@ -52,43 +51,26 @@ public class CPO_Panel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	private JTable mTableGammes;
 	private JTable mTableBarres;
-	private DefaultTableModel modelBarres;
-	private JButton btnRun;
-	public DefaultTableModel getModelBarres() {
-		return modelBarres;
-	}
-	public void setModelBarres(DefaultTableModel modelBarres) {
-		this.modelBarres = modelBarres;
-	}
+	private DefaultTableModel mModelBarres;
+	private JButton btnRun;	
 	private JTextArea textArea;
 	private DefaultTableModel mModelGammes;
-	private AtomicInteger mNumBarre;
+	private Integer mNumBarre;
 	private JCheckBox chckbxPrio ;
 
 	@SuppressWarnings("unused")
 	private CPO_IHM mCPO_IHM;
 
-	public JCheckBox getChckbxPrio() {
-		return chckbxPrio;
-	}
-	public void setChckbxPrio(JCheckBox chckbxPrio) {
-		this.chckbxPrio = chckbxPrio;
-	}
+	
 	public CPO_Panel(CPO_IHM cpoIhm) {
 
 		mCPO_IHM=cpoIhm;
-		mNumBarre=new AtomicInteger();
+		mNumBarre=0;
 		createPanelCPO();
 
 	}
 
-	public CPO_Panel() {
-
-		//mCPO_IHM=new CPO_IHM();
-		mNumBarre=new AtomicInteger();
-		createPanelCPO();
-
-	}
+	
 
 
 	private void createPanelCPO() {
@@ -196,9 +178,9 @@ public class CPO_Panel extends JPanel {
 
 
 
-		setIconButton(btnUpButton,"icons8-up-16.png");
-		setIconButton(btnDownButton,"icons8-down-16.png");
-		setIconButton(btnRun,"icons8-play-16.png");
+		setIconButton(this,btnUpButton,"icons8-up-16.png");
+		setIconButton(this,btnDownButton,"icons8-down-16.png");
+		setIconButton(this,btnRun,"icons8-play-16.png");
 
 
 		btnUpButton.setHorizontalAlignment(SwingConstants.CENTER);
@@ -221,7 +203,7 @@ public class CPO_Panel extends JPanel {
 		scrollPaneMsg.setViewportView(textArea);
 
 		try {
-			modelBarres= new DefaultTableModel() ;
+			mModelBarres= new DefaultTableModel() ;
 
 			mTableBarres = new JTable() {
 
@@ -235,7 +217,7 @@ public class CPO_Panel extends JPanel {
 
 	        };
 
-			buildTableModelBarre(modelBarres,mTableBarres);
+			buildTableModelBarre();
 
 
 
@@ -269,7 +251,7 @@ public class CPO_Panel extends JPanel {
 	     	mTableGammes.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 	     	mTableGammes.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
 
-			buildTableModelGamme(mModelGammes,mTableGammes,modelBarres,mNumBarre);
+			buildTableModelGamme();
 
 
 
@@ -288,6 +270,37 @@ public class CPO_Panel extends JPanel {
 		scrollPane_gamme.setViewportView(mTableGammes);
 		setLayout(gl_panelCPO);
 	}
+	
+	public JCheckBox getChckbxPrio() {
+		return chckbxPrio;
+	}
+	public void setChckbxPrio(JCheckBox chckbxPrio) {
+		this.chckbxPrio = chckbxPrio;
+	}
+	public DefaultTableModel getModelBarres() {
+		return mModelBarres;
+	}
+	public void setModelBarres(Set<String> set) {
+		
+		
+		String[] list=set.toArray(new String[0]);
+		Arrays.sort(list);
+		
+		for(String barre : list ) {			
+			
+			String[] b=barre.split("-");
+			Object[] rowO = { Integer.valueOf(b[0]), b[1],"normale","normale" };
+			mNumBarre++;
+			mModelBarres.addRow(rowO);
+		}
+		
+		
+    	
+	}
+	public void setModelBarres(DefaultTableModel mModelBarres) {
+		this.mModelBarres = mModelBarres;
+	}
+	
 	public void setText(String s) {
 		textArea.setText(textArea.getText()+s);
 	}
@@ -323,7 +336,7 @@ public class CPO_Panel extends JPanel {
 	}
 
 
-	public   void buildTableModelBarre(DefaultTableModel inModelBarres,JTable inTableBarres)
+	public   void buildTableModelBarre()
 	        throws SQLException {
 
 
@@ -336,12 +349,12 @@ public class CPO_Panel extends JPanel {
 	    columnNames.add("montée");
 	    columnNames.add("desc.");
 
-	    inModelBarres.setColumnIdentifiers(columnNames);
+	    mModelBarres.setColumnIdentifiers(columnNames);
 
 
-        inTableBarres.setModel(inModelBarres);
+        mTableBarres.setModel(mModelBarres);
 
-        TableColumn colMontee =inTableBarres.getColumnModel().getColumn(2);
+        TableColumn colMontee =mTableBarres.getColumnModel().getColumn(2);
         // créer un ComboBox
         JComboBox<String> cb = new JComboBox<>();
         cb.addItem("lente");
@@ -350,18 +363,18 @@ public class CPO_Panel extends JPanel {
         //définir l'éditeur par défaut
         colMontee.setCellEditor(new DefaultCellEditor(cb));
 
-        TableColumn colDescente =inTableBarres.getColumnModel().getColumn(3);
+        TableColumn colDescente =mTableBarres.getColumnModel().getColumn(3);
         //définir l'éditeur par défaut
         colDescente.setCellEditor(new DefaultCellEditor(cb));
 
 
-        inTableBarres.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-    	TableColumnModel columnModel = inTableBarres.getColumnModel();
+        mTableBarres.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+    	TableColumnModel columnModel = mTableBarres.getColumnModel();
         columnModel.getColumn(0).setPreferredWidth(40);
         columnModel.getColumn(0).setMaxWidth(40);
-        inTableBarres.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+        mTableBarres.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
 
-        inTableBarres.addMouseListener(new MouseAdapter() {
+        mTableBarres.addMouseListener(new MouseAdapter() {
     	    @Override
 			public void mousePressed(MouseEvent mouseEvent) {
     	        JTable table =(JTable) mouseEvent.getSource();
@@ -380,20 +393,20 @@ public class CPO_Panel extends JPanel {
 
 	}
 
-	public  void buildTableModelGamme(DefaultTableModel model,JTable inmTableGammes,DefaultTableModel modelBarre,AtomicInteger numBarre)
+	public  void buildTableModelGamme()
 	        throws SQLException {
 
 
 
 
-	    inmTableGammes.setModel(model);
+	    mTableGammes.setModel(mModelGammes);
 
-	    inmTableGammes.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+	    mTableGammes.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
 
-        inmTableGammes.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+        mTableGammes.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
 
-        inmTableGammes.addMouseListener(new MouseAdapter() {
+        mTableGammes.addMouseListener(new MouseAdapter() {
     	    @Override
 			public void mousePressed(MouseEvent mouseEvent) {
     	        JTable table =(JTable) mouseEvent.getSource();
@@ -403,9 +416,9 @@ public class CPO_Panel extends JPanel {
 
     	        if (mouseEvent.getClickCount() == 2 && table.getSelectedRow() != -1) {
     	        	String gamme=table.getModel().getValueAt(row, 0).toString();
-    	        	numBarre.set(numBarre.get()+1);
-    	        	Object[] rowO = { numBarre.get(), gamme,"normale","normale" };
-    	        	modelBarre.addRow(rowO);
+    	        	
+    	        	Object[] rowO = { ++mNumBarre, gamme,"normale","normale" };
+    	        	mModelBarres.addRow(rowO);
 
     	        }
     	    }
@@ -440,10 +453,10 @@ public class CPO_Panel extends JPanel {
 
 	}
 
-	public void setIconButton(JButton btnButton,String fileName) {
+	public static void setIconButton(Object o,JButton btnButton,String fileName) {
 		try {
 
-			InputStream in = getClass().getResourceAsStream("/"+fileName) ;
+			InputStream in = o.getClass().getResourceAsStream("/"+fileName) ;
 			BufferedImage someImage = ImageIO.read(in);
 			ImageIcon img = new ImageIcon(someImage);
 		    btnButton.setIcon(  img);
