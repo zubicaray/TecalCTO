@@ -37,8 +37,13 @@ public class JobType {
 
 	int horizon;
 
-	int mJobId;
-	public String name;
+	private int mBarreId;
+	private String name;
+	public String getName() {
+		return name;
+	}
+
+
 	int indexAnod=-1;
 	int indexColmatage=-1;
 	int indexDechargement=-1;
@@ -62,8 +67,8 @@ public class JobType {
 	
 	
 
-	JobType(int jobid, String inname,CpModel inM) {
-		mJobId = jobid;
+	JobType(int barre, String inname,CpModel inM) {
+		mBarreId = barre;
 		name = inname;
 		model=inM;
 		sqlData=SQL_DATA.getInstance();
@@ -583,6 +588,11 @@ public class JobType {
 
 		}
 
+	}
+
+
+	public int getmBarreId() {
+		return mBarreId;
 	}
 
 }

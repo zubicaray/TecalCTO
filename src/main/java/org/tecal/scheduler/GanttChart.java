@@ -159,7 +159,8 @@ public class GanttChart extends JFrame {
 	public ChartPanel model_diag(TecalOrdo  inTecalOrdo){
 		
 		
-		HashMap<String, ArrayList<GammeType> > ficheToZones		= inTecalOrdo.getBarres();
+		HashMap<Integer, ArrayList<GammeType> > ficheToZones		= inTecalOrdo.getBarres();
+		LinkedHashMap<Integer,String> ficheToGamme		= inTecalOrdo.getBarreGammes();
 		Map<Integer, List<AssignedTask>> assignedTasksByNumzone=inTecalOrdo.getAssignedJobs();
 		 
 		mDataset.removeAllSeries();
@@ -186,11 +187,11 @@ public class GanttChart extends JFrame {
 
 		 int jobID = 0;
 		 
-		 String[] gammes= new String[ficheToZones.keySet().size()];
-		 for (Map.Entry<String, ArrayList<GammeType> > entry : ficheToZones.entrySet()) {
-			String lgamme = entry.getKey();			         
+		 Integer[] gammes= new Integer[ficheToZones.keySet().size()];
+		 for (Map.Entry<Integer, ArrayList<GammeType> > entry : ficheToZones.entrySet()) {
+			String lgamme =entry.getKey()+"-"+ ficheToGamme.get(entry.getKey());			         
 			series[jobID] = new XYIntervalSeries(lgamme);
-			gammes[jobID] = lgamme;
+			gammes[jobID] = entry.getKey();
 			mDataset.addSeries(series[jobID]);
 			jobID++;
 		 }
@@ -292,8 +293,8 @@ public class GanttChart extends JFrame {
 			int cpt1=0;
 		    for(AssignedTask at :listeTache) {	
 			 
-				String gamme=gammes[idjob];
-		    	ArrayList<GammeType> df=ficheToZones.get(gamme);
+				Integer barre=gammes[idjob];
+		    	ArrayList<GammeType> df=ficheToZones.get(barre);
 		    	//on retrouve le idtask de la table ZONES SQLSERVER ( numéroté sans trou à partir de 0 <> numzone donc)
 		    	// car quant à lui,le taskid de google, est propre à l'ordres des zones d'une gamme
 		    	int posteEncours=df.get(at.taskID).idzonebdd;

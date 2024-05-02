@@ -13,8 +13,11 @@ import java.awt.event.ComponentEvent;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.swing.DefaultRowSorter;
 import javax.swing.GroupLayout;
@@ -60,6 +63,8 @@ public class CPO_IHM extends JFrame {
 	private SQL_DATA sqlCnx;
 	@SuppressWarnings("unused")
 	private timerGantt mTimer;
+	@SuppressWarnings("unused")
+	private Map<Integer, List<AssignedTask>> ongoingTasksByJobId;
 
 	private LinkedHashMap<Integer,String> mGammes;
 
@@ -108,8 +113,8 @@ public class CPO_IHM extends JFrame {
 
 	public void runTest () {
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-		mTecalOrdo.runTest();
-		mCPO_PANEL.setModelBarres(mTecalOrdo.getBarres().keySet());
+		mGammes=mTecalOrdo.runTest();
+		mCPO_PANEL.setModelBarres(mGammes);
 		execute();
 		setCursor(Cursor.getDefaultCursor());
 	}
@@ -117,7 +122,15 @@ public class CPO_IHM extends JFrame {
 	public void run (LinkedHashMap<Integer,String> gammes) {
 
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		mGammes=gammes;
+		//filter(gammes);
 		mTecalOrdo.run(gammes);
+		
+		if(mTecalOrdo.hasSolution()) {
+			for( Entry<Integer, List<AssignedTask>> entry  :mTecalOrdo.getAssignedTasksByJobId().entrySet()) {				
+				ongoingTasksByJobId.put(entry.getKey(),entry.getValue());			
+			}		
+		}
 		execute();
 		setCursor(Cursor.getDefaultCursor());
 
@@ -164,7 +177,7 @@ public class CPO_IHM extends JFrame {
 					int t=at.derive-at.start;
 					String minutes=String.format("%02d:%02d",  t / 60, (t % 60));
 					Object[] rowO = {
-							mTecalOrdo.getAllJobs().get(at.jobID).name,
+							mTecalOrdo.getAllJobs().get(at.jobID).getName(),
 							sqlCnx.getZones().get(at.numzone).codezone,
 							minutes };
 					modelDerives.addRow(rowO);
@@ -207,6 +220,7 @@ public class CPO_IHM extends JFrame {
 	}
 	private void init() {
 
+		ongoingTasksByJobId = new HashMap<Integer, List<AssignedTask>>();
 		TecalGUI.cosmeticGUI();
 		mGanttTecalOR = new GanttChart("Diagramme Gantt de la production");
 

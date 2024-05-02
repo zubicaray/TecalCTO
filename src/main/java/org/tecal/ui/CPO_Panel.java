@@ -13,8 +13,11 @@ import java.io.InputStream;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 import javax.imageio.ImageIO;
@@ -41,6 +44,8 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
+
+import org.tecal.scheduler.types.GammeType;
 
 
 public class CPO_Panel extends JPanel {
@@ -280,19 +285,18 @@ public class CPO_Panel extends JPanel {
 	public DefaultTableModel getModelBarres() {
 		return mModelBarres;
 	}
-	public void setModelBarres(Set<String> set) {
+	public void setModelBarres(LinkedHashMap<Integer, String> set) {
 		
 		
-		String[] list=set.toArray(new String[0]);
-		Arrays.sort(list);
 		
-		for(String barre : list ) {			
-			
-			String[] b=barre.split("-");
-			Object[] rowO = { Integer.valueOf(b[0]), b[1],"normale","normale" };
+        for (Map.Entry<Integer, String> entry : set.entrySet()) {
+        	Integer key = entry.getKey();
+            String value = entry.getValue();
+            Object[] rowO = { key,value,"normale","normale" };
 			mNumBarre++;
 			mModelBarres.addRow(rowO);
-		}
+        }
+   
 		
 		
     	

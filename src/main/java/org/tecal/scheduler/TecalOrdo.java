@@ -69,8 +69,8 @@ public class TecalOrdo {
 
 	// map de toutes les gammes
 	private HashMap<String, ArrayList<GammeType> > mGammes;
-	// map des barres associé à leut gamme
-	private HashMap<String, ArrayList<GammeType> > mBarres;
+	private HashMap<Integer, ArrayList<GammeType> > mBarreZones;
+	private LinkedHashMap<Integer,String> mBarreGammes;
 	private SQL_DATA sqlCnx ;
 	@SuppressWarnings("unused")
 	private  SQL_DATA getSqlCnx() {return sqlCnx;}
@@ -99,7 +99,7 @@ public class TecalOrdo {
 
 	private Map<Integer, List<AssignedTask>> assignedTasksByNumzone;
 	private Map<Integer, List<AssignedTask>> assignedTasksByJobId;
-
+	
 	
 	public Map<Integer, List<AssignedTask>> getAssignedTasksByJobId() {
 		return assignedTasksByJobId;
@@ -136,7 +136,7 @@ public class TecalOrdo {
 
 	public TecalOrdo(int source) {
 
-		mBarres=new  HashMap< >();
+		mBarreZones=new  HashMap< >();
 		sqlCnx=SQL_DATA.getInstance();
 
 		Loader.loadNativeLibraries();
@@ -192,41 +192,46 @@ public class TecalOrdo {
 		 numzoneArr= zonesBDD.keySet().toArray(new Integer[0]);
 
 	}
-	public void setBarresTest() {
-	 int i=0;
-	 for(String gamme: CST.gammesTest ) {
-		 i++;
-		 mBarres.put(i+"-"+gamme, mGammes.get(gamme));
-
-	 }
+	public LinkedHashMap<Integer,String>  setBarresTest() {
+		mBarreGammes=new LinkedHashMap<Integer,String>();
+		
+		int i=0;
+		for(String gamme: CST.gammesTest ) {
+			i++;
+			mBarreZones.put(i, mGammes.get(gamme));
+			mBarreGammes.put(i, gamme);
+		}
+		
+		return mBarreGammes;
 	}
 
 	public Map<Integer, List<AssignedTask>> getAssignedJobs() {
 		return assignedTasksByNumzone;
 	}
 
-	public HashMap<String, ArrayList<GammeType>> getBarres() {
-		return mBarres;
+	public HashMap<Integer, ArrayList<GammeType>> getBarres() {
+		return mBarreZones;
 	}
 
 	public void setBarres(LinkedHashMap<Integer,String> inBarres) {
 
-		mBarres.clear();
+		mBarreGammes=inBarres;
+		mBarreZones.clear();
 		for (Map.Entry<Integer,String > entry : inBarres.entrySet()) {
 
 			int numbarre=entry.getKey();
 			String gamme=entry.getValue();
-			 mBarres.put(numbarre+"-"+gamme, mGammes.get(gamme));
+			mBarreZones.put(numbarre, mGammes.get(gamme));
 
 		}
 
 	}
 
 
-	public void  runTest() {
+	public LinkedHashMap<Integer,String>  runTest() {
 
 		
-		setBarresTest();
+		LinkedHashMap<Integer,String> res=setBarresTest();
 		int[] params= {
 				CST.TEMPS_ZONE_OVERLAP_MIN,
 				CST.TEMPS_MVT_PONT_MIN_JOB,
@@ -238,6 +243,7 @@ public class TecalOrdo {
 	
 
 		execute();
+		return res;
 	}
 
 	public void  run(LinkedHashMap<Integer,String> inBarres) {
@@ -450,9 +456,12 @@ public class TecalOrdo {
 		zoneToIntervals.clear();
 		multiZoneIntervals.clear();
 		cumulDemands.clear();
-		for (Map.Entry<String, ArrayList<GammeType> > entry : mBarres.entrySet()) {
+		for (Map.Entry<Integer, ArrayList<GammeType> > entry : mBarreZones.entrySet()) {
 
-			JobType job = new JobType(cptJob, entry.getKey(),model);
+			int numBarre=entry.getKey();
+			String name=numBarre+"-"+mBarreGammes.get(numBarre);
+			
+			JobType job = new JobType(cptJob, name,model);
 			cptJob++;
 			//String lgamme = entry.getKey();
 			List<GammeType>  zones = entry.getValue();
@@ -853,6 +862,22 @@ static IntervalVar getNoOverlapZone(CpModel model,IntervalVar mvt){
 
 	public boolean hasSolution() {
 		return hasSolution;
+	}
+
+
+
+
+
+
+	public LinkedHashMap<Integer,String> getBarreGammes() {
+		return mBarreGammes;
+	}
+
+
+
+
+	public void setBarreGammes(LinkedHashMap<Integer,String> mBarreGammes) {
+		this.mBarreGammes = mBarreGammes;
 	}
 }
 
