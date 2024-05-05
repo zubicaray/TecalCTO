@@ -68,13 +68,12 @@ public class TecalOrdo {
 
 
 	// map de toutes les gammes
-	private HashMap<String, ArrayList<GammeType> > mGammes;
+	private HashMap<String, ArrayList<GammeType> > 	mGammes;
 	private HashMap<Integer, ArrayList<GammeType> > mBarreZones;
-	private LinkedHashMap<Integer,String> mBarreGammes;
-	private HashMap<Integer, ArrayList<IntVar> > mDebutZones;
-	private SQL_DATA sqlCnx ;
-	@SuppressWarnings("unused")
-	private  SQL_DATA getSqlCnx() {return sqlCnx;}
+	private HashMap<Integer, ArrayList<GammeType> > mBarreZonesAll;
+	private LinkedHashMap<Integer,String> 			mBarreLabels;
+	private HashMap<Integer, ArrayList<IntVar> > 	mDebutZones;
+	
 	
 	private boolean hasSolution;
 
@@ -86,10 +85,9 @@ public class TecalOrdo {
 	private Integer[] numzoneArr;
 
 	// Creates the model.
-	private	List<JobType> allJobs= new ArrayList<>();
-	public List<JobType> getAllJobs() {
-		return allJobs;
-	}
+	private	LinkedHashMap<Integer, JobType> allPreviousJobs= new LinkedHashMap<>();
+	private	LinkedHashMap<Integer, JobType> allJobs= new LinkedHashMap<>();
+	public LinkedHashMap<Integer, JobType> getAllJobs() { 		return allJobs;	}
 
 
 	private	Map<List<Integer>, TaskOrdo> 	allTasks 			= new HashMap<>();
@@ -99,18 +97,36 @@ public class TecalOrdo {
 
 
 	private Map<Integer, List<AssignedTask>> assignedTasksByNumzone;
-	private Map<Integer, List<AssignedTask>> assignedTasksByJobId;
+	private LinkedHashMap<Integer, List<AssignedTask>> assignedTasksByBarreId;
 	//AssignedTask des génération précédentes et qu sont en cours de production
 	@SuppressWarnings("unused")
-	private Map<Integer, List<AssignedTask>> ongoingTasksByJobId;
+	private LinkedHashMap<Integer, List<AssignedTask>> ongoingTasksByBarreId;
 	
 	
-	public Map<Integer, List<AssignedTask>> getAssignedTasksByJobId() {
-		return assignedTasksByJobId;
+	private JobType[] arrayJobs;
+	
+	
+	public JobType[] getArrayJobs() {
+		return arrayJobs;
 	}
 
 
-	private CpModel model;
+
+
+	public Map<Integer, List<AssignedTask>> getongoingTasksByBarreId() {
+		return ongoingTasksByBarreId;
+	}
+
+
+
+
+	public LinkedHashMap<Integer, List<AssignedTask>> getAssignedTasksByBarreId() {
+		return assignedTasksByBarreId;
+	}
+
+
+	public static CpModel model;
+	public static CpSolver solver; 
 
 	static int horizon = 0;
 
@@ -141,8 +157,13 @@ public class TecalOrdo {
 	public TecalOrdo(int source) {
 
 		mBarreZones=new  HashMap< >();
+		mBarreZonesAll=new  HashMap< >();
+		mBarreLabels=new  LinkedHashMap< >();
 		mDebutZones=new  HashMap< >();
-		sqlCnx=SQL_DATA.getInstance();
+		
+		assignedTasksByNumzone = new HashMap<>();
+		assignedTasksByBarreId = new LinkedHashMap<>();
+		
 
 		Loader.loadNativeLibraries();
 		//model = new CpModel();
@@ -168,7 +189,7 @@ public class TecalOrdo {
 		// temps de sécurité entre deux gammes différentes sur un même poste d'ano
 		mTEMPS_ANO_ENTRE_P1_P2=inParams[4];
 
-		mTEMPS_MAX_SOLVEUR=inParams[4];
+		mTEMPS_MAX_SOLVEUR=inParams[5];
 	}
 
 	public void  setDataSource(int source) {
@@ -176,9 +197,8 @@ public class TecalOrdo {
 		setSource(source);
 
 		if(CST.SQLSERVER ==source) {
-
-			mGammes=sqlCnx.getLignesGammesAll();
-			zonesBDD=sqlCnx.getZones();
+			mGammes=SQL_DATA.getInstance().getLignesGammesAll();
+			zonesBDD=SQL_DATA.getInstance().getZones();
 		}else {
 
 			try {
@@ -198,16 +218,17 @@ public class TecalOrdo {
 
 	}
 	public LinkedHashMap<Integer,String>  setBarresTest() {
-		mBarreGammes=new LinkedHashMap<Integer,String>();
+		
 		
 		int i=0;
 		for(String gamme: CST.gammesTest ) {
 			i++;
 			mBarreZones.put(i, mGammes.get(gamme));
-			mBarreGammes.put(i, gamme);
+			mBarreZonesAll.put(i, mGammes.get(gamme));
+			mBarreLabels.put(i, gamme);
 		}
 		
-		return mBarreGammes;
+		return mBarreLabels;
 	}
 
 	public Map<Integer, List<AssignedTask>> getAssignedJobs() {
@@ -220,13 +241,17 @@ public class TecalOrdo {
 
 	public void setBarres(LinkedHashMap<Integer,String> inBarres) {
 
-		mBarreGammes=inBarres;
+		//mBarreLabels=inBarres;
 		mBarreZones.clear();
 		for (Map.Entry<Integer,String > entry : inBarres.entrySet()) {
 
 			int numbarre=entry.getKey();
 			String gamme=entry.getValue();
 			mBarreZones.put(numbarre, mGammes.get(gamme));
+			if(!mBarreZonesAll.containsKey(numbarre)) {
+				mBarreZonesAll.put(numbarre, mGammes.get(gamme));
+				mBarreLabels.put(numbarre, gamme);
+			}
 
 		}
 
@@ -241,7 +266,9 @@ public class TecalOrdo {
 				CST.TEMPS_ZONE_OVERLAP_MIN,
 				CST.TEMPS_MVT_PONT_MIN_JOB,
 				CST.GAP_ZONE_NOOVERLAP,
-				CST.TEMPS_MVT_PONT,CST.TEMPS_ANO_ENTRE_P1_P2,5//CST.TEMPS_MAX_SOLVEUR
+				CST.TEMPS_MVT_PONT,
+				CST.TEMPS_ANO_ENTRE_P1_P2,
+				5//CST.TEMPS_MAX_SOLVEUR
 		};
 
 		setParams(params);
@@ -251,9 +278,19 @@ public class TecalOrdo {
 		return res;
 	}
 
-	public void  run(LinkedHashMap<Integer,String> inBarres,Map<Integer, List<AssignedTask>> ongoingJob) {
+	public void  run(LinkedHashMap<Integer,String> inBarres,LinkedHashMap<Integer, List<AssignedTask>> ongoingJob) {
 	
-		ongoingTasksByJobId=ongoingJob;
+		ongoingTasksByBarreId=ongoingJob;
+		
+		for(Integer key :ongoingTasksByBarreId.keySet() ) {
+			if(! allPreviousJobs.containsKey(key)) {
+				//on ajoute les jobs qui sont déjà en cours de prod
+				allPreviousJobs.put(key,allJobs.get(key));
+			}
+		}
+		
+		
+		
 		setBarres(inBarres);		
 		execute();
 	}
@@ -274,7 +311,6 @@ public class TecalOrdo {
 		//--------------------------------------------------------------------------------------------
 		// CONSTRAINTES SUR CHAQUE POSTE
 		//--------------------------------------------------------------------------------------------
-		machineConstraints();
 		bridgesConstraints();
 		brigesSecurity();
 		//--------------------------------------------------------------------------------------------
@@ -287,11 +323,14 @@ public class TecalOrdo {
 		IntVar objVar = model.newIntVar(0, horizon, "makespan");
 		List<IntVar> ends = new ArrayList<>();
 		List<IntVar> starts = new ArrayList<>();
-		for (int jobCpt = 0; jobCpt < allJobs.size(); ++jobCpt) {
-			List<Task> job = allJobs.get(jobCpt).tasksJob;
+		
+		
+		
+		for (int jobCpt = 0; jobCpt < arrayJobs.length; ++jobCpt) {
+			List<Task> job = arrayJobs[jobCpt].tasksJob;
 			List<Integer> key = Arrays.asList(jobCpt, job.size() - 1);
-			ends.add(allTasks.get(key).fin);
-			starts.add(allTasks.get(key).startBDD);
+			ends.add(allTasks.get(key).getFin());
+			starts.add(allTasks.get(key).getStart());
 		}
 
 
@@ -304,7 +343,7 @@ public class TecalOrdo {
 				DecisionStrategyProto.DomainReductionStrategy.SELECT_MIN_VALUE);
 		 */
 		// Creates a solver and solves the model.
-		CpSolver solver = new CpSolver();
+		solver = new CpSolver();
 		//solver.getParameters().setNumWorkers(1);
 		//if(modeFast) {
 		//	solver.getParameters().setStopAfterFirstSolution(true);
@@ -314,8 +353,9 @@ public class TecalOrdo {
 		solver.getParameters().setMaxTimeInSeconds(mTEMPS_MAX_SOLVEUR);
 
 
-		assignedTasksByNumzone = new HashMap<>();
-		assignedTasksByJobId = new HashMap<>();
+		
+		assignedTasksByNumzone.clear();
+		assignedTasksByBarreId.clear();
 		
 		CpSolverStatus status = solver.solve(model);
 
@@ -325,11 +365,7 @@ public class TecalOrdo {
 			
 			hasSolution=true;
 
-			for (JobType job : allJobs) {
-				if(CST.PrintZonesTime) {
-					job.printZoneTimes(solver);
-				}
-			}
+			
 
 			outputMsg.append("-----------------------------------------------------------------.");
 			outputMsg.append(System.getProperty("line.separator"));
@@ -337,7 +373,7 @@ public class TecalOrdo {
 			outputMsg.append(System.getProperty("line.separator"));
 			// Create one list of assigned tasks per Zone.
 
-			createAssignedTasks(solver);
+			createAssignedTasks();
 
 
 			if(CST.PrintTaskTime) {
@@ -390,15 +426,15 @@ public class TecalOrdo {
 		outputMsg.append(String.format("  temps %f s%n", solver.wallTime()));
 	}
 
-	private void createAssignedTasks(CpSolver solver) {
-		for (int jobID = 0; jobID < allJobs.size(); ++jobID) {
-			List<Task> job = allJobs.get(jobID).tasksJob;
+	private void createAssignedTasks() {
+		for (int jobID = 0; jobID < arrayJobs.length; ++jobID) {
+			List<Task> job = arrayJobs[jobID].tasksJob;
 			for (int taskID = 0; taskID < job.size(); ++taskID) {
 				Task task = job.get(taskID);
 				List<Integer> key = Arrays.asList(jobID, taskID);
 
-				int debut=(int) solver.value(allTasks.get(key).startBDD);
-				int fin=(int) solver.value(allTasks.get(key).endBDD);
+				int debut=(int) solver.value(allTasks.get(key).getStart());
+				int fin=(int) solver.value(allTasks.get(key).getEndBDD());
 
 				int derive;
 				// on ne sait pas à quel moment entre le min et le max de dérive
@@ -406,9 +442,9 @@ public class TecalOrdo {
 				// pour calculer la dérive
 				if(task.numzone != CST.DECHARGEMENT_NUMZONE){
 					List<Integer> keySuivante = Arrays.asList(jobID, taskID+1);
-					derive=(int) solver.value(allTasks.get(keySuivante).startBDD)-allTasks.get(key).tempsDeplacement-allTasks.get(key).egouttage;
+					derive=(int) solver.value(allTasks.get(keySuivante).getStart())-allTasks.get(key).tempsDeplacement-allTasks.get(key).egouttage;
 				} else {
-					derive=(int) solver.value(allTasks.get(key).deriveMax);
+					derive=(int) solver.value(allTasks.get(key).getDeriveMax());
 				}
 
 
@@ -423,8 +459,9 @@ public class TecalOrdo {
 				assignedTasksByNumzone.computeIfAbsent(task.numzone, (Integer k) -> new ArrayList<>());
 				assignedTasksByNumzone.get(task.numzone).add(assignedTask);
 				
-				assignedTasksByJobId.computeIfAbsent(jobID, (Integer k) -> new ArrayList<>());
-				assignedTasksByJobId.get(jobID).add(assignedTask);
+				int barre=arrayJobs[jobID].getBarreID();
+				assignedTasksByBarreId.computeIfAbsent(barre, (Integer k) -> new ArrayList<>());
+				assignedTasksByBarreId.get(barre).add(assignedTask);
 				
 			}
 		}
@@ -469,53 +506,40 @@ public class TecalOrdo {
 		for (Map.Entry<Integer, ArrayList<GammeType> > entry : mBarreZones.entrySet()) {
 
 			int numBarre=entry.getKey();
-			String name=numBarre+"-"+mBarreGammes.get(numBarre);
+			String name=numBarre+"-"+mBarreLabels.get(numBarre);
 			
 			JobType job = new JobType(numBarre, name,model);
 			
 			//String lgamme = entry.getKey();
 			List<GammeType>  zones = entry.getValue();
 			// on calcul les indexes des zones a regrouper par pont
-			job.computeCoords(zones);
-			allJobs.add(job);
+			job.buildTaskList(zones);
+			allJobs.put(numBarre,job);
 		}
 
+		arrayJobs=allJobs.values().toArray(new JobType[0]);
 		// Computes horizon dynamically as the sum of all durations.
 		computeHorizon();
-			
-		
-		 
-		
 
 		System.out.println("HORIZON=" + horizon);
 
-		for (JobType job : allJobs) {
+		for (JobType job : arrayJobs) {
 			job.horizon=horizon;
 		}
 
 
 
-		for (int jobID = 0; jobID < allJobs.size(); ++jobID) {
-			JobType job = allJobs.get(jobID);
+		for (int jobID = 0; jobID < arrayJobs.length; ++jobID) {
+			JobType job = arrayJobs[jobID];
 
 			//on créé les zones avec leut temps de déplacement, égouttage, etc ...
-			job.addIntervalForModel(allTasks,zoneToIntervals,multiZoneIntervals,cumulDemands,jobID,zonesBDD);
+			job.addIntervalForModel(allTasks,zoneToIntervals,multiZoneIntervals,cumulDemands,jobID);
 			//on créé les zones corespondant a mouvement des ponts
-			job.simulateBridgesMoves();
-			// on identifie et  regroupe les zones trop courte pour autoriser un mvt du pont
-			job.ComputeZonesNoOverlap(jobID, allTasks);
+			job.simulateBridgesMoves();			
 			// regroupement des zones qui pourraient être trop proches de zones d'autre jobs sur pont adverses
 			job.makeSafetyBetweenBridges();
 
-		}
-
-		for (int jobID = 0; jobID < allJobs.size(); ++jobID) {
-
-			//allJobs.get(jobID).ComputeZonesNoOverlap(jobID, allTasks);
-			//allJobs.get(jobID).printNoOverlapZones();
-
-		}
-
+		}		
 
 	}
 
@@ -524,20 +548,17 @@ public class TecalOrdo {
 
 	private void computeHorizon() {
 		horizon=0;
-		for (JobType job : allJobs) {
+		for (JobType job : arrayJobs) {
 			for (Task task : job.tasksJob) {
 				horizon += task.duration;
 			}
 		}
 		
-		 if(ongoingTasksByJobId !=null && !ongoingTasksByJobId.isEmpty() ) {
-			 for(Entry<Integer, List<AssignedTask>>  entry:ongoingTasksByJobId.entrySet()  ) {
+		 if(ongoingTasksByBarreId !=null && !ongoingTasksByBarreId.isEmpty() ) {
+			 for(Entry<Integer, List<AssignedTask>>  entry:ongoingTasksByBarreId.entrySet()  ) {
 				 
-				 for(AssignedTask t:entry.getValue()) {
-					 
-					 horizon += t.duration;
-					 
-					 
+				 for(AssignedTask t:entry.getValue()) {					 
+					 horizon += t.duration;				 
 				 }
 				 
 			 }
@@ -578,13 +599,13 @@ public class TecalOrdo {
         for (Entry<Integer, List<IntervalVar>> entry : cumulDemands.entrySet()) {
             int idCumulZone = entry.getKey();
             //get the constraint on the current "cumulative" machine
-            CumulativeConstraint cumul=cumulConstr.get(idCumulZone);
-            List<IntervalVar> inters = entry.getValue();
-            for(IntervalVar iv:inters) {
-            	cumul.addDemand(iv, 1);
+            if(cumulConstr.containsKey(idCumulZone)) {
+        	   CumulativeConstraint cumul=cumulConstr.get(idCumulZone);
+               List<IntervalVar> inters = entry.getValue();
+               for(IntervalVar iv:inters) {
+               	cumul.addDemand(iv, 1);
+               }
             }
-
-
         }
 
 
@@ -627,8 +648,8 @@ public class TecalOrdo {
 	private  void jobsPrecedence () {
 
 		// Precedences inside a job.
-		for (int jobID = 0; jobID < allJobs.size(); ++jobID) {
-			List<Task> jobTasks = allJobs.get(jobID).tasksJob;
+		for (int jobID = 0; jobID < arrayJobs.length; ++jobID) {
+			List<Task> jobTasks =arrayJobs[jobID].tasksJob;
 
 			for (int taskID = 0; taskID < jobTasks.size() - 1; ++taskID) {
 				List<Integer> prevKey = Arrays.asList(jobID, taskID);
@@ -637,11 +658,8 @@ public class TecalOrdo {
 				// last OK
 				//le debut de la zone suivante doit etre compris
 				//entre le début et la fin de la dérive
-				model.addLessOrEqual(allTasks.get(nextKey).startBDD, allTasks.get(prevKey).fin);
-				model.addGreaterOrEqual(allTasks.get(nextKey).startBDD, allTasks.get(prevKey).deriveNulle);
-				
-				
-
+				model.addLessOrEqual(allTasks.get(nextKey).getStart(), allTasks.get(prevKey).getFin());
+				model.addGreaterOrEqual(allTasks.get(nextKey).getStart(), allTasks.get(prevKey).getDeriveNulle());
 
 			}
 
@@ -653,21 +671,17 @@ public class TecalOrdo {
 	//regroupent des debut d'interval par numzone
 	private  void priseEnCompteOngoingJobs () {
 		
-		 if(ongoingTasksByJobId ==null||  ongoingTasksByJobId.isEmpty() ) return;	
+		 if(ongoingTasksByBarreId ==null||  ongoingTasksByBarreId.isEmpty() ) return;	
 		
 		 computeDebutByZone ();
 		 HashMap<Integer,Integer> zoneEndings=new HashMap<>();
 		 
-		 for(Entry<Integer, List<AssignedTask>>  entry:ongoingTasksByJobId.entrySet()  ) {
+		 for(Entry<Integer, List<AssignedTask>>  entry:ongoingTasksByBarreId.entrySet()  ) {
 			 
-			 for(AssignedTask t:entry.getValue()) {
-				 
-				 zoneEndings.computeIfAbsent(t.numzone,(Integer k) -> t.end);   
-				 
+			 for(AssignedTask t:entry.getValue()) {				 
+				 zoneEndings.computeIfAbsent(t.numzone,(Integer k) -> t.end);   				 
 				 if(zoneEndings.get(t.numzone)>t.end) 
-					 zoneEndings.put(t.numzone,t.end);
-				 
-				 
+					 zoneEndings.put(t.numzone,t.end);							 
 			 }
 			 
 		 }
@@ -677,18 +691,12 @@ public class TecalOrdo {
 			int end=entry.getValue();
 			
 			if(mDebutZones.containsKey(numzone)) {
-				for(IntVar var:mDebutZones.get(numzone)) {
-					
-					model.addGreaterOrEqual(var, end);
-					
+				for(IntVar var:mDebutZones.get(numzone)) {					
+					model.addGreaterOrEqual(var, end);					
 				}
-			}
-		
-			
+			}		
 			 
 		 }
-		 
-		 
 		 
 		
 	}
@@ -697,9 +705,10 @@ public class TecalOrdo {
 	//regroupent des debut d'interval par numzone
 	private  void computeDebutByZone () {
 
+		/*
 		// Precedences inside a job.
-		for (int jobID = 0; jobID < allJobs.size(); ++jobID) {
-			List<Task> jobTasks = allJobs.get(jobID).tasksJob;
+		for (int jobID = 0; jobID < arrayJobs.length; ++jobID) {
+			List<Task> jobTasks = arrayJobs[jobID].tasksJob;
 
 			for (int taskID = 0; taskID < jobTasks.size() ; ++taskID) {
 				List<Integer> key = Arrays.asList(jobID, taskID);		
@@ -708,81 +717,22 @@ public class TecalOrdo {
 				int numzone=jobTasks.get(taskID).numzone;
 				
 				mDebutZones.computeIfAbsent(numzone, (Integer k) -> new ArrayList<>());   
-				mDebutZones.get(numzone).add(t.startBDD);
+				mDebutZones.get(numzone).add(t.getStart());
 				
 
 
 			}
 
 		}
-
+*/
 	}
 
-	private  void machineConstraints() {
 
-
-
-		//---------------------------------------------------------------------------
-		// NOOVERLAP ZONES REGROUPEES -----------------------------------------------
-		//---------------------------------------------------------------------------
-
-		if(CST.CSTR_NOOVERLAP_ZONES_GROUPEES)
-		{
-			// les zones de rincages ne doivent pas se croiser
-
-			ArrayList<ZonesIntervalVar> listZonesNoOverlapParPont  = new  ArrayList<>();
-			listZonesNoOverlapParPont.add( new  ZonesIntervalVar()); // add zones pont 1
-			listZonesNoOverlapParPont.add( new  ZonesIntervalVar()); // add zones pont 2
-			//---------------------------------------------------------------------------
-			// toutes les zones regroupées ne doivent pas se croiser
-			//---------------------------------------------------------------------------
-			for (JobType j  :allJobs) {
-				int p=0;
-				for(ListeZone zonesRegroupeesP :j.tasksNoOverlapPont) {
-					listZonesNoOverlapParPont.get(p).addAll(zonesRegroupeesP);
-					p++;
-				}
-				p=0;
-
-			}
-			for(ArrayList<IntervalVar> listZonesNoOverlap: listZonesNoOverlapParPont) {
-				model.addNoOverlap(listZonesNoOverlap);
-			}
-			//---------------------------------------------------------------------------
-			//le débuts des zones longues des autres jobs
-			// ne doivent pas croiser les zones regroupées du job en cours
-			//---------------------------------------------------------------------------
-			for(int pont=0;pont<CST.NB_PONTS;pont++) {
-				for(int j=0;j<allJobs.size();j++) {
-					JobType j1=allJobs.get(j);
-
-			    	 ListeZone zonesGroupeesWithAllOthers=new ListeZone();
-			    	 ListeZone zonesLonguesWithAllOthers=new ListeZone();
-
-			    	 zonesGroupeesWithAllOthers.addAll(j1.tasksNoOverlapPont.get(pont));
-			    	 zonesLonguesWithAllOthers.addAll(j1.debutLonguesZonesPont.get(pont));
-
-			    	 for(int k=0;k<allJobs.size();k++) {
-			    		 if(k==j) {
-							continue;
-						}
-			    		 zonesGroupeesWithAllOthers.addAll(allJobs.get(k).debutLonguesZonesPont.get(pont));
-			    		 zonesLonguesWithAllOthers.addAll(allJobs.get(k).debutLonguesZonesPont.get(pont));
-			    	 }
-
-			    	 model.addNoOverlap(zonesGroupeesWithAllOthers);
-			    	 model.addNoOverlap(zonesLonguesWithAllOthers);
-
-				}
-			}
-
-		}
-	}
 	private void brigesSecurity () {
 
 		if(CST.CSTR_BRIDGES_SECURITY) {
 			ListeZone zonesAutourAnodisation=new ListeZone();
-			for (JobType job : allJobs) {
+			for (JobType job : allJobs.values()) {
 				/*
 		    	 IntervalVar z1=getNoOverlapZone(model,job.mTaskOrdoList.get(job.indexLastZoneP1).intervalBDD);
 		    	 zonesAutourAnodisation.add(z1);
@@ -811,7 +761,7 @@ public class TecalOrdo {
 			ArrayList<ZonesIntervalVar> listZonesNoOverlapParPont  = new  ArrayList<>();
 			listZonesNoOverlapParPont.add( new  ZonesIntervalVar()); // add zones pont 1
 			listZonesNoOverlapParPont.add( new  ZonesIntervalVar()); // add zones pont 2
-			for (JobType j  :allJobs) {
+			for (JobType j  :allJobs.values()) {
 				int p=0;
 				for(ListeZone bridgeMoveP :j.bridgesMoves) {
 					listZonesNoOverlapParPont.get(p).addAll(bridgeMoveP);
@@ -974,15 +924,33 @@ static IntervalVar getNoOverlapZone(CpModel model,IntervalVar mvt){
 
 
 
-	public LinkedHashMap<Integer,String> getBarreGammes() {
-		return mBarreGammes;
+	public LinkedHashMap<Integer,String> getBarreLabels() {
+		return mBarreLabels;
 	}
 
 
 
 
-	public void setBarreGammes(LinkedHashMap<Integer,String> mBarreGammes) {
-		this.mBarreGammes = mBarreGammes;
+	public void setBarreLabels(LinkedHashMap<Integer,String> inBarreGammes) {
+		
+		//mBarreLabels=inBarres;
+		//mBarreZones.clear();
+		for (Map.Entry<Integer,String > entry : inBarreGammes.entrySet()) {
+
+			int numbarre=entry.getKey();
+			String gamme=entry.getValue();
+			if(!mBarreLabels.containsKey(numbarre))
+				mBarreLabels.put(numbarre, gamme);
+
+		}
+		
+	}
+
+
+
+
+	public HashMap<Integer, ArrayList<GammeType> > getBarreZonesAll() {
+		return mBarreZonesAll;
 	}
 }
 

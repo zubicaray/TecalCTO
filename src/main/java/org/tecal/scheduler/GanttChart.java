@@ -167,10 +167,21 @@ public class GanttChart extends JFrame {
 	public void model_diag(TecalOrdo  inTecalOrdo){
 		
 		
-		HashMap<Integer, ArrayList<GammeType> > ficheToZones		= inTecalOrdo.getBarres();
-		LinkedHashMap<Integer,String> ficheToGamme		= inTecalOrdo.getBarreGammes();
-		Map<Integer, List<AssignedTask>> assignedTasksByNumzone=inTecalOrdo.getAssignedJobs();
+		HashMap<Integer, ArrayList<GammeType> > ficheToZones	= inTecalOrdo.getBarreZonesAll();
+		LinkedHashMap<Integer,String> ficheToGamme				= inTecalOrdo.getBarreLabels();
+		Map<Integer, List<AssignedTask>> assignedTasksByNumzone	= inTecalOrdo.getAssignedJobs();
+		Map<Integer, List<AssignedTask>> ongoingTasksByJob		= inTecalOrdo.getongoingTasksByBarreId();
 		 
+		ArrayList< List<AssignedTask>> allJobs=new ArrayList<>();
+		
+		if(ongoingTasksByJob !=null  ) {
+			ongoingTasksByJob.values().forEach( taskArr->{				
+				allJobs.add(taskArr);				
+			});			
+		}
+			
+	
+		
 		mDataset.removeAllSeries();
 		 		 
 		 
@@ -195,11 +206,11 @@ public class GanttChart extends JFrame {
 
 		 int jobID = 0;
 		 
-		 Integer[] gammes= new Integer[ficheToZones.keySet().size()];
+		 Integer[] barreJobs= new Integer[ficheToZones.keySet().size()];
 		 for (Map.Entry<Integer, ArrayList<GammeType> > entry : ficheToZones.entrySet()) {
 			String lgamme =entry.getKey()+"-"+ ficheToGamme.get(entry.getKey());			         
 			series[jobID] = new XYIntervalSeries(lgamme);
-			gammes[jobID] = entry.getKey();
+			barreJobs[jobID] = entry.getKey();
 			mDataset.addSeries(series[jobID]);
 			jobID++;
 		 }
@@ -216,9 +227,95 @@ public class GanttChart extends JFrame {
 		 //!!!!!!!!!!!!!!!!!!!!
 		 // si pas linkedmap les job id ont dans le désordre chrono
 		 // et du coup les zones cumul s'affiche mal
-		 Map<Integer, List<AssignedTask>> tabAssignedJobsSorted=new HashMap<Integer, List<AssignedTask>>();
+		 Map<Integer, List<AssignedTask>> tabAssignedJobsSorted=new HashMap<Integer, List<AssignedTask>>();			
 		 
-		 Map<Integer, List<AssignedTask>> cumulTask=new HashMap<Integer, List<AssignedTask>>();;
+		 computeTasksByJobID(assignedTasksByNumzone, zonesCumul, tabAssignedJobsSorted);
+		 
+		 tabAssignedJobsSorted.values().forEach( taskArr->{				
+				allJobs.add(taskArr);				
+			});	
+		 
+		 /** 
+		  * on trie les zones de chaque job par date
+		  * pour que jfreechart les ajoute dans l'ordre pour qu'on puisse rtrouver les bons tooltip
+		  */
+		  
+		 allJobs.forEach( value -> {	 
+			Collections.sort(value,new Comparator<AssignedTask>() {
+			        public int compare(AssignedTask a1, AssignedTask a2) {
+			        	int numligne1=a1.start+a1.taskID;
+			        	int numligne2=a2.start+a2.taskID;
+			        	numligne1=a1.taskID+a1.numzone*100;
+			        	numligne2=a2.taskID+a2.numzone*100;
+			            return numligne1-numligne2;
+			        }
+			    });
+		 }
+		 );
+		 
+		 for(int idjob=0;idjob<allJobs.size();idjob++) {
+			 List<AssignedTask> listeTache=allJobs.get(idjob);
+				
+				labelsModel.add(new String[listeTache.size()]);
+				tasksTab.add(new AssignedTask[listeTache.size()]);
+				int cpt1=0;
+			    for(AssignedTask at :listeTache) {	
+				 
+					Integer barre=barreJobs[idjob];
+			    	ArrayList<GammeType> df=ficheToZones.get(barre);
+			    	//on retrouve le idtask de la table ZONES SQLSERVER ( numéroté sans trou à partir de 0 <> numzone donc)
+			    	// car quant à lui,le taskid de google, est propre à l'ordres des zones d'une gamme
+			    	int posteEncours=df.get(at.taskID).idzonebdd;
+		      
+				    int[] dr={at.start,at.start+at.duration,at.start+at.duration+at.derive};		
+			
+				    //System.out.println("gamme:"+gamme+" "+df.get(at.taskID).codezone+" start:"+at.start+" numligne:"+df.get(at.taskID).numligne); 
+				    //System.out.println("at.duration="+at.duration );
+				      
+				    double incrementY=0.3;
+				   // boolean hasDerive=false;
+				    
+				    
+				    if(zonesCumul.containsKey(at.numzone)) {
+				    	//System.out.println("gamme:"+gamme+" "+df.get(at.taskID).codezone+" start:"+at.start+" IdPosteZOneCumul:"+IdPosteZOneCumul); 
+				    	double offset=incrementY*at.IdPosteZoneCumul;
+				    	double incrementSpaceY=0.45;
+				    	//Encode the room as x value. The width of the bar is only 0.6 to leave a small gap. The course starts 0.1 h/6 min after the end of the preceding course.
+					    series[idjob].add(posteEncours, posteEncours - incrementSpaceY+offset, posteEncours -incrementSpaceY+offset+incrementY, dr[0],dr[0] ,dr[1]);
+					 }
+				   
+				    else {
+				    	 series[idjob].add(posteEncours,posteEncours - 0.3,posteEncours +0.3, 
+				    			 dr[0],dr[0] ,dr[1] );
+				    	 
+				    	
+				    }
+			    
+				    labelsModel.get(idjob)[cpt1]="start:"+at.start+", durée:"+toMinutes(at.duration)+", fin:"+(at.derive)
+				    		+ " dérive: " +(at.derive-dr[1])+", égouttage:"+df.get(at.taskID).egouttage+ ", " +df.get(at.taskID).codezone;
+				    
+				    
+				    tasksTab.get(idjob)[cpt1]=at;
+				    
+				    cpt1++;    
+				    
+				    
+				 
+				 };
+		 }
+		
+		
+	   
+	     
+	     	   
+	     
+	    
+	
+	}
+
+	private void computeTasksByJobID(Map<Integer, List<AssignedTask>> assignedTasksByNumzone,
+			HashMap<Integer, ZoneCumul> zonesCumul, Map<Integer, List<AssignedTask>> tabAssignedJobsSorted) {
+		Map<Integer, List<AssignedTask>> cumulTask=new HashMap<Integer, List<AssignedTask>>();;
 		 //réorga par jobid/list zones
 		 assignedTasksByNumzone.values().forEach( taskArr->{
 			
@@ -268,90 +365,6 @@ public class GanttChart extends JFrame {
 			 
 		 }
 		 );
-		 
-		 
-		 
-		 /** 
-		  * on trie les zones de chaque job par date
-		  * pour que jfreechart les ajoute dans l'ordre pour qu'on puisse rtrouver les bons tooltip
-		  */
-		  
-		 tabAssignedJobsSorted.forEach((idjob, value) -> {	 
-			Collections.sort(value,new Comparator<AssignedTask>() {
-			        public int compare(AssignedTask a1, AssignedTask a2) {
-			        	int numligne1=a1.start+a1.taskID;
-			        	int numligne2=a2.start+a2.taskID;
-			        	numligne1=a1.taskID+a1.numzone*100;
-			        	numligne2=a2.taskID+a2.numzone*100;
-			            return numligne1-numligne2;
-			        }
-			    });
-		 }
-		 );
-		 
-		
-		 //pour que tout soit ajouté dans le bon ordre il faut retrier les task		 
-		 for (Map.Entry<Integer, List<AssignedTask>> entry : tabAssignedJobsSorted.entrySet()) {
-		 
-			int idjob=entry.getKey();
-			List<AssignedTask> listeTache=entry.getValue();
-			
-			labelsModel.add(new String[listeTache.size()]);
-			tasksTab.add(new AssignedTask[listeTache.size()]);
-			int cpt1=0;
-		    for(AssignedTask at :listeTache) {	
-			 
-				Integer barre=gammes[idjob];
-		    	ArrayList<GammeType> df=ficheToZones.get(barre);
-		    	//on retrouve le idtask de la table ZONES SQLSERVER ( numéroté sans trou à partir de 0 <> numzone donc)
-		    	// car quant à lui,le taskid de google, est propre à l'ordres des zones d'une gamme
-		    	int posteEncours=df.get(at.taskID).idzonebdd;
-	      
-			    int[] dr={at.start,at.start+at.duration,at.start+at.duration+at.derive};		
-		
-			    //System.out.println("gamme:"+gamme+" "+df.get(at.taskID).codezone+" start:"+at.start+" numligne:"+df.get(at.taskID).numligne); 
-			    //System.out.println("at.duration="+at.duration );
-			      
-			    double incrementY=0.3;
-			   // boolean hasDerive=false;
-			    
-			    
-			    if(zonesCumul.containsKey(at.numzone)) {
-			    	//System.out.println("gamme:"+gamme+" "+df.get(at.taskID).codezone+" start:"+at.start+" IdPosteZOneCumul:"+IdPosteZOneCumul); 
-			    	double offset=incrementY*at.IdPosteZoneCumul;
-			    	double incrementSpaceY=0.45;
-			    	//Encode the room as x value. The width of the bar is only 0.6 to leave a small gap. The course starts 0.1 h/6 min after the end of the preceding course.
-				    series[idjob].add(posteEncours, posteEncours - incrementSpaceY+offset, posteEncours -incrementSpaceY+offset+incrementY, dr[0],dr[0] ,dr[1]);
-				 }
-			   
-			    else {
-			    	 series[idjob].add(posteEncours,posteEncours - 0.3,posteEncours +0.3, 
-			    			 dr[0],dr[0] ,dr[1] );
-			    	 
-			    	
-			    }
-		    
-			    labelsModel.get(idjob)[cpt1]="start:"+at.start+", durée:"+toMinutes(at.duration)+", fin:"+(at.derive)
-			    		+ " dérive: " +(at.derive-dr[1])+", égouttage:"+df.get(at.taskID).egouttage+ ", " +df.get(at.taskID).codezone;
-			    
-			    
-			    tasksTab.get(idjob)[cpt1]=at;
-			    
-			    cpt1++;    
-			    
-			    
-			 
-			 };
-			
-		 };
-			 
-		
-	   
-	     
-	     	   
-	     
-	    
-	
 	}
 
 	private void buildPlot() {

@@ -9,30 +9,110 @@ import com.google.ortools.sat.LinearExpr;
 public class TaskOrdo {
 
 	
-	IntVar startBDD;
-	IntVar endBDD;
+	private IntVar startBDD;
+	private IntVar endBDD;
 	//interval théorique
 	IntervalVar intervalBDD;
 		
 	//réel , qui intègre les contraintes du pont
 	//IntVar deb;
-	IntVar fin;
-	IntVar deriveNulle;
-	IntVar deriveMax;
+	private IntVar fin;
+	private IntVar deriveNulle;
+	private IntVar deriveMax;
 	IntervalVar intervalReel;
 	IntervalVar minimumDerive;
+	IntervalVar maximumDerive;
 	int tempsDeplacement;
 	int egouttage;
+	int duration;
 	boolean zoneSecu=false;
+	
+	
+	private long fixedStartBDD;
+	private long fixedEndBDD;
+	private long fixedDeriveNulle;
+	@SuppressWarnings("unused")
+	private long fixedDeriveMax;
+	private  long fixedFin;
+	
 	
 
 	boolean isOverlapable=false;
 
+	public LinearExpr getFixedStart() {
+		return intervalBDD.getStartExpr();
+	}
+	public LinearExpr getFixedDeriveMax() {
+		return maximumDerive.getStartExpr();
+	}
+	
+	public LinearExpr getFixedEndBDD() {
+		return intervalBDD.getEndExpr();
+	}
+	public LinearExpr getFixedFin() {
+		return intervalReel.getEndExpr();
+	}
+	public LinearExpr getFixedDeriveNulle() {
+		return minimumDerive.getEndExpr();
+	}
+	
 
-	TaskOrdo(CpModel model,int horizon,int duration,int inderive,int minDebut,int intempsDeplacement,int egouttage,String suffix){
+	public IntVar getStart() {
+		return startBDD;
+	}
+	public IntVar getDeriveMax() {
+		return deriveMax;
+	}
+	public IntVar getDeriveNulle() { return deriveNulle ;}
+	
+	public IntVar getEndBDD() {
+		return endBDD;
+	}
+	public IntVar getFin() {
+		return fin;
+	}
+	
+	
+	
+	
+	public void fixeTime() {
+		
+		
+		fixedStartBDD=TecalOrdo.solver.value(startBDD);
+		fixedEndBDD=TecalOrdo.solver.value(endBDD);
+		fixedDeriveNulle=TecalOrdo.solver.value(deriveNulle);		
+		fixedDeriveMax=TecalOrdo.solver.value(deriveMax);
+		fixedFin=TecalOrdo.solver.value(fin);
+		
+		
+		intervalBDD = TecalOrdo.model.newFixedInterval(fixedStartBDD,duration, "intervalFixeReel" );
+	
+		
+		intervalReel=TecalOrdo.model.newFixedInterval(
+				fixedStartBDD,
+				fixedFin-fixedStartBDD,
+				"intervalReel fixe");
+		
+		
+		
+		maximumDerive=TecalOrdo.model.newFixedInterval(
+				fixedFin-(tempsDeplacement+egouttage),
+				tempsDeplacement+egouttage,
+				"derive max fixed" );
+		
+		minimumDerive=TecalOrdo.model.newFixedInterval(
+				fixedEndBDD,
+				fixedEndBDD-fixedDeriveNulle,
+				"minimumDerive fixef" );
+		
+	
+	}
+
+	TaskOrdo(CpModel model,int horizon,int induration,int inderive,int minDebut,int intempsDeplacement,int egouttage,String suffix){
 	
 	
 		tempsDeplacement=intempsDeplacement;
+		duration=induration;
 		this.egouttage=egouttage;
 		
 		if(inderive+duration>=CST.TEMPS_ZONE_OVERLAP_MIN){
@@ -40,11 +120,11 @@ public class TaskOrdo {
 		}		
 		
 		
-		startBDD = model.newIntVar(0, horizon, "start" + suffix); 
-		endBDD = model.newIntVar(0, horizon, "end" + suffix);		
-		fin=model.newIntVar(0, horizon, "fin_nooverlap");
-		deriveNulle=model.newIntVar(0, horizon, "fin_nooverlap");
-		deriveMax=model.newIntVar(0, horizon, "fin_nooverlap");		
+		startBDD 	= model.newIntVar(0, horizon, "start" + suffix); 
+		endBDD 		= model.newIntVar(0, horizon, "end"   + suffix);		
+		fin			= model.newIntVar(0, horizon, "fin_nooverlap");
+		deriveNulle	= model.newIntVar(0, horizon, "deriveNulle");
+		deriveMax	= model.newIntVar(0, horizon, "deriveMax");		
 		      
 		intervalBDD = model.newIntervalVar(startBDD, LinearExpr.constant(duration),endBDD, "interval" + suffix);
 		  
@@ -53,7 +133,7 @@ public class TaskOrdo {
 				LinearExpr.constant(duration+egouttage+inderive+tempsDeplacement),
 				fin,"");
 		
-		model.newIntervalVar(
+		maximumDerive=model.newIntervalVar(
 				deriveMax,
 				LinearExpr.constant(tempsDeplacement+egouttage),
 				fin,"");
@@ -66,7 +146,8 @@ public class TaskOrdo {
 		
 
 	}
-	
+
+
 
 
 }

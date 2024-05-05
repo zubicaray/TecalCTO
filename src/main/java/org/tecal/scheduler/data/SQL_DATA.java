@@ -508,12 +508,12 @@ public void setTempsDeplacements() {
     static TempsDeplacement getmTempsDeplacement() {
 		return mTempsDeplacement;
 	}
-    public static int getTempsDeplacement(int dep,int arr,int vitesse) {    	
+    public  int getTempsDeplacement(int dep,int arr,int vitesse) {    	
 		return mTempsDeplacement.get(Arrays.asList(dep, arr))[vitesse];
 	}
 
 
-	static void setmTempsDeplacement(TempsDeplacement mTempsDeplacement) {
-		SQL_DATA.mTempsDeplacement = mTempsDeplacement;
+	 void setmTempsDeplacement(TempsDeplacement TempsDeplacement) {
+		mTempsDeplacement = TempsDeplacement;
 	}
 }
