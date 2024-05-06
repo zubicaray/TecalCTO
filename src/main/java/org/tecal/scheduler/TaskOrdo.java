@@ -39,30 +39,47 @@ public class TaskOrdo {
 
 	boolean isOverlapable=false;
 
-	public LinearExpr getFixedStart() {
-		return intervalBDD.getStartExpr();
+	public long getFixedStartBDD() {
+		return fixedStartBDD;
 	}
-	public LinearExpr getFixedDeriveMax() {
-		return maximumDerive.getStartExpr();
+	public long getFixedDeriveMax() {
+		return fixedDeriveMax;
 	}
 	
-	public LinearExpr getFixedEndBDD() {
-		return intervalBDD.getEndExpr();
+	public long getFixedEndBDD() {
+		return fixedEndBDD;
 	}
-	public LinearExpr getFixedFin() {
-		return intervalReel.getEndExpr();
+	public long getFixedFin() {
+		return fixedFin;
 	}
-	public LinearExpr getFixedDeriveNulle() {
-		return minimumDerive.getEndExpr();
+	public long getFixedDeriveNulle() {
+		return fixedDeriveNulle;
 	}
 	
 
 	public IntVar getStart() {
 		return startBDD;
 	}
+	public long getStartValue() {
+		return TecalOrdo.solver.value(intervalBDD.getStartExpr());
+	}
+	
+	public long getEndBDDValue() {
+		return TecalOrdo.solver.value(intervalBDD.getEndExpr());
+	}
+	
+	public long getFinValue() {
+		return TecalOrdo.solver.value(intervalReel.getEndExpr());
+	}
+	
 	public IntVar getDeriveMax() {
 		return deriveMax;
 	}
+	
+	public long getDeriveMaxValue() {
+		return TecalOrdo.solver.value(maximumDerive.getStartExpr());
+	}
+	
 	public IntVar getDeriveNulle() { return deriveNulle ;}
 	
 	public IntVar getEndBDD() {
@@ -108,7 +125,7 @@ public class TaskOrdo {
 	
 	}
 
-	TaskOrdo(CpModel model,int horizon,int induration,int inderive,int minDebut,int intempsDeplacement,int egouttage,String suffix){
+	TaskOrdo(CpModel model,int induration,int inderive,int minDebut,int intempsDeplacement,int egouttage,String suffix){
 	
 	
 		tempsDeplacement=intempsDeplacement;
@@ -120,11 +137,11 @@ public class TaskOrdo {
 		}		
 		
 		
-		startBDD 	= model.newIntVar(0, horizon, "start" + suffix); 
-		endBDD 		= model.newIntVar(0, horizon, "end"   + suffix);		
-		fin			= model.newIntVar(0, horizon, "fin_nooverlap");
-		deriveNulle	= model.newIntVar(0, horizon, "deriveNulle");
-		deriveMax	= model.newIntVar(0, horizon, "deriveMax");		
+		startBDD 	= model.newIntVar(0, TecalOrdo.horizon, "start" + suffix); 
+		endBDD 		= model.newIntVar(0, TecalOrdo.horizon, "end"   + suffix);		
+		fin			= model.newIntVar(0, TecalOrdo.horizon, "fin_nooverlap");
+		deriveNulle	= model.newIntVar(0, TecalOrdo.horizon, "deriveNulle");
+		deriveMax	= model.newIntVar(0, TecalOrdo.horizon, "deriveMax");		
 		      
 		intervalBDD = model.newIntervalVar(startBDD, LinearExpr.constant(duration),endBDD, "interval" + suffix);
 		  

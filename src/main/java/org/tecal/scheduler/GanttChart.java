@@ -49,6 +49,7 @@ public class GanttChart extends JFrame {
 	private String[] mZonesAllGamme;
 	private XYIntervalSeriesCollection mDataset;
 	private HashMap<Integer,ZoneType> mZonesBDD;
+	private Map<Integer, List<AssignedTask>> mTabAssignedJobsSorted;
 	private XYPlot mPlot;
 	private ChartPanel  mChartPanel;
 	
@@ -56,8 +57,8 @@ public class GanttChart extends JFrame {
 	public ChartPanel getChartPanel() {
 		return mChartPanel;
 	}
-	ArrayList<String[]>  labelsModel;
-	ArrayList<AssignedTask[]>  tasksTab;
+	private  HashMap<Integer,String[]>  labelsModel;
+	//ArrayList<AssignedTask[]>  tasksTab;
 	ArrayList<String[]> labels;
 	private ValueMarker timeBar;
 
@@ -170,17 +171,9 @@ public class GanttChart extends JFrame {
 		HashMap<Integer, ArrayList<GammeType> > ficheToZones	= inTecalOrdo.getBarreZonesAll();
 		LinkedHashMap<Integer,String> ficheToGamme				= inTecalOrdo.getBarreLabels();
 		Map<Integer, List<AssignedTask>> assignedTasksByNumzone	= inTecalOrdo.getAssignedJobs();
-		Map<Integer, List<AssignedTask>> ongoingTasksByJob		= inTecalOrdo.getongoingTasksByBarreId();
-		 
-		ArrayList< List<AssignedTask>> allJobs=new ArrayList<>();
 		
-		if(ongoingTasksByJob !=null  ) {
-			ongoingTasksByJob.values().forEach( taskArr->{				
-				allJobs.add(taskArr);				
-			});			
-		}
-			
 	
+		
 		
 		mDataset.removeAllSeries();
 		 		 
@@ -204,47 +197,43 @@ public class GanttChart extends JFrame {
 		 //Create series. Start and end times are used as y intervals, and the room is represented by the x value
 		 XYIntervalSeries[]  series = new XYIntervalSeries[totalZoneCount];
 
-		 int jobID = 0;
+		
 		 
-		 Integer[] barreJobs= new Integer[ficheToZones.keySet().size()];
+		 //Integer[] barreJobs= new Integer[ficheToZones.keySet().size()];
 		 for (Map.Entry<Integer, ArrayList<GammeType> > entry : ficheToZones.entrySet()) {
 			String lgamme =entry.getKey()+"-"+ ficheToGamme.get(entry.getKey());			         
-			series[jobID] = new XYIntervalSeries(lgamme);
-			barreJobs[jobID] = entry.getKey();
-			mDataset.addSeries(series[jobID]);
-			jobID++;
+			series[entry.getKey()-1] = new XYIntervalSeries(lgamme);
+			//barreJobs[entry.getKey()] = entry.getKey();
+			mDataset.addSeries(series[entry.getKey()-1]);
+			
 		 }
 	
-		 
 		
-		 labelsModel = new ArrayList<String[]>(jobID);
-		 tasksTab = new ArrayList<AssignedTask[]>(jobID);
-		 for(int i=0; i < jobID; i++) {
-		//	 labelsModel.add(new ArrayList<String>());
-		 }
+		
+		 labelsModel = new HashMap<>();
+		 //tasksTab = new ArrayList<AssignedTask[]>(nbJob);
+		
 		 
 		 
 		 //!!!!!!!!!!!!!!!!!!!!
 		 // si pas linkedmap les job id ont dans le désordre chrono
 		 // et du coup les zones cumul s'affiche mal
-		 Map<Integer, List<AssignedTask>> tabAssignedJobsSorted=new HashMap<Integer, List<AssignedTask>>();			
+		 mTabAssignedJobsSorted=new HashMap<Integer, List<AssignedTask>>();			
 		 
-		 computeTasksByJobID(assignedTasksByNumzone, zonesCumul, tabAssignedJobsSorted);
+		 computeTasksByBarreID(assignedTasksByNumzone, zonesCumul);
 		 
-		 tabAssignedJobsSorted.values().forEach( taskArr->{				
-				allJobs.add(taskArr);				
-			});	
+		
 		 
 		 /** 
 		  * on trie les zones de chaque job par date
 		  * pour que jfreechart les ajoute dans l'ordre pour qu'on puisse rtrouver les bons tooltip
 		  */
 		  
-		 allJobs.forEach( value -> {	 
+		 mTabAssignedJobsSorted.values().forEach( value -> {	 
 			Collections.sort(value,new Comparator<AssignedTask>() {
 			        public int compare(AssignedTask a1, AssignedTask a2) {
-			        	int numligne1=a1.start+a1.taskID;
-			        	int numligne2=a2.start+a2.taskID;
+			        	int numligne1=(int)a1.start+a1.taskID;
+			        	int numligne2=(int)a2.start+a2.taskID;
 			        	numligne1=a1.taskID+a1.numzone*100;
 			        	numligne2=a2.taskID+a2.numzone*100;
 			            return numligne1-numligne2;
@@ -253,55 +242,56 @@ public class GanttChart extends JFrame {
 		 }
 		 );
 		 
-		 for(int idjob=0;idjob<allJobs.size();idjob++) {
-			 List<AssignedTask> listeTache=allJobs.get(idjob);
+		 //for(int idjob=0;idjob<mJobsFuturs.size();idjob++) {
+		 for (Entry<Integer, List<AssignedTask>> lset :  mTabAssignedJobsSorted.entrySet()) {
+			List<AssignedTask> listeTache=lset.getValue();
+			Integer barre=lset.getKey();
+			labelsModel.put(barre,new String[listeTache.size()]);
+			//tasksTab.add(new AssignedTask[listeTache.size()]);
+			int cpt1=0;
+		    for(AssignedTask at :listeTache) {	
+			 
 				
-				labelsModel.add(new String[listeTache.size()]);
-				tasksTab.add(new AssignedTask[listeTache.size()]);
-				int cpt1=0;
-			    for(AssignedTask at :listeTache) {	
-				 
-					Integer barre=barreJobs[idjob];
-			    	ArrayList<GammeType> df=ficheToZones.get(barre);
-			    	//on retrouve le idtask de la table ZONES SQLSERVER ( numéroté sans trou à partir de 0 <> numzone donc)
-			    	// car quant à lui,le taskid de google, est propre à l'ordres des zones d'une gamme
-			    	int posteEncours=df.get(at.taskID).idzonebdd;
-		      
-				    int[] dr={at.start,at.start+at.duration,at.start+at.duration+at.derive};		
-			
-				    //System.out.println("gamme:"+gamme+" "+df.get(at.taskID).codezone+" start:"+at.start+" numligne:"+df.get(at.taskID).numligne); 
-				    //System.out.println("at.duration="+at.duration );
-				      
-				    double incrementY=0.3;
-				   // boolean hasDerive=false;
-				    
-				    
-				    if(zonesCumul.containsKey(at.numzone)) {
-				    	//System.out.println("gamme:"+gamme+" "+df.get(at.taskID).codezone+" start:"+at.start+" IdPosteZOneCumul:"+IdPosteZOneCumul); 
-				    	double offset=incrementY*at.IdPosteZoneCumul;
-				    	double incrementSpaceY=0.45;
-				    	//Encode the room as x value. The width of the bar is only 0.6 to leave a small gap. The course starts 0.1 h/6 min after the end of the preceding course.
-					    series[idjob].add(posteEncours, posteEncours - incrementSpaceY+offset, posteEncours -incrementSpaceY+offset+incrementY, dr[0],dr[0] ,dr[1]);
-					 }
-				   
-				    else {
-				    	 series[idjob].add(posteEncours,posteEncours - 0.3,posteEncours +0.3, 
-				    			 dr[0],dr[0] ,dr[1] );
-				    	 
-				    	
-				    }
+		    	ArrayList<GammeType> df=ficheToZones.get(barre);
+		    	//on retrouve le idtask de la table ZONES SQLSERVER ( numéroté sans trou à partir de 0 <> numzone donc)
+		    	// car quant à lui,le taskid de google, est propre à l'ordres des zones d'une gamme
+		    	int posteEncours=df.get(at.taskID).idzonebdd;
+	      
+			    long[] dr={at.start,at.start+at.duration,at.start+at.duration+at.derive};		
+		
+			    //System.out.println("gamme:"+gamme+" "+df.get(at.taskID).codezone+" start:"+at.start+" numligne:"+df.get(at.taskID).numligne); 
+			    //System.out.println("at.duration="+at.duration );
+			      
+			    double incrementY=0.3;
+			   // boolean hasDerive=false;
 			    
-				    labelsModel.get(idjob)[cpt1]="start:"+at.start+", durée:"+toMinutes(at.duration)+", fin:"+(at.derive)
-				    		+ " dérive: " +(at.derive-dr[1])+", égouttage:"+df.get(at.taskID).egouttage+ ", " +df.get(at.taskID).codezone;
-				    
-				    
-				    tasksTab.get(idjob)[cpt1]=at;
-				    
-				    cpt1++;    
-				    
-				    
-				 
-				 };
+			    
+			    if(zonesCumul.containsKey(at.numzone)) {
+			    	//System.out.println("gamme:"+gamme+" "+df.get(at.taskID).codezone+" start:"+at.start+" IdPosteZOneCumul:"+IdPosteZOneCumul); 
+			    	double offset=incrementY*at.IdPosteZoneCumul;
+			    	double incrementSpaceY=0.45;
+			    	//Encode the room as x value. The width of the bar is only 0.6 to leave a small gap. The course starts 0.1 h/6 min after the end of the preceding course.
+				    series[barre-1].add(posteEncours, posteEncours - incrementSpaceY+offset, posteEncours -incrementSpaceY+offset+incrementY, dr[0],dr[0] ,dr[1]);
+				 }
+			   
+			    else {
+			    	 series[barre-1].add(posteEncours,posteEncours - 0.3,posteEncours +0.3, 
+			    			 dr[0],dr[0] ,dr[1] );
+			    	 
+			    	
+			    }
+		    
+			    labelsModel.get(barre)[cpt1]="start:"+at.start+", durée:"+toMinutes(at.duration)+", fin:"+(at.derive)
+			    		+ " dérive: " +(at.derive-dr[1])+", égouttage:"+df.get(at.taskID).egouttage+ ", " +df.get(at.taskID).codezone;
+			    
+			    
+			    //tasksTab.get(barre-1)[cpt1]=at;
+			    
+			    cpt1++;    
+			    
+			    
+			 
+			 };
 		 }
 		
 		
@@ -313,19 +303,19 @@ public class GanttChart extends JFrame {
 	
 	}
 
-	private void computeTasksByJobID(Map<Integer, List<AssignedTask>> assignedTasksByNumzone,
-			HashMap<Integer, ZoneCumul> zonesCumul, Map<Integer, List<AssignedTask>> tabAssignedJobsSorted) {
+	private void computeTasksByBarreID(Map<Integer, List<AssignedTask>> assignedTasksByNumzone,
+			HashMap<Integer, ZoneCumul> zonesCumul) {
 		Map<Integer, List<AssignedTask>> cumulTask=new HashMap<Integer, List<AssignedTask>>();;
 		 //réorga par jobid/list zones
 		 assignedTasksByNumzone.values().forEach( taskArr->{
 			
 			taskArr.forEach( task->{
 				
-				if(tabAssignedJobsSorted.containsKey(task.jobID) ==false) {
-					tabAssignedJobsSorted.put(task.jobID, new ArrayList<AssignedTask>());
+				if(mTabAssignedJobsSorted.containsKey(task.barreID) ==false) {
+					mTabAssignedJobsSorted.put(task.barreID, new ArrayList<AssignedTask>());
 				}
 				
-				tabAssignedJobsSorted.get(task.jobID).add(task);
+				mTabAssignedJobsSorted.get(task.barreID).add(task);
 				
 							
 				//System.out.println("task.idzoneBDD="+task.idzoneBDD );
@@ -345,8 +335,8 @@ public class GanttChart extends JFrame {
 			    	
 				  Collections.sort(tasks,new Comparator<AssignedTask>() {
 				        public int compare(AssignedTask a1, AssignedTask a2) {
-				        	int numligne1=a1.start;
-				        	int numligne2=a2.start;
+				        	int numligne1=(int)a1.start;
+				        	int numligne2=(int)a2.start;
 				            return numligne1-numligne2;
 				        }
 				    });
@@ -356,9 +346,9 @@ public class GanttChart extends JFrame {
 		 cumulTask.forEach((numzone, tasks) -> {	 				
 			 tasks.forEach( task->{
 				ZoneCumul zc=zonesCumul.get(task.numzone);
-		    	int end=task.duration+task.start;
+		    	int end=task.duration+(int)task.start;
 		      		
-		    	task.IdPosteZoneCumul=zc.getPosteIdx(task.start, end,task.derive);
+		    	task.IdPosteZoneCumul=zc.getPosteIdx((int)task.start, end,task.derive);
 				 
 				 
 			 });
@@ -389,7 +379,7 @@ public class GanttChart extends JFrame {
 		
 		 public String generateToolTip(XYDataset dataset, int series, int item) {    	
 			 	//System.out.println("series:"+series+" "+" item:"+item+" val="+labelsModel[series][item]);    	
-			 	return  labelsModel.get(series)[item]+ " temps avant sortie :"+ tmpsAvantSortie(tasksTab.get(series)[item].derive);
+			 	return  labelsModel.get(series+1)[item]+ " temps avant sortie :"+ tmpsAvantSortie(mTabAssignedJobsSorted.get(series+1).get(item).derive);
 		    }
 		 };
 	     renderer.setSeriesToolTipGenerator(0, ttgen); 

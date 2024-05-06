@@ -6,7 +6,6 @@ Ordonnanceur pour anodisation
 1.  **TecalOrdo.preparesZones**: préparation des zones de chaque job 
 	1. **JobType.computeCoords**: 	organise les indexes des zones par pont
 		- identification de l'indexe anodisation et indexe colmatage
-		- identification des zones de cumuls
 	2. **JobType.addIntervalForModel()**
 		- on créé les zones temporelles avec leur temps de déplacement, égouttage, etc ...
 		- on crée les contraintes de cumul pour les zones à machines virtuellement multiples (ex anodisation = C13->C15, machine de capacité 3)

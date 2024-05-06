@@ -4,20 +4,20 @@ package org.tecal.scheduler.types;
 
 public class AssignedTask {
 	//id OF/GAMME propre à G.OR
-	public int jobID;
+	public int barreID;
 	//id zone  propre à G.OR
 	public int taskID;  
 	// numzone de la table ZONE
 	public int numzone;
-	public int start;
-	public int end;
+	public long start;
+	public long end;
 	public int duration;    
 	public int derive;    
 	// offset pour les zones cumul
 	public int IdPosteZoneCumul;
 	// Ctor
-	public AssignedTask(int jobID, int taskID, int numzone,int start, int duration,int derive) {
-		this.jobID = jobID;
+	public AssignedTask(int barreID, int taskID, int numzone,long start, int duration,int derive) {
+		this.barreID = barreID;
 		this.taskID = taskID;
 		this.start = start;
 		this.duration = duration;

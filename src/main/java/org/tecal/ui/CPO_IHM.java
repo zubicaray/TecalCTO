@@ -13,10 +13,8 @@ import java.awt.event.ComponentEvent;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.swing.DefaultRowSorter;
@@ -76,7 +74,7 @@ public class CPO_IHM extends JFrame {
 	public TecalOrdo getmTecalOrdo() {
 		return mTecalOrdo;
 	}
-	public void setmTecalOrdo(TecalOrdo mTecalOrdo) {
+	public void setTecalOrdo(TecalOrdo mTecalOrdo) {
 		this.mTecalOrdo = mTecalOrdo;
 	}
 
@@ -99,9 +97,7 @@ public class CPO_IHM extends JFrame {
 				try {
 					CPO_IHM frame = new CPO_IHM();
 					frame.setTitle("Tecal Ordonnanceur");
-
 					frame.runTest();
-
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -113,10 +109,6 @@ public class CPO_IHM extends JFrame {
 	public void runTest () {
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		mGammes=mTecalOrdo.runTest();
-
-
-
-
 		mCPO_PANEL.setModelBarres(mGammes);
 		execute();
 		setCursor(Cursor.getDefaultCursor());
@@ -130,7 +122,7 @@ public class CPO_IHM extends JFrame {
 		// on garde les jobs en cours des générations précédentes
 		keepOngoingJobs();
 		mCPO_PANEL.setModelBarres(mGammes);
-		mTecalOrdo.run(gammes,ongoingTasksByJobId);
+		mTecalOrdo.run(gammes);
 
 
 		execute();
@@ -144,10 +136,7 @@ public class CPO_IHM extends JFrame {
 			return;
 		}
 
-
-		//ArrayList<Integer> jobToKeep		=new ArrayList<Integer>();
 		ArrayList<Integer> barresToRemove	=new ArrayList<>();
-		//ArrayList<Integer> jobToRemove		=new ArrayList<Integer>();
 
 		double current_time=mGanttTecalOR.getTimeBar().getValue();
 		for( Entry<Integer, List<AssignedTask>> entry  :mTecalOrdo.getAssignedTasksByBarreId().entrySet()) {
@@ -165,6 +154,7 @@ public class CPO_IHM extends JFrame {
 
 		}
 
+		mTecalOrdo.setBarresEnCours(barresToRemove);
 
 		for(Integer barreId:barresToRemove) {
 			mGammes.remove(barreId);
@@ -176,14 +166,8 @@ public class CPO_IHM extends JFrame {
 	private void execute() {
 
 		mGanttTecalOR.model_diag(mTecalOrdo);
-
 		mCPO_PANEL.setText(mTecalOrdo.getOutputMsg().toString());
-
 		setDerives();
-
-
-
-
 
 	}
 
@@ -208,10 +192,10 @@ public class CPO_IHM extends JFrame {
 			for(AssignedTask at :lat) {
 				if(at.derive>at.end) {
 
-					int t=at.derive-at.start;
+					long t=at.derive-at.start;
 					String minutes=String.format("%02d:%02d",  t / 60, (t % 60));
 					Object[] rowO = {
-							mTecalOrdo.getArrayJobs()[at.jobID].getName(),
+							mTecalOrdo.getAllJobs().get(at.barreID).getName(),
 							sqlCnx.getZones().get(at.numzone).codezone,
 							minutes };
 					modelDerives.addRow(rowO);
@@ -228,7 +212,8 @@ public class CPO_IHM extends JFrame {
 				CST.TEMPS_ZONE_OVERLAP_MIN,
 				CST.TEMPS_MVT_PONT_MIN_JOB,
 				CST.GAP_ZONE_NOOVERLAP,
-			CST.TEMPS_MVT_PONT,CST.TEMPS_ANO_ENTRE_P1_P2,5//CST.TEMPS_MAX_SOLVEUR
+			CST.TEMPS_MVT_PONT,CST.TEMPS_ANO_ENTRE_P1_P2,
+			15//CST.TEMPS_MAX_SOLVEUR
 		};
 
 		mTecalOrdo.setParams(params);
