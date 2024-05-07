@@ -39,7 +39,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ListSelectionModel;
@@ -91,7 +90,7 @@ public class TecalGUI {
 
 	private DefaultTableModel modelVisuProd ;
 
-	private JTextArea textArea;
+
 
 	List<Image> mIcons;
 
@@ -313,7 +312,7 @@ public class TecalGUI {
 
 				 LinkedHashMap<Integer,String> gammes=new LinkedHashMap <>();
 				 for(int i=0;i<sel.length;i++) {
-					 gammes.put(i,tableOF.getModel().getValueAt(sel[i], 1).toString());
+					 gammes.put(i+1,tableOF.getModel().getValueAt(sel[i], 1).toString());
 				 }
 
 
@@ -331,12 +330,12 @@ public class TecalGUI {
 
 
 				//mTecalOrdo.setBarres(gammes);
-				mCPO_IHM=new CPO_IHM(gammes,params);
+				mCPO_IHM=new CPO_IHM(params);
 				frmTecalOrdonnanceur.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				//mTecalOrdo.run(mCPO_IHM);
-				mCPO_IHM.run(null);
+				mCPO_IHM.run(gammes);
 				frmTecalOrdonnanceur.setCursor(Cursor.getDefaultCursor());
-				textArea.setText(mCPO_IHM.getmTecalOrdo().print());
+				mCPO_IHM.setVisible(true);
 
 			}
 		});

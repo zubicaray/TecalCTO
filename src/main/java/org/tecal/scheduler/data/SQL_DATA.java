@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.StringJoiner;
@@ -41,6 +42,7 @@ public class SQL_DATA {
 	public  ArrayList<Integer>   zonesSecu;
 	public  HashMap<Integer,Integer>  relatedZones;
 	private HashMap<String, ArrayList<GammeType> > gammes;		
+	private HashSet<String> mMissingTimeMovesGammes;
 	static TempsDeplacement  mTempsDeplacement;		
 	private   final SimpleDateFormat FMT =
 	            new SimpleDateFormat( "yyyyMMdd" );
@@ -121,6 +123,7 @@ public class SQL_DATA {
 		setRelatedZones();
 		setLignesGammes();
 		setTempsDeplacements();
+		setMissingTimeMovesGammes();
 	
 	}
 	
@@ -325,6 +328,43 @@ public  ResultSet getEnteteGammes() {
 
 	return resultSet;
 }
+public void  setMissingTimeMovesGammes() {
+	ResultSet resultSet = null;    
+	mMissingTimeMovesGammes = new HashSet<>();  
+	
+	
+	
+    // Create and execute a SELECT SQL statement.
+    String selectSql = "SELECT DISTINCT NumGamme FROM\r\n"
+    		+ "(\r\n"
+    		+ "SELECT\r\n"
+    		+ "	D1.NumGamme,\r\n"
+    		+ "    D1.NumLigne,D1.NumZone as N1,D2.NumZone as N2,T.normal\r\n"
+    		+ "    \r\n"
+    		+ "  FROM \r\n"
+    		+ "	[DetailsGammesAnodisation] D1\r\n"
+    		+ "	INNER JOIN  [DetailsGammesAnodisation] D2\r\n"
+    		+ "	ON D1.NumGamme=D2.NumGamme and D1.NumLigne=D2.NumLigne-1\r\n"
+    		+ "	INNER JOIN TempsDeplacements T\r\n"
+    		+ "	ON T.depart=D1.NumZone and T.arrivee=D2.NumZone and T.normal=0\r\n"
+    		+ " -- order by D1.NumGamme,D1.NumLigne\r\n"
+    		+ "  ) TEMP "
+    		+ "order by NumGamme "
+    		;
+    try {
+    	
+		resultSet = mStatement.executeQuery(selectSql);
+		 while (resultSet.next()) {
+	            //System.out.println(resultSet.getString(1) + " " + resultSet.getString(2));
+			 mMissingTimeMovesGammes.add(resultSet.getString(1));
+	        }
+    
+	} catch (SQLException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+
+}
 
 public ResultSet getVisuProd(java.util.Date inDate) {
 	ResultSet resultSet = null;    
@@ -515,5 +555,8 @@ public void setTempsDeplacements() {
 
 	 void setmTempsDeplacement(TempsDeplacement TempsDeplacement) {
 		mTempsDeplacement = TempsDeplacement;
+	}
+	public  HashSet<String> getMissingTimeMovesGammes() {
+		return mMissingTimeMovesGammes;
 	}
 }

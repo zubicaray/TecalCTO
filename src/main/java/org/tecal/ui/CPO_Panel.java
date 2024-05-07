@@ -1,5 +1,7 @@
 package org.tecal.ui;
 
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -36,11 +38,14 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowFilter;
 import javax.swing.SwingConstants;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
+
+import org.tecal.scheduler.data.SQL_DATA;
 
 
 public class CPO_Panel extends JPanel {
@@ -318,7 +323,7 @@ public class CPO_Panel extends JPanel {
 
 						mCPO_IHM.run(gammes);
 
-						//textArea.setText(mTecalOrdo.print());
+						
 
 
 
@@ -420,6 +425,29 @@ public class CPO_Panel extends JPanel {
     	        }
     	    }
     	});
+        
+        mTableGammes.setDefaultRenderer(Object.class, new DefaultTableCellRenderer(){
+            /**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
+
+			@Override
+            public Component getTableCellRendererComponent(JTable table,
+                    Object value, boolean isSelected, boolean hasFocus, int row, int col) {
+                super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+                String gamme = (String)table.getModel().getValueAt(row, 0);
+                
+                if (SQL_DATA.getInstance().getMissingTimeMovesGammes().contains(gamme)) {
+                    setBackground(Color.RED);
+                    setForeground(Color.BLACK);
+                } else {
+                    setBackground(table.getBackground());
+                    setForeground(table.getForeground());
+                }       
+                return this;
+            }   
+        });
 
 
 

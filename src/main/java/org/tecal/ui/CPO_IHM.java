@@ -219,16 +219,15 @@ public class CPO_IHM extends JFrame {
 	/**
 	 * Create the frame based on production
 	 */
-	public CPO_IHM(LinkedHashMap<Integer,String> gammes,int[] params) {
+	public CPO_IHM(int[] params) {
 
 
 
-		mGammes=gammes;
+	
 
 		mTecalOrdo=new TecalOrdo(CST.SQLSERVER);
 		mTecalOrdo.setParams(params);
-		mTecalOrdo.setBarres(gammes);
-
+		
 		init();
 
 
@@ -377,8 +376,8 @@ public class CPO_IHM extends JFrame {
 		this.addComponentListener(new ComponentAdapter() {
 			@Override
 			public void componentShown(ComponentEvent e) {
-				SQL_DATA sql=SQL_DATA.getInstance();
-				ResultSet rs= sql.getEnteteGammes();
+				
+				ResultSet rs= SQL_DATA.getInstance().getEnteteGammes();
 				try {
 					mCPO_PANEL.setRessource(rs);
 				} catch (SQLException e1) {

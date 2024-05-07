@@ -172,9 +172,6 @@ public class GanttChart extends JFrame {
 		LinkedHashMap<Integer,String> ficheToGamme				= inTecalOrdo.getBarreLabels();
 		Map<Integer, List<AssignedTask>> assignedTasksByNumzone	= inTecalOrdo.getAssignedJobs();
 		
-	
-		
-		
 		mDataset.removeAllSeries();
 		 		 
 		 
