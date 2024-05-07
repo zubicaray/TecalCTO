@@ -453,7 +453,7 @@ public class TecalOrdo {
 					derive = allTasks.get(keySuivante).getStartValue()
 							- allTasks.get(key).tempsDeplacement - allTasks.get(key).egouttage;
 				} else {
-					derive = allTasks.get(key).getDeriveMaxValue();
+					derive = fin;//allTasks.get(key).getDeriveMaxValue();
 				}
 
 				if (task.numzone == CST.CHARGEMENT_NUMZONE) {

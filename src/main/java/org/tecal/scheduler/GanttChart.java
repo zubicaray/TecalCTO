@@ -264,7 +264,6 @@ public class GanttChart extends JFrame {
 			    //System.out.println("at.duration="+at.duration );
 			      
 			    double incrementY=0.3;
-			   // boolean hasDerive=false;
 			    
 			    
 			    if(zonesCumul.containsKey(at.numzone)) {
