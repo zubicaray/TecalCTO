@@ -94,7 +94,7 @@ public class TecalOrdo {
 	private HashMap<Integer, ArrayList<GammeType>>	mBarreFutures;
 	private HashMap<Integer, ArrayList<GammeType>>	mBarresAll;
 	private LinkedHashMap<Integer, String> 			mBarreLabels;
-	private HashMap<Integer, ArrayList<IntVar>> 	mDebutZones;
+	
 	private ArrayList<Integer> 						mBarresEnCours;
 	public ArrayList<Integer> getBarresEnCours() {
 		return mBarresEnCours;
@@ -104,7 +104,7 @@ public class TecalOrdo {
 		this.mBarresEnCours.addAll(nouvellesBarresEnCours) ;
 
 		for(Integer barreId:nouvellesBarresEnCours) {
-			mJobsEnCours.put(barreId, mJobsFuturs.get(barreId).makeFixedJob());
+			mJobsEnCours.put(barreId, mJobsFuturs.get(barreId).makeFixedJob(assignedTasksByBarreId.get(barreId)));
 		}
 	}
 
@@ -129,13 +129,13 @@ public class TecalOrdo {
 		return mAllJobs;
 	}
 
-	private Map<List<Integer>, TaskOrdo> allTasks = new HashMap<>();
-	private Map<Integer, List<IntervalVar>> zoneToIntervals = new HashMap<>();
-	private Map<Integer, List<IntervalVar>> multiZoneIntervals = new HashMap<>();
-	private Map<Integer, List<IntervalVar>> cumulDemands = new HashMap<>();
+	private Map<List<Integer>, TaskOrdo> 	allTasks 			= new HashMap<>();
+	private Map<Integer, List<IntervalVar>> zoneToIntervals 	= new HashMap<>();
+	private Map<Integer, List<IntervalVar>> multiZoneIntervals 	= new HashMap<>();
+	private Map<Integer, List<IntervalVar>> cumulDemands 		= new HashMap<>();
 
-	private Map<Integer, List<AssignedTask>> assignedTasksByNumzone;
-	private LinkedHashMap<Integer, List<AssignedTask>> assignedTasksByBarreId;
+	private Map<Integer, List<AssignedTask>> 			assignedTasksByNumzone;
+	private LinkedHashMap<Integer, List<AssignedTask>> 	assignedTasksByBarreId;
 	// AssignedTask des génération précédentes et qu sont en cours de production
 
 	private ArrayList<JobType> arrayAllJobs;
@@ -183,7 +183,7 @@ public class TecalOrdo {
 		mBarreFutures = new HashMap<>();
 		mBarresAll = new HashMap<>();
 		mBarreLabels = new LinkedHashMap<>();
-		mDebutZones = new HashMap<>();
+	
 		mBarresEnCours	=new ArrayList<>();
 
 		assignedTasksByNumzone = new HashMap<>();
@@ -195,6 +195,7 @@ public class TecalOrdo {
 		// model = new CpModel();
 
 		outputMsg = new StringBuilder();
+		model = new CpModel();
 
 		setDataSource(source);
 
@@ -269,10 +270,10 @@ public class TecalOrdo {
 			int numbarre = entry.getKey();
 			String gamme = entry.getValue();
 			mBarreFutures.put(numbarre, mGammes.get(gamme));
-			if (!mBarresAll.containsKey(numbarre)) {
+			//if (!mBarresAll.containsKey(numbarre)) {
 				mBarresAll.put(numbarre, mGammes.get(gamme));
 				mBarreLabels.put(numbarre, gamme);
-			}
+			//}
 
 		}
 
@@ -357,15 +358,16 @@ public class TecalOrdo {
 		CpSolverStatus status = solver.solve(model);
 
 		hasSolution = false;
-
+		outputMsg.append("-----------------------------------------------------------------");
+		outputMsg.append(System.getProperty("line.separator"));
 		if (status == CpSolverStatus.OPTIMAL || status == CpSolverStatus.FEASIBLE) {
 
 			hasSolution = true;
 
 
 
-			outputMsg.append("-----------------------------------------------------------------.");
-			outputMsg.append(System.getProperty("line.separator"));
+			
+			
 			if(status == CpSolverStatus.OPTIMAL) {
 				outputMsg.append("Solution OPTIMALE !");
 			}
@@ -412,7 +414,7 @@ public class TecalOrdo {
 			}
 
 		} else {
-			outputMsg.append("No solution found.");
+			outputMsg.append("Pas de solution trouvée.");
 			outputMsg.append(System.getProperty("line.separator"));
 			return;
 		}
@@ -426,9 +428,9 @@ public class TecalOrdo {
 	}
 
 	private void createAssignedTasks() {
-		for (JobType arrayAllJob : arrayAllJobs) {
-			List<Task> tasks = arrayAllJob.tasksJob;
-			int barre = arrayAllJob.getBarreID();
+		for (JobType job : arrayAllJobs) {
+			List<Task> tasks = job.tasksJob;
+			int barre = job.getBarreID();
 			for (int taskID = 0; taskID < tasks.size(); ++taskID) {
 				Task task = tasks.get(taskID);
 				List<Integer> key = Arrays.asList(barre, taskID);
@@ -497,7 +499,7 @@ public class TecalOrdo {
 		zoneToIntervals.clear();
 		multiZoneIntervals.clear();
 		cumulDemands.clear();
-		mDebutZones.clear();
+		
 		for (Map.Entry<Integer, ArrayList<GammeType>> entry : mBarreFutures.entrySet()) {
 
 			int numBarre = entry.getKey();
@@ -512,16 +514,18 @@ public class TecalOrdo {
 			mJobsFuturs.put(numBarre, job);
 		}
 
-		mJobsEnCours.clear();
+		
+		//mJobsEnCours.clear();
+		
 		Collection<JobType> c=mJobsEnCours.values();
 		Collection<JobType> d=mJobsFuturs.values();
 
 		arrayAllJobs.clear();
-		//arrayAllJobs.addAll(c);
+		arrayAllJobs.addAll(c);
 		arrayAllJobs.addAll(d);
 
 		mAllJobs.clear();
-		//mAllJobs.putAll(mJobsEnCours);
+		mAllJobs.putAll(mJobsEnCours);
 		mAllJobs.putAll(mJobsFuturs);
 
 
@@ -531,7 +535,10 @@ public class TecalOrdo {
 
 		System.out.println("HORIZON=" + horizon);
 
-
+		//model.clearAssumptions();
+		//model.clearObjective();
+		//model.clearHints();
+		
 
 		for (JobType job : arrayAllJobs) {
 			// on créé les zones avec leut temps de déplacement, égouttage, etc ...
@@ -549,8 +556,12 @@ public class TecalOrdo {
 	private void computeHorizon() {
 		horizon = 0;
 		for (JobType job : arrayAllJobs) {
+			System.out.println("job="+job.getName() );
+			//int cpt=0;
 			for (Task task : job.tasksJob) {
+				//System.out.println("task "+cpt+"="+ task.duration );
 				horizon += task.duration;
+				//cpt++;
 			}
 		}
 
@@ -668,14 +679,8 @@ public class TecalOrdo {
 
 		if (CST.CSTR_BRIDGES_SECURITY) {
 			ListeZone zonesAutourAnodisation = new ListeZone();
-			for (JobType job : mJobsFuturs.values()) {
-				/*
-				 * IntervalVar
-				 * z1=getNoOverlapZone(model,job.mTaskOrdoList.get(job.indexLastZoneP1).
-				 * intervalBDD); zonesAutourAnodisation.add(z1); IntervalVar
-				 * z2=getNoOverlapZone(model,job.mTaskOrdoList.get(job.indexFirstZoneP2).
-				 * intervalBDD); zonesAutourAnodisation.add(z2);
-				 */
+			for (JobType job : mAllJobs.values()) {
+				
 				zonesAutourAnodisation.addAll(job.mNoOverlapP1P2);
 
 			}
@@ -694,7 +699,7 @@ public class TecalOrdo {
 			ArrayList<ZonesIntervalVar> listZonesNoOverlapParPont = new ArrayList<>();
 			listZonesNoOverlapParPont.add(new ZonesIntervalVar()); // add zones pont 1
 			listZonesNoOverlapParPont.add(new ZonesIntervalVar()); // add zones pont 2
-			for (JobType j : mJobsFuturs.values()) {
+			for (JobType j : mAllJobs.values()) {
 				int p = 0;
 				for (ListeZone bridgeMoveP : j.bridgesMoves) {
 					listZonesNoOverlapParPont.get(p).addAll(bridgeMoveP);

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.tecal.scheduler.data.SQL_DATA;
+import org.tecal.scheduler.types.AssignedTask;
 import org.tecal.scheduler.types.GammeType;
 import org.tecal.scheduler.types.ZoneType;
 
@@ -234,41 +235,48 @@ public class JobType {
 		int minDebut=0;
 		
 			
+		if(!isFixed) {
 
-		
-		if(task.numzone == CST.DECHARGEMENT_NUMZONE )
-			task.duration=CST.TEMPS_DECHARGEMENT;
-		
-		
-		if( task.numzone == CST.CHARGEMENT_NUMZONE)
-			task.duration=CST.TEMPS_CHARGEMENT;
-		
-		
-		TaskOrdo taskOrdo;
-		if(task.numzone == CST.DECHARGEMENT_NUMZONE ) {
-			taskOrdo = new TaskOrdo(TecalOrdo.model,task.duration,zt.derive, minDebut,0,task.egouttage,suffix);   
+			if(task.numzone == CST.DECHARGEMENT_NUMZONE )
+				task.duration=CST.TEMPS_DECHARGEMENT;
+			
+			
+			if( task.numzone == CST.CHARGEMENT_NUMZONE)
+				task.duration=CST.TEMPS_CHARGEMENT;
+			
+			
+			TaskOrdo taskOrdo;
+			if(task.numzone == CST.DECHARGEMENT_NUMZONE ) {
+				taskOrdo = new TaskOrdo(TecalOrdo.model,task.duration,zt.derive, minDebut,0,task.egouttage,suffix);   
+			}
+			else {
+				Task taskSuivante = tasksJob.get(taskID+1);
+				
+				int tps=SQL_DATA.getInstance().getTempsDeplacement(task.numzone,taskSuivante.numzone,CST.VITESSE);
+				if (tps==0) {
+					System.out.println("---------TPS NUL !!!!---------------");
+					System.out.println("task.numzone "+task.numzone);
+					System.out.println("task.numzone "+taskSuivante.numzone);
+				}
+				taskOrdo = new TaskOrdo(TecalOrdo.model,task.duration,zt.derive, minDebut,tps,task.egouttage,suffix);   
+			}
+			
+			//minDebut+=task.duration;
+			
+			
+			
+			mTaskOrdoList.add(taskOrdo);
+			
+			if(SQL_DATA.getInstance().zonesSecu.contains(task.numzone)) {
+				taskOrdo.zoneSecu=true;
+			}
 		}
 		else {
-			Task taskSuivante = tasksJob.get(taskID+1);
-			
-			int tps=SQL_DATA.getInstance().getTempsDeplacement(task.numzone,taskSuivante.numzone,CST.VITESSE);
-			if (tps==0) {
-				System.out.println("---------TPS NUL !!!!---------------");
-				System.out.println("task.numzone "+task.numzone);
-				System.out.println("task.numzone "+taskSuivante.numzone);
-			}
-			taskOrdo = new TaskOrdo(TecalOrdo.model,task.duration,zt.derive, minDebut,tps,task.egouttage,suffix);   
+			mTaskOrdoList.get(taskID).createFixedIntervals();
 		}
 		
-		minDebut+=task.duration;
 		List<Integer> key = Arrays.asList(mBarreId, taskID);
-		
-		allTasks.put(key, taskOrdo);     
-		mTaskOrdoList.add(taskOrdo);
-		
-		if(SQL_DATA.getInstance().zonesSecu.contains(task.numzone)) {
-			taskOrdo.zoneSecu=true;
-		}
+		allTasks.put(key, mTaskOrdoList.get(taskID));     
 			
 
 
@@ -318,7 +326,7 @@ public class JobType {
 		return mBarreId;
 	}
 	
-	public JobTypeFixed  makeFixedJob() {
+	public JobTypeFixed  makeFixedJob(List<AssignedTask> listTasks) {
 		
 		JobTypeFixed jf=new JobTypeFixed(mBarreId, name);
 		
@@ -335,10 +343,11 @@ public class JobType {
 	
 
 		jf.zones=zones;
-		
+		int cpt=0;
 		for (TaskOrdo t : mTaskOrdoList) {
-			t.fixeTime();
+			t.fixeTime(listTasks.get(cpt));
 			jf.mTaskOrdoList.add(t);
+			cpt++;
 		}
 		for (Task t : tasksJob) {
 			

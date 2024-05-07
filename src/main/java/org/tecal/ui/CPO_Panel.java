@@ -282,11 +282,12 @@ public class CPO_Panel extends JPanel {
 	}
 	public void setModelBarres(LinkedHashMap<Integer, String> set) {
 		mModelBarres.setRowCount(0);
+		mNumBarre=0;
         for (Map.Entry<Integer, String> entry : set.entrySet()) {
-        	Integer key = entry.getKey();
+        	Integer barre = entry.getKey();
             String value = entry.getValue();
-            Object[] rowO = { key,value,"normale","normale" };
-			mNumBarre++;
+            Object[] rowO = { barre,value,"normale","normale" };
+			if(barre>mNumBarre) mNumBarre=barre;
 			mModelBarres.addRow(rowO);
         }
 
@@ -376,7 +377,9 @@ public class CPO_Panel extends JPanel {
     	        Point point = mouseEvent.getPoint();
     	        int row = table.rowAtPoint(point);
     	        if (mouseEvent.getClickCount() == 2 && table.getSelectedRow() != -1) {
+    	        	if(model.getDataVector().get(row).get(0)==mNumBarre) mNumBarre--;
     	        	model.removeRow(row);
+    	        	
     	        }
     	    }
     	});
@@ -411,7 +414,7 @@ public class CPO_Panel extends JPanel {
     	        if (mouseEvent.getClickCount() == 2 && table.getSelectedRow() != -1) {
     	        	String gamme=table.getModel().getValueAt(row, 0).toString();
 
-    	        	Object[] rowO = { ++mNumBarre, gamme,"normale","normale" };
+    	        	Object[] rowO = {++mNumBarre, gamme,"normale","normale" };
     	        	mModelBarres.addRow(rowO);
 
     	        }

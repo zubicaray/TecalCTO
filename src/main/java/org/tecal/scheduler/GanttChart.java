@@ -201,7 +201,8 @@ public class GanttChart extends JFrame {
 		 
 		 //Integer[] barreJobs= new Integer[ficheToZones.keySet().size()];
 		 for (Map.Entry<Integer, ArrayList<GammeType> > entry : ficheToZones.entrySet()) {
-			String lgamme =entry.getKey()+"-"+ ficheToGamme.get(entry.getKey());			         
+			String lgamme =entry.getKey()+"-"+ ficheToGamme.get(entry.getKey());	
+			//pb ere
 			series[entry.getKey()-1] = new XYIntervalSeries(lgamme);
 			//barreJobs[entry.getKey()] = entry.getKey();
 			mDataset.addSeries(series[entry.getKey()-1]);
@@ -376,7 +377,8 @@ public class GanttChart extends JFrame {
 
 		     
 		 private static final long serialVersionUID = 1L;
-		
+		 //TODO
+		 //PB -> faire un serie+1 ne suffira pas si les barres en moins sont mal placées dans la lis
 		 public String generateToolTip(XYDataset dataset, int series, int item) {    	
 			 	//System.out.println("series:"+series+" "+" item:"+item+" val="+labelsModel[series][item]);    	
 			 	return  labelsModel.get(series+1)[item]+ " temps avant sortie :"+ tmpsAvantSortie(mTabAssignedJobsSorted.get(series+1).get(item).derive);

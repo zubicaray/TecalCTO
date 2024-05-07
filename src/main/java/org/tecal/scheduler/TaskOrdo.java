@@ -1,6 +1,8 @@
 package org.tecal.scheduler;
 
 
+import org.tecal.scheduler.types.AssignedTask;
+
 import com.google.ortools.sat.CpModel;
 import com.google.ortools.sat.IntVar;
 import com.google.ortools.sat.IntervalVar;
@@ -92,37 +94,33 @@ public class TaskOrdo {
 	
 	
 	
-	public void fixeTime() {
+	public void fixeTime(AssignedTask task) {
 		
 		
-		fixedStartBDD=TecalOrdo.solver.value(startBDD);
-		fixedEndBDD=TecalOrdo.solver.value(endBDD);
-		fixedDeriveNulle=TecalOrdo.solver.value(deriveNulle);		
-		fixedDeriveMax=TecalOrdo.solver.value(deriveMax);
-		fixedFin=TecalOrdo.solver.value(fin);
+		fixedStartBDD=task.start;
+		
+		fixedEndBDD=task.end;
 		
 		
+		fixedFin=task.derive+tempsDeplacement+egouttage;
+		
+		
+	
+		
+		
+		
+		
+	
+	}
+	
+	void createFixedIntervals() {
 		intervalBDD = TecalOrdo.model.newFixedInterval(fixedStartBDD,duration, "intervalFixeReel" );
-	
 		
-		intervalReel=TecalOrdo.model.newFixedInterval(
-				fixedStartBDD,
-				fixedFin-fixedStartBDD,
-				"intervalReel fixe");
-		
-		
-		
-		maximumDerive=TecalOrdo.model.newFixedInterval(
-				fixedFin-(tempsDeplacement+egouttage),
-				tempsDeplacement+egouttage,
-				"derive max fixed" );
-		
-		minimumDerive=TecalOrdo.model.newFixedInterval(
-				fixedEndBDD,
-				fixedEndBDD-fixedDeriveNulle,
-				"minimumDerive fixef" );
-		
-	
+			
+			intervalReel=TecalOrdo.model.newFixedInterval(
+					fixedStartBDD,
+					fixedFin-fixedStartBDD,
+					"intervalReel fixe");
 	}
 
 	TaskOrdo(CpModel model,int induration,int inderive,int minDebut,int intempsDeplacement,int egouttage,String suffix){
