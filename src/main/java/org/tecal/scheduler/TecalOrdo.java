@@ -104,7 +104,11 @@ public class TecalOrdo {
 		this.mBarresEnCours.addAll(nouvellesBarresEnCours) ;
 
 		for(Integer barreId:nouvellesBarresEnCours) {
-			mJobsEnCours.put(barreId, mJobsFuturs.get(barreId).makeFixedJob(assignedTasksByBarreId.get(barreId)));
+			if(!mJobsEnCours.containsKey(barreId))
+				mJobsEnCours.put(barreId, mJobsFuturs.get(barreId).makeFixedJob(assignedTasksByBarreId.get(barreId)));
+			else {
+				mJobsEnCours.get(barreId).clear();
+			}
 		}
 	}
 
@@ -136,6 +140,7 @@ public class TecalOrdo {
 
 	private Map<Integer, List<AssignedTask>> 			assignedTasksByNumzone;
 	private LinkedHashMap<Integer, List<AssignedTask>> 	assignedTasksByBarreId;
+	//private LinkedHashMap<Integer, List<AssignedTask>> 	ongoingTasksByBarreId;
 	// AssignedTask des génération précédentes et qu sont en cours de production
 
 	private ArrayList<JobType> arrayAllJobs;
@@ -188,6 +193,7 @@ public class TecalOrdo {
 
 		assignedTasksByNumzone = new HashMap<>();
 		assignedTasksByBarreId = new LinkedHashMap<>();
+		//ongoingTasksByBarreId = new LinkedHashMap<>();
 
 		arrayAllJobs=new ArrayList<>();
 
@@ -556,7 +562,7 @@ public class TecalOrdo {
 	private void computeHorizon() {
 		horizon = 0;
 		for (JobType job : arrayAllJobs) {
-			System.out.println("job="+job.getName() );
+			//System.out.println("job="+job.getName() );
 			//int cpt=0;
 			for (Task task : job.tasksJob) {
 				//System.out.println("task "+cpt+"="+ task.duration );

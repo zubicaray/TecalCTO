@@ -107,6 +107,7 @@ public class JobType {
 		
 		IntVar deb = null;
 		IntVar fin= null;
+		
 	
 		//System.out.println("Job "+name);
 		for (int taskID = 0; taskID < mTaskOrdoList.size(); ++taskID) {
@@ -151,12 +152,23 @@ public class JobType {
 		}
 		
 	}
+
+
+	 void clear() {
+		mNoOverlapP1P2.clear();
+		for(ListeZone t :bridgesMoves) {
+			t.clear();
+		}
+	}
 	void simulateBridgesMoves() {
 
 		
 		IntVar deb = null;
 		IntVar fin= null;
 		int bridge=0;
+		
+		
+		
 		//System.out.println("Job "+name);
 		for (int taskID = 0; taskID < mTaskOrdoList.size(); ++taskID) {
 			

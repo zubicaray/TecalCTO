@@ -60,8 +60,7 @@ public class CPO_IHM extends JFrame {
 	private SQL_DATA sqlCnx;
 	@SuppressWarnings("unused")
 	private timerGantt mTimer;
-	@SuppressWarnings("unused")
-	private LinkedHashMap<Integer, List<AssignedTask>> ongoingTasksByJobId;
+	
 
 	private LinkedHashMap<Integer,String> mGammes;
 
@@ -146,10 +145,7 @@ public class CPO_IHM extends JFrame {
 			int barreid=entry.getKey();
 			if(first.end<current_time) {
 				// on ne garde pas les taches du job car il n'a pas encore commencé
-
-				ongoingTasksByJobId.put(entry.getKey(),entry.getValue());
-				int barre=mTecalOrdo.getAllJobs().get(barreid).getmBarreId();
-				barresToRemove.add(barre);
+				barresToRemove.add(barreid);
 			}
 
 		}
@@ -240,7 +236,7 @@ public class CPO_IHM extends JFrame {
 	}
 	private void init() {
 
-		ongoingTasksByJobId = new LinkedHashMap<>();
+	
 		TecalGUI.cosmeticGUI();
 		mGanttTecalOR = new GanttChart("Diagramme Gantt de la production");
 

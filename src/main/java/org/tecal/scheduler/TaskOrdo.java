@@ -117,7 +117,7 @@ public class TaskOrdo {
 		intervalBDD = TecalOrdo.model.newFixedInterval(fixedStartBDD,duration, "intervalFixeReel" );
 		
 			
-			intervalReel=TecalOrdo.model.newFixedInterval(
+		intervalReel=TecalOrdo.model.newFixedInterval(
 					fixedStartBDD,
 					fixedFin-fixedStartBDD,
 					"intervalReel fixe");
