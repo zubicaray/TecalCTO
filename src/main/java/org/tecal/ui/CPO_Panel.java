@@ -74,6 +74,15 @@ public class CPO_Panel extends JPanel {
 		createPanelCPO();
 
 	}
+	public CPO_Panel( ) {
+
+		
+		mNumBarre=0;
+		createPanelCPO();
+
+	}
+
+
 
 
 
@@ -405,7 +414,6 @@ public class CPO_Panel extends JPanel {
 
 	    mTableGammes.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-
         mTableGammes.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
 
         mTableGammes.addMouseListener(new MouseAdapter() {
@@ -427,9 +435,7 @@ public class CPO_Panel extends JPanel {
     	});
         
         mTableGammes.setDefaultRenderer(Object.class, new DefaultTableCellRenderer(){
-            /**
-			 * 
-			 */
+            
 			private static final long serialVersionUID = 1L;
 
 			@Override

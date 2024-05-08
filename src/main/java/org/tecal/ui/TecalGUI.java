@@ -4,10 +4,13 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.EventQueue;
+import java.awt.FlowLayout;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -40,12 +43,16 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.JToolBar;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ListSelectionModel;
+import javax.swing.RowFilter;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 
 import org.jdatepicker.impl.JDatePanelImpl;
 import org.jdatepicker.impl.JDatePickerImpl;
@@ -56,6 +63,9 @@ import org.tecal.scheduler.GanttChart;
 import org.tecal.scheduler.data.SQL_DATA;
 
 import com.formdev.flatlaf.FlatDarkLaf;
+
+import java.awt.BorderLayout;
+
 
  class DateLabelFormatter extends AbstractFormatter {
 
@@ -110,6 +120,9 @@ public class TecalGUI {
 	JScrollPane scrollPaneVisuProd;
 
 	private JTextField textTEMPS_MAX_SOLVEUR;
+	private JTextField textEnd;
+	private JTextField textStart;
+	private  JTable tableTpsMvts;
 
 
 	/**
@@ -181,7 +194,7 @@ public class TecalGUI {
 
 		//mCPO_IHM = new CPO(mIcons);
 
-		frmTecalOrdonnanceur.setBounds(100, 100, 729, 661);
+		frmTecalOrdonnanceur.setBounds(100, 100, 729, 674);
 		frmTecalOrdonnanceur.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
 		tabbedPaneMain = new JTabbedPane(SwingConstants.TOP);
@@ -202,6 +215,7 @@ public class TecalGUI {
 		//scrollPane_gamme.setViewportView(tableGammes);
 		//panelCPO.setLayout(gl_panel);
 		buildVisuProd();
+		buildMvtPonts();
 		buildParamsTab(tabbedPaneMain);
 
 		frmTecalOrdonnanceur.getContentPane().setLayout(groupLayout);
@@ -236,9 +250,13 @@ public class TecalGUI {
 	private void  buildVisuProd() {
 
 		panelVisuProd = new JPanel();
+		
+		
+		
+		
+		
 		UtilDateModel model = new UtilDateModel();
-		//model.setDate(20,04,2014);
-		// Need this...
+	
 		Properties p = new Properties();
 		p.put("text.today", "Today");
 		p.put("text.month", "Month");
@@ -260,12 +278,26 @@ public class TecalGUI {
 		});
 
 		tabbedPaneMain.addTab("Visuel de prod", null, panelVisuProd, null);
-
-		scrollPaneVisuProd = new JScrollPane();
-
-
-
+		
+		
+		JPanel buttonsDate = new JPanel(new FlowLayout());
+		buttonsDate.add(datePicker);
 		JButton btnRunVisuProd = new JButton("Gantt PROD");
+		buttonsDate.add(btnRunVisuProd);
+		JButton btnGanttCpo = new JButton("Gantt CPO");
+		buttonsDate.add(btnGanttCpo);
+
+       
+		panelVisuProd.add(buttonsDate, BorderLayout.PAGE_START);
+		
+		
+		
+		scrollPaneVisuProd = new JScrollPane();
+		panelVisuProd.add(scrollPaneVisuProd, BorderLayout.CENTER);
+
+
+
+		
 		btnRunVisuProd.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -298,7 +330,7 @@ public class TecalGUI {
 			}
 		});
 
-		JButton btnGanttCpo = new JButton("Gantt CPO");
+		
 		btnGanttCpo.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -339,39 +371,6 @@ public class TecalGUI {
 
 			}
 		});
-		GroupLayout gl_panelVisuProd = new GroupLayout(panelVisuProd);
-		gl_panelVisuProd.setHorizontalGroup(
-			gl_panelVisuProd.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_panelVisuProd.createSequentialGroup()
-					.addGroup(gl_panelVisuProd.createParallelGroup(Alignment.LEADING)
-						.addGroup(gl_panelVisuProd.createSequentialGroup()
-							.addGap(199)
-							.addComponent(datePicker, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-							.addGap(35)
-							.addComponent(btnRunVisuProd)
-							.addPreferredGap(ComponentPlacement.UNRELATED)
-							.addComponent(btnGanttCpo, GroupLayout.PREFERRED_SIZE, 91, GroupLayout.PREFERRED_SIZE))
-						.addGroup(gl_panelVisuProd.createSequentialGroup()
-							.addGap(22)
-							.addComponent(scrollPaneVisuProd, GroupLayout.DEFAULT_SIZE, 657, Short.MAX_VALUE)))
-					.addGap(29))
-		);
-		gl_panelVisuProd.setVerticalGroup(
-			gl_panelVisuProd.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_panelVisuProd.createSequentialGroup()
-					.addGap(5)
-					.addGroup(gl_panelVisuProd.createParallelGroup(Alignment.LEADING)
-						.addComponent(datePicker, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-						.addGroup(gl_panelVisuProd.createParallelGroup(Alignment.BASELINE)
-							.addComponent(btnRunVisuProd)
-							.addComponent(btnGanttCpo)))
-					.addGap(42)
-					.addComponent(scrollPaneVisuProd, GroupLayout.DEFAULT_SIZE, 487, Short.MAX_VALUE)
-					.addGap(37))
-		);
-
-
-		panelVisuProd.setLayout(gl_panelVisuProd);
 
 
 
@@ -379,6 +378,9 @@ public class TecalGUI {
 	}
 
 	private void buildParamsTab(JTabbedPane tabbedPane) {
+		
+		
+   
 
 
 
@@ -498,6 +500,83 @@ public class TecalGUI {
 		panel_param.setLayout(gl_panel_param);
 	}
 
+	private void filterMvts() {
+		List<RowFilter<Object,Object>> filters = new ArrayList<RowFilter<Object,Object>>(2);
+		filters.add(RowFilter.regexFilter(textStart.getText(), 0));
+		filters.add(RowFilter.regexFilter(textEnd.getText(), 2));
+		RowFilter<Object, Object> rf = RowFilter.andFilter(filters);
+		
+		TableRowSorter<TableModel> sorter = new TableRowSorter<>((tableTpsMvts.getModel()));
+	    sorter.setRowFilter(rf);
+		
+	    tableTpsMvts.setRowSorter(sorter);
+	}
+	
+	private void buildMvtPonts() {
+		JPanel panelMvtPonts = new JPanel(new BorderLayout());
+		tabbedPaneMain.addTab("Temps mouvements", null, panelMvtPonts, null);
+		
+		
+		textStart = new JTextField();
+		textStart.setColumns(10);
+		
+		textEnd = new JTextField();
+		textEnd.setColumns(10);
+		
+		JPanel buttonsPanel = new JPanel(new FlowLayout());
+		buttonsPanel.add(textStart);
+		buttonsPanel.add(textEnd);
+	
+
+		JScrollPane scrollMvtsTable = new JScrollPane();
+	
+       
+		 panelMvtPonts.add(buttonsPanel, BorderLayout.PAGE_START);
+		 panelMvtPonts.add(scrollMvtsTable, BorderLayout.CENTER);
+		 
+		 tableTpsMvts = new JTable();
+		 
+		 try {
+			buildTableModelMvts();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		 //scrollMvtsTable.add(tableTpsMvts);
+		 scrollMvtsTable.setViewportView(tableTpsMvts);
+		
+		
+		
+		textStart.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyReleased(KeyEvent e) {				
+
+
+				filterMvts();
+			}
+		});
+		
+		
+		
+		
+		textEnd.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyReleased(KeyEvent e) {		
+
+				filterMvts();
+			}
+
+			
+		});
+		
+		
+		
+		
+		
+		 
+		 
+	}
+
 	public void setIconButton(JButton btnButton,String fileName) {
 		try {
 
@@ -509,6 +588,70 @@ public class TecalGUI {
 		    System.out.println(ex);
 		  }
 	}
+
+
+
+	public   void buildTableModelMvts()
+	        throws SQLException {
+
+		
+		ResultSet rs =sqlCnx.getTpsMvts();
+	    ResultSetMetaData metaData = rs.getMetaData();
+
+	    // names of columns
+	    Vector<String> columnNames = new Vector<>();
+	    int columnCount = metaData.getColumnCount();
+	    for (int column = 1; column <= columnCount; column++) {
+	        columnNames.add(metaData.getColumnName(column));
+	    }
+
+	    // data of the table
+	    Vector<Vector<Object>> data = new Vector<>();
+	    while (rs.next()) {
+	        Vector<Object> vector = new Vector<>();
+	        for (int columnIndex = 1; columnIndex <= columnCount; columnIndex++) {
+	            vector.add(rs.getObject(columnIndex));
+	        }
+	        data.add(vector);
+	    }
+
+	    DefaultTableModel modelMvts = new DefaultTableModel(data, columnNames) {
+
+    	    /**
+			 *
+			 */
+			private static final long serialVersionUID = 1L;
+
+			@Override
+    	    public boolean isCellEditable(int row, int column) {
+    	       //all cells false
+    	       return false;
+    	    }
+    	};
+
+    	tableTpsMvts.setModel(modelMvts);
+    	
+		
+
+
+		tableTpsMvts.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+
+
+		tableTpsMvts.addMouseListener(new MouseAdapter() {
+		    @Override
+			public void mousePressed(MouseEvent mouseEvent) {
+		        JTable table =(JTable) mouseEvent.getSource();
+		        Point point = mouseEvent.getPoint();
+		        int row = table.rowAtPoint(point);
+		        if (mouseEvent.getClickCount() == 2 && table.getSelectedRow() != -1) {
+		        	
+		        }
+		    }
+		});
+	
+
+	}
+
 
 
 	public   void buildTableModelVisuProd()

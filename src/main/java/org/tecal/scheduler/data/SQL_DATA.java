@@ -366,6 +366,38 @@ public void  setMissingTimeMovesGammes() {
 
 }
 
+public ResultSet getTpsMvts() {
+	ResultSet resultSet = null;    
+	
+	
+	
+    // Create and execute a SELECT SQL statement.
+    String selectSql = "SELECT [depart],Z1.CodeZone\r\n"
+    		+ "      ,[arrivee],Z2.CodeZone\r\n"
+    		+ "      ,[lent]\r\n"
+    		+ "      ,[normal]\r\n"
+    		+ "      ,[rapide]\r\n"
+    		+ "  FROM [ANODISATION_SECOURS].[dbo].[TempsDeplacements] T,\r\n"
+    		+ "  [ANODISATION_SECOURS].[dbo].[Zones] Z1,\r\n"
+    		+ "  [ANODISATION_SECOURS].[dbo].[Zones] Z2\r\n"
+    		+ "  WHERE\r\n"
+    		+ "  Z1.NumZone=T.depart and Z2.numzone=T.arrivee"
+    	
+    		
+    		;
+    try {
+		resultSet = mStatement.executeQuery(selectSql);
+		// Print results from select statement
+    
+	} catch (SQLException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+
+	return resultSet;
+}
+	
+
 public ResultSet getVisuProd(java.util.Date inDate) {
 	ResultSet resultSet = null;    
 	
