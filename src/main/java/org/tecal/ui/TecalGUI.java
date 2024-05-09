@@ -1,5 +1,6 @@
 package org.tecal.ui;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -9,6 +10,8 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -37,13 +40,14 @@ import javax.swing.JButton;
 import javax.swing.JFormattedTextField.AbstractFormatter;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
-import javax.swing.JToolBar;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowFilter;
@@ -51,6 +55,7 @@ import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
@@ -63,8 +68,6 @@ import org.tecal.scheduler.GanttChart;
 import org.tecal.scheduler.data.SQL_DATA;
 
 import com.formdev.flatlaf.FlatDarkLaf;
-
-import java.awt.BorderLayout;
 
 
  class DateLabelFormatter extends AbstractFormatter {
@@ -209,7 +212,7 @@ public class TecalGUI {
 		);
 
 
-		
+
 
 
 		//scrollPane_gamme.setViewportView(tableGammes);
@@ -249,14 +252,14 @@ public class TecalGUI {
 
 	private void  buildVisuProd() {
 
-		panelVisuProd = new JPanel();
-		
-		
-		
-		
-		
+		panelVisuProd = new JPanel(new BorderLayout());
+
+
+
+
+
 		UtilDateModel model = new UtilDateModel();
-	
+
 		Properties p = new Properties();
 		p.put("text.today", "Today");
 		p.put("text.month", "Month");
@@ -278,8 +281,8 @@ public class TecalGUI {
 		});
 
 		tabbedPaneMain.addTab("Visuel de prod", null, panelVisuProd, null);
-		
-		
+
+
 		JPanel buttonsDate = new JPanel(new FlowLayout());
 		buttonsDate.add(datePicker);
 		JButton btnRunVisuProd = new JButton("Gantt PROD");
@@ -287,17 +290,22 @@ public class TecalGUI {
 		JButton btnGanttCpo = new JButton("Gantt CPO");
 		buttonsDate.add(btnGanttCpo);
 
-       
+
 		panelVisuProd.add(buttonsDate, BorderLayout.PAGE_START);
-		
-		
-		
+
+
+
 		scrollPaneVisuProd = new JScrollPane();
+		scrollPaneVisuProd.addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentResized(ComponentEvent e) {
+			}
+		});
 		panelVisuProd.add(scrollPaneVisuProd, BorderLayout.CENTER);
 
 
 
-		
+
 		btnRunVisuProd.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -330,7 +338,7 @@ public class TecalGUI {
 			}
 		});
 
-		
+
 		btnGanttCpo.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -378,9 +386,9 @@ public class TecalGUI {
 	}
 
 	private void buildParamsTab(JTabbedPane tabbedPane) {
-		
-		
-   
+
+
+
 
 
 
@@ -501,41 +509,41 @@ public class TecalGUI {
 	}
 
 	private void filterMvts() {
-		List<RowFilter<Object,Object>> filters = new ArrayList<RowFilter<Object,Object>>(2);
-		filters.add(RowFilter.regexFilter(textStart.getText(), 0));
-		filters.add(RowFilter.regexFilter(textEnd.getText(), 2));
+		List<RowFilter<Object,Object>> filters = new ArrayList<>(2);
+		filters.add(RowFilter.regexFilter(textStart.getText(), 1));
+		filters.add(RowFilter.regexFilter(textEnd.getText(), 3));
 		RowFilter<Object, Object> rf = RowFilter.andFilter(filters);
-		
+
 		TableRowSorter<TableModel> sorter = new TableRowSorter<>((tableTpsMvts.getModel()));
 	    sorter.setRowFilter(rf);
-		
+
 	    tableTpsMvts.setRowSorter(sorter);
 	}
-	
+
 	private void buildMvtPonts() {
 		JPanel panelMvtPonts = new JPanel(new BorderLayout());
 		tabbedPaneMain.addTab("Temps mouvements", null, panelMvtPonts, null);
-		
-		
+
+
 		textStart = new JTextField();
 		textStart.setColumns(10);
-		
+
 		textEnd = new JTextField();
 		textEnd.setColumns(10);
-		
+
 		JPanel buttonsPanel = new JPanel(new FlowLayout());
 		buttonsPanel.add(textStart);
 		buttonsPanel.add(textEnd);
-	
+
 
 		JScrollPane scrollMvtsTable = new JScrollPane();
-	
-       
+
+
 		 panelMvtPonts.add(buttonsPanel, BorderLayout.PAGE_START);
 		 panelMvtPonts.add(scrollMvtsTable, BorderLayout.CENTER);
-		 
+
 		 tableTpsMvts = new JTable();
-		 
+
 		 try {
 			buildTableModelMvts();
 		} catch (SQLException e) {
@@ -544,37 +552,37 @@ public class TecalGUI {
 		}
 		 //scrollMvtsTable.add(tableTpsMvts);
 		 scrollMvtsTable.setViewportView(tableTpsMvts);
-		
-		
-		
+
+
+
 		textStart.addKeyListener(new KeyAdapter() {
 			@Override
-			public void keyReleased(KeyEvent e) {				
+			public void keyReleased(KeyEvent e) {
 
 
 				filterMvts();
 			}
 		});
-		
-		
-		
-		
+
+
+
+
 		textEnd.addKeyListener(new KeyAdapter() {
 			@Override
-			public void keyReleased(KeyEvent e) {		
+			public void keyReleased(KeyEvent e) {
 
 				filterMvts();
 			}
 
-			
+
 		});
-		
-		
-		
-		
-		
-		 
-		 
+
+
+
+
+
+
+
 	}
 
 	public void setIconButton(JButton btnButton,String fileName) {
@@ -594,7 +602,7 @@ public class TecalGUI {
 	public   void buildTableModelMvts()
 	        throws SQLException {
 
-		
+
 		ResultSet rs =sqlCnx.getTpsMvts();
 	    ResultSetMetaData metaData = rs.getMetaData();
 
@@ -630,8 +638,10 @@ public class TecalGUI {
     	};
 
     	tableTpsMvts.setModel(modelMvts);
-    	
-		
+    	TableColumnModel tcm = tableTpsMvts.getColumnModel();
+    	tcm.removeColumn( tcm.getColumn(0) );
+    	tcm.removeColumn( tcm.getColumn(1) );
+
 
 
 		tableTpsMvts.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
@@ -644,11 +654,11 @@ public class TecalGUI {
 		        Point point = mouseEvent.getPoint();
 		        int row = table.rowAtPoint(point);
 		        if (mouseEvent.getClickCount() == 2 && table.getSelectedRow() != -1) {
-		        	
+
 		        }
 		    }
 		});
-	
+
 
 	}
 
@@ -680,9 +690,6 @@ public class TecalGUI {
 
 	    modelVisuProd = new DefaultTableModel(data, columnNames) {
 
-    	    /**
-			 *
-			 */
 			private static final long serialVersionUID = 1L;
 
 			@Override
@@ -705,13 +712,40 @@ public class TecalGUI {
 			public void mousePressed(MouseEvent mouseEvent) {
 		        JTable table =(JTable) mouseEvent.getSource();
 		        Point point = mouseEvent.getPoint();
+
+
+
 		        int row = table.rowAtPoint(point);
+		        table.setRowSelectionInterval(row, row);
+
 		        if (mouseEvent.getClickCount() == 2 && table.getSelectedRow() != -1) {
 		        	modelVisuProd.removeRow(row);
 		        }
 		    }
 		});
 		scrollPaneVisuProd.setViewportView(tableOF);
+
+		 final JPopupMenu popupMenu = new JPopupMenu();
+	        JMenuItem deleteItem = new JMenuItem("Etalonnage  des mouvements");
+	        deleteItem.addActionListener(new ActionListener() {
+
+	            @Override
+	            public void actionPerformed(ActionEvent e) {
+	            	int row = tableOF.getSelectedRow();
+	            	if(row>=0) {
+	            		JOptionPane.showMessageDialog(frmTecalOrdonnanceur, "Right-click gamme="+tableOF.getModel().getValueAt(row, 1).toString());
+	            		int result = JOptionPane.showConfirmDialog((Component) null, "Voulez-vous aussi écraser les valeurs non nulles?","alert", JOptionPane.YES_NO_CANCEL_OPTION);
+
+	            		if(result!=2) {
+	            			boolean b = (result == 0);
+	            			SQL_DATA.getInstance().updateTpsMvts(tableOF.getModel().getValueAt(row, 0).toString(), b);
+	            		}
+
+	            	}
+	            }
+	        });
+	        popupMenu.add(deleteItem);
+	        tableOF.setComponentPopupMenu(popupMenu);
 
 	}
 

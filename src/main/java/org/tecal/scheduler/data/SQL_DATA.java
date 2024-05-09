@@ -366,6 +366,55 @@ public void  setMissingTimeMovesGammes() {
 
 }
 
+public boolean updateTpsMvts(String of,boolean updateNoNull) {
+	boolean res= false;
+	
+	String req="Update  [TempsDeplacements] \r\n"
+			+ "SET normal=T.tps\r\n"
+			+ "FROM \r\n"
+			+ "	[ANODISATION_SECOURS].[dbo].[TempsDeplacements] TPS\r\n"
+			+ "	INNER JOIN (\r\n"
+			+ "\r\n"
+			+ "		select F1.NumPoste N1,P1.NomPoste M1,F2.NumPoste N2,P2.NomPoste M2,\r\n"
+			+ "			DATEDIFF(SECOND, DATEADD(DAY, DATEDIFF(DAY, 0, F2.DateEntreePoste), 0),F2.DateEntreePoste) -\r\n"
+			+ "				DATEDIFF(SECOND, DATEADD(DAY, DATEDIFF(DAY, 0, F1.DateSortiePoste), 0),F1.DateSortiePoste)-\r\n"
+			+ "				DP.TempsEgouttageSecondes	as tps\r\n"
+			+ "		from \r\n"
+			+ "			DetailsFichesProduction  F1\r\n"
+			+ "			INNER JOIN DetailsFichesProduction  F2\r\n"
+			+ "			ON F1.NumFicheProduction =F2.NumFicheProduction\r\n"
+			+ "				AND F1.NumLigne=F2.NumLigne-1\r\n"
+			+ "			INNER JOIN POSTES P1\r\n"
+			+ "				on P1.Numposte=F1.Numposte\r\n"
+			+ "			INNER JOIN POSTES P2\r\n"
+			+ "				on P2.Numposte=F2.Numposte\r\n"
+			+ "			INNER JOIN DetailsGammesProduction DP\r\n"
+			+ "			ON F1.NumFicheProduction =DP.NumFicheProduction and \r\n"
+			+ "			 F1.NumLigne=DP.NumLigne\r\n"
+			+ "	\r\n"
+			+ "		where F1.NumFicheProduction = '"+of+"' \r\n"
+			+ "	--order by F1.NumLigne\r\n"
+			+ "	)  T\r\n"
+			+ "	ON TPS.depart=T.N1 and TPS.arrivee=T.N2";
+	if(!updateNoNull) {
+		req+="where normal=0";
+	}
+	
+		
+	    try {
+			res = mStatement.execute(req);
+			// Print results from select statement
+	    
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			res=false;
+		}
+
+	    return res;
+	
+}
+
 public ResultSet getTpsMvts() {
 	ResultSet resultSet = null;    
 	
