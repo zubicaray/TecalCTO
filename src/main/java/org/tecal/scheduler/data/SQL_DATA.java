@@ -372,13 +372,13 @@ public boolean updateTpsMvts(String of,boolean updateNoNull) {
 	String req="Update  [TempsDeplacements] \r\n"
 			+ "SET normal=T.tps\r\n"
 			+ "FROM \r\n"
-			+ "	[ANODISATION_SECOURS].[dbo].[TempsDeplacements] TPS\r\n"
+			+ "	[TempsDeplacements] TPS\r\n"
 			+ "	INNER JOIN (\r\n"
 			+ "\r\n"
-			+ "		select F1.NumPoste N1,P1.NomPoste M1,F2.NumPoste N2,P2.NomPoste M2,\r\n"
+			+ "		select DP1.NumZone N1,P1.NomPoste M1, DP2.NumZone N2,P2.NomPoste M2,\r\n"
 			+ "			DATEDIFF(SECOND, DATEADD(DAY, DATEDIFF(DAY, 0, F2.DateEntreePoste), 0),F2.DateEntreePoste) -\r\n"
 			+ "				DATEDIFF(SECOND, DATEADD(DAY, DATEDIFF(DAY, 0, F1.DateSortiePoste), 0),F1.DateSortiePoste)-\r\n"
-			+ "				DP.TempsEgouttageSecondes	as tps\r\n"
+			+ "				DP1.TempsEgouttageSecondes	as tps\r\n"
 			+ "		from \r\n"
 			+ "			DetailsFichesProduction  F1\r\n"
 			+ "			INNER JOIN DetailsFichesProduction  F2\r\n"
@@ -388,14 +388,17 @@ public boolean updateTpsMvts(String of,boolean updateNoNull) {
 			+ "				on P1.Numposte=F1.Numposte\r\n"
 			+ "			INNER JOIN POSTES P2\r\n"
 			+ "				on P2.Numposte=F2.Numposte\r\n"
-			+ "			INNER JOIN DetailsGammesProduction DP\r\n"
-			+ "			ON F1.NumFicheProduction =DP.NumFicheProduction and \r\n"
-			+ "			 F1.NumLigne=DP.NumLigne\r\n"
+			+ "			INNER JOIN DetailsGammesProduction DP1\r\n"
+			+ "			ON F1.NumFicheProduction =DP1.NumFicheProduction and \r\n"
+			+ "			 F1.NumLigne=DP1.NumLigne\r\n"
+			+ "			INNER JOIN DetailsGammesProduction DP2\r\n"
+			+ "			ON F2.NumFicheProduction =DP2.NumFicheProduction and \r\n"
+			+ "			 F2.NumLigne=DP2.NumLigne"
 			+ "	\r\n"
 			+ "		where F1.NumFicheProduction = '"+of+"' \r\n"
 			+ "	--order by F1.NumLigne\r\n"
 			+ "	)  T\r\n"
-			+ "	ON TPS.depart=T.N1 and TPS.arrivee=T.N2";
+			+ "	ON TPS.depart=T.N1 and TPS.arrivee=T.N2 ";
 	if(!updateNoNull) {
 		req+="where normal=0";
 	}
@@ -460,16 +463,16 @@ public ResultSet getVisuProd(java.util.Date inDate) {
 	String fin=toSQLServerFormat(dt);
 	
     // Create and execute a SELECT SQL statement.
-    String selectSql = "select DG.numficheproduction as [N° OF], 	DC.NumGammeANodisation as [gamme ],DC.NumBarre as  [barre] \r\n"
+    String selectSql = "select distinct  DG.numficheproduction as [N° OF], 	DC.NumGammeANodisation as [gamme ],DC.NumBarre as  [barre] \r\n"
     		+ "from   	[DetailsGammesProduction]  DG 	\r\n"
     		+ "INNER JOIN   [DetailsFichesProduction] DF 	on   		\r\n"
     		+ "DG.numficheproduction=DF.numficheproduction and 		\r\n"
     		+ "DG.numligne=DF.NumLigne  and DF.NumLigne=1 	\r\n"
-    		+ "INNER JOIN ( select numficheproduction,NumGammeANodisation,NumBarre from [DetailsChargesProduction] where numligne=1\r\n"
+    		+ "INNER JOIN ( select distinct numficheproduction,NumGammeANodisation,NumBarre from [DetailsChargesProduction] where numligne=1\r\n"
     		+ ") DC 	\r\n"
     		+ "on   		DC.numficheproduction=DF.numficheproduction \r\n"
     		+ "WHERE		DF.DateEntreePoste BETWEEN   '"+deb+"'  and '"+fin+"'      "
-    		+ "order by DF.DateEntreePoste,DC.NumBarre,DG.numficheproduction "
+    		+ "order by DG.numficheproduction ,DC.NumBarre"
     	
     		
     		;

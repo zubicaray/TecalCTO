@@ -57,7 +57,7 @@ public class CPO_IHM extends JFrame {
 	private GanttChart mGanttTecalOR;
 
 	private TecalOrdo mTecalOrdo;
-	private SQL_DATA sqlCnx;
+	
 	@SuppressWarnings("unused")
 	private timerGantt mTimer;
 	
@@ -192,7 +192,7 @@ public class CPO_IHM extends JFrame {
 					String minutes=String.format("%02d:%02d",  t / 60, (t % 60));
 					Object[] rowO = {
 							mTecalOrdo.getAllJobs().get(at.barreID).getName(),
-							sqlCnx.getZones().get(at.numzone).codezone,
+							SQL_DATA.getInstance().getZones().get(at.numzone).codezone,
 							minutes };
 					modelDerives.addRow(rowO);
 				}
@@ -240,8 +240,6 @@ public class CPO_IHM extends JFrame {
 		mGanttTecalOR = new GanttChart("Diagramme Gantt de la production");
 
 
-
-		sqlCnx=SQL_DATA.getInstance();
 		mCPO_PANEL= new CPO_Panel(this);
 		setIconImages(TecalGUI.loadIcons(this));
 		//setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
