@@ -7,7 +7,6 @@ import java.awt.Cursor;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.Image;
-import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -189,7 +188,7 @@ public class TecalGUI {
 
 		frmTecalOrdonnanceur = new JFrame();
 
-		frmTecalOrdonnanceur.setTitle("Tecal Ordonnanceur");
+		frmTecalOrdonnanceur.setTitle("Tecal PROD");
 
 		mIcons=loadIcons(this);
 
@@ -649,17 +648,6 @@ public class TecalGUI {
 		tableTpsMvts.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 
 
-		tableTpsMvts.addMouseListener(new MouseAdapter() {
-		    @Override
-			public void mousePressed(MouseEvent mouseEvent) {
-		        JTable table =(JTable) mouseEvent.getSource();
-		        Point point = mouseEvent.getPoint();
-		        int row = table.rowAtPoint(point);
-		        if (mouseEvent.getClickCount() == 2 && table.getSelectedRow() != -1) {
-
-		        }
-		    }
-		});
 
 
 	}
@@ -702,10 +690,10 @@ public class TecalGUI {
     	};
 
     	tableOF = new JTable(modelVisuProd) {
-    		
-    		
+
+
     		 /**
-			 * 
+			 *
 			 */
 			private static final long serialVersionUID = 1L;
 
@@ -713,16 +701,16 @@ public class TecalGUI {
              public Component prepareRenderer(
                      TableCellRenderer renderer, int row, int column) {
                  Component c = super.prepareRenderer(renderer, row, column);
-                
-                 
-                      
+
+
+
 	                if (isRowSelected(row)) {
 	                     c.setBackground(Color.black);
 	                     c.setForeground(Color.white);
 	                 } else {
-	                    
+
 	                	String gamme = (String)this.getModel().getValueAt(row, 1);
-	  	                
+
 	  	                if (SQL_DATA.getInstance().getMissingTimeMovesGammes().contains(gamme)) {
 	  	                	 c.setBackground(Color.RED);
 		                     c.setForeground(Color.white);
@@ -733,23 +721,21 @@ public class TecalGUI {
 	  	                }
 
 	                 }
-                 
+
                  return c;
              }
-    		
+
     	};
 		scrollPaneVisuProd.setViewportView(tableOF);
 		//panelVisuProd.setLayout(gl_panelVisuProd);
-
-
 		tableOF.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 
 
-	
+
 		scrollPaneVisuProd.setViewportView(tableOF);
-		
+
 		tableOF.setDefaultRenderer(Object.class, new DefaultTableCellRenderer(){
-	            
+
 				private static final long serialVersionUID = 1L;
 
 				@Override
@@ -757,37 +743,37 @@ public class TecalGUI {
 	                    Object value, boolean isSelected, boolean hasFocus, int row, int col) {
 	                super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
 	                String gamme = (String)table.getModel().getValueAt(row, 1);
-	                
+
 	                if (SQL_DATA.getInstance().getMissingTimeMovesGammes().contains(gamme)) {
 	                    setBackground(Color.RED);
 	                    setForeground(Color.BLACK);
-	                } 
+	                }
 	                else {
 	                    setBackground(table.getBackground());
 	                    setForeground(table.getForeground());
-	                }       
-	               
+	                }
+
 	                return this;
-	            }   
-				
-				
+	            }
+
+
 	        });
-		
-	
+
+
 		 final JPopupMenu popupMenu = new JPopupMenu();
-	        JMenuItem deleteItem = new JMenuItem("Etalonnage  des mouvements");
-	        deleteItem.addActionListener(new ActionListener() {
+	        JMenuItem item = new JMenuItem("Etalonnage  des mouvements");
+	        item.addActionListener(new ActionListener() {
 
 	            @Override
 	            public void actionPerformed(ActionEvent e) {
 	            	int row = tableOF.getSelectedRow();
-	            	
-	            	
-	            	
+
+
+
 	            	if(row>=0) {
-	            		
-	            	
-	            		
+
+
+
 	            		//JOptionPane.showMessageDialog(frmTecalOrdonnanceur, "Right-click gamme="+tableOF.getModel().getValueAt(row, 1).toString());
 	            		int result = JOptionPane.showConfirmDialog((Component) null, "Voulez-vous aussi écraser les valeurs non nulles?","alert", JOptionPane.YES_NO_CANCEL_OPTION);
 
@@ -802,7 +788,7 @@ public class TecalGUI {
 	            	}
 	            }
 	        });
-	        popupMenu.add(deleteItem);
+	        popupMenu.add(item);
 	        tableOF.setComponentPopupMenu(popupMenu);
 
 	}

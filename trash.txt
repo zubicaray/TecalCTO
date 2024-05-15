@@ -1,1 +1,2 @@
- gammes  78 et 119 => no solution
+gammes  78 et 119 => no solution
+3 mars 2022 : prod better than CPO !!
