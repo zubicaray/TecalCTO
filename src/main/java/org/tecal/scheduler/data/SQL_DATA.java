@@ -429,9 +429,9 @@ public ResultSet getTpsMvts() {
     		+ "      ,[lent]\r\n"
     		+ "      ,[normal]\r\n"
     		+ "      ,[rapide]\r\n"
-    		+ "  FROM [ANODISATION_SECOURS].[dbo].[TempsDeplacements] T,\r\n"
-    		+ "  [ANODISATION_SECOURS].[dbo].[Zones] Z1,\r\n"
-    		+ "  [ANODISATION_SECOURS].[dbo].[Zones] Z2\r\n"
+    		+ "  FROM [TempsDeplacements] T,\r\n"
+    		+ "  [Zones] Z1,\r\n"
+    		+ "  [Zones] Z2\r\n"
     		+ "  WHERE\r\n"
     		+ "  Z1.NumZone=T.depart and Z2.numzone=T.arrivee"
     	

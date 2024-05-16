@@ -40,6 +40,7 @@ import javax.swing.RowFilter;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
@@ -95,7 +96,24 @@ public class CPO_Panel extends JPanel {
 
 		JTextField textFiltre = new JTextField();
 		textFiltre.setColumns(10);
+		
+		JButton btnReload  = new JButton();
+		setIconButton(this,btnReload,"icons8-update-16.png");
+		
+		
+		btnReload.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
 
+					SQL_DATA.getInstance().setMissingTimeMovesGammes();
+					 //mModelGammes.fireTableStructureChanged();
+					 //mTableGammes.revalidate();
+					 mTableGammes.repaint();
+
+
+				}
+			});
+		
 
 		textFiltre.addKeyListener(new KeyAdapter() {
 			@Override
@@ -104,6 +122,8 @@ public class CPO_Panel extends JPanel {
 			    sorter.setRowFilter(RowFilter.regexFilter(textFiltre.getText()));
 
 			    mTableGammes.setRowSorter(sorter);
+			    mTableGammes.repaint();
+			  
 			}
 		});
 		textFiltre.addActionListener(new ActionListener() {
@@ -145,7 +165,11 @@ public class CPO_Panel extends JPanel {
 								.addGroup(gl_panelCPO.createSequentialGroup()
 									.addComponent(lblGammes, GroupLayout.PREFERRED_SIZE, 67, GroupLayout.PREFERRED_SIZE)
 									.addGap(111)
-									.addComponent(textFiltre, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+									.addComponent(textFiltre, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+									.addGap(70)
+									.addComponent(btnReload, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+										)
+									
 								.addComponent(scrollPane_gamme, GroupLayout.DEFAULT_SIZE, 364, Short.MAX_VALUE))
 							.addGap(18)
 							.addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING, false)
@@ -170,6 +194,7 @@ public class CPO_Panel extends JPanel {
 					.addGroup(gl_panelCPO.createParallelGroup(Alignment.BASELINE)
 						.addComponent(lblGammes, GroupLayout.PREFERRED_SIZE, 20, GroupLayout.PREFERRED_SIZE)
 						.addComponent(textFiltre, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+						.addComponent(btnReload, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 						.addComponent(lblBarreLabel))
 					.addPreferredGap(ComponentPlacement.UNRELATED)
 					.addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING)
@@ -260,12 +285,33 @@ public class CPO_Panel extends JPanel {
 	     	    }
 	     	};
 
-	     	mTableGammes = new JTable();
+	     	mTableGammes = new JTable(mModelGammes) {
+	       		 /**
+	   			 *
+	   			 */
+	   			private static final long serialVersionUID = 1L;
 
-	     	mTableGammes.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-	     	mTableGammes.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+	   			@Override
+	                public Component prepareRenderer(
+	                        TableCellRenderer renderer, int row, int column) {
+	                    Component c = super.prepareRenderer(renderer, row, column);
+
+
+
+	   	                if (isRowSelected(row)) {
+	   	                     c.setBackground(Color.black);
+	   	                     c.setForeground(Color.white);
+	   	                 } 
+	                    return c;
+	                }
+
+	       	};;
+
+	     	
 
 			buildTableModelGamme();
+					
+	     	mTableGammes.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
 
 
 
@@ -281,6 +327,7 @@ public class CPO_Panel extends JPanel {
 
 
 	    setActionListener();
+	    mTableGammes.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);	
 		scrollPane_gamme.setViewportView(mTableGammes);
 		setLayout(gl_panelCPO);
 	}
@@ -409,9 +456,6 @@ public class CPO_Panel extends JPanel {
 
 
 
-
-	    mTableGammes.setModel(mModelGammes);
-
 	    mTableGammes.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         mTableGammes.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
@@ -442,7 +486,11 @@ public class CPO_Panel extends JPanel {
             public Component getTableCellRendererComponent(JTable table,
                     Object value, boolean isSelected, boolean hasFocus, int row, int col) {
                 super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
-                String gamme = (String)table.getModel().getValueAt(row, 0);
+                
+                int modelIndex = table.convertRowIndexToModel(row)      ;         
+                
+                String gamme = (String)table.getModel().getValueAt(modelIndex, 0);
+              
                 
                 if (SQL_DATA.getInstance().getMissingTimeMovesGammes().contains(gamme)) {
                     setBackground(Color.RED);

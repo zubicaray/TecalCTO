@@ -707,26 +707,13 @@ public class TecalGUI {
 	                if (isRowSelected(row)) {
 	                     c.setBackground(Color.black);
 	                     c.setForeground(Color.white);
-	                 } else {
-
-	                	String gamme = (String)this.getModel().getValueAt(row, 1);
-
-	  	                if (SQL_DATA.getInstance().getMissingTimeMovesGammes().contains(gamme)) {
-	  	                	 c.setBackground(Color.RED);
-		                     c.setForeground(Color.white);
-	  	                }
-	  	                else {
-		                     setBackground(this.getBackground());
-			                 setForeground(this.getForeground());
-	  	                }
-
 	                 }
 
                  return c;
              }
 
     	};
-		scrollPaneVisuProd.setViewportView(tableOF);
+		//scrollPaneVisuProd.setViewportView(tableOF);
 		//panelVisuProd.setLayout(gl_panelVisuProd);
 		tableOF.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 
