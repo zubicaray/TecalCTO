@@ -70,7 +70,7 @@ public class CPO_IHM extends JFrame {
 	public void setGammes(LinkedHashMap<Integer, String> mGammes) {
 		this.mGammes = mGammes;
 	}
-	public TecalOrdo getmTecalOrdo() {
+	public TecalOrdo getTecalOrdo() {
 		return mTecalOrdo;
 	}
 	public void setTecalOrdo(TecalOrdo mTecalOrdo) {
@@ -96,7 +96,8 @@ public class CPO_IHM extends JFrame {
 				try {
 					CPO_IHM frame = new CPO_IHM();
 					frame.setTitle("Tecal Ordonnanceur");
-					frame.runTest();
+					if(CST.TEST) 
+						frame.runTest();
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -121,6 +122,7 @@ public class CPO_IHM extends JFrame {
 		// on garde les jobs en cours des générations précédentes
 		keepOngoingJobs();
 		mCPO_PANEL.setModelBarres(mGammes);
+		
 		mTecalOrdo.run(gammes);
 
 

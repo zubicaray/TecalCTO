@@ -50,6 +50,9 @@ public class GanttChart extends JFrame {
 	private XYIntervalSeriesCollection mDataset;
 	private HashMap<Integer,ZoneType> mZonesBDD;
 	private Map<Integer, List<AssignedTask>> mTabAssignedJobsSorted;
+	HashMap<Integer,Integer> barreToIndex;
+	HashMap<Integer,Integer> indexToBarreIndex;
+	
 	private XYPlot mPlot;
 	private ChartPanel  mChartPanel;
 	
@@ -75,6 +78,8 @@ public class GanttChart extends JFrame {
 		 int nbZones=mZonesBDD.keySet().size();		 
 		 mZonesAllGamme =  new String[nbZones];
 		 mDataset = new XYIntervalSeriesCollection();
+		 barreToIndex=new HashMap<>();	
+		 indexToBarreIndex=new HashMap<>();	
 		 
 		 buildPlot();
 		 setTimer(new timerGantt());
@@ -168,17 +173,31 @@ public class GanttChart extends JFrame {
 	public void model_diag(TecalOrdo  inTecalOrdo){
 		
 		
-		HashMap<Integer, ArrayList<GammeType> > ficheToZones	= inTecalOrdo.getBarreZonesAll();
+		LinkedHashMap<Integer, ArrayList<GammeType> > ficheToZones	= inTecalOrdo.getBarreZonesAll();
 		LinkedHashMap<Integer,String> ficheToGamme				= inTecalOrdo.getBarreLabels();
 		Map<Integer, List<AssignedTask>> assignedTasksByNumzone	= inTecalOrdo.getAssignedJobs();
+		
+		indexToBarreIndex.clear();
+		barreToIndex.clear();
+		
+		// on doit mettre les barres sous forme d'index comme demandée 
+		// par l'objet XYIntervalSeries qui est un tableau
+		int cptBarre=0;
+		for (Map.Entry<Integer, ArrayList<GammeType> > entry : ficheToZones.entrySet()) {
+			barreToIndex.put(entry.getKey(),cptBarre);
+			indexToBarreIndex.put(cptBarre,entry.getKey());
+			cptBarre++;
+		}
+		 
 		
 		mDataset.removeAllSeries();
 		 		 
 		 
 		 HashMap<Integer,ZoneCumul> zonesCumul=new HashMap<Integer,ZoneCumul>();
 		 
-		 int cpt=0;
+		 
 		 // on crée les labels des zones
+		 int cpt=0;
 		 for (Map.Entry<Integer,ZoneType > entry : mZonesBDD.entrySet()) {
 			 ZoneType zt = entry.getValue();
 			         
@@ -193,16 +212,17 @@ public class GanttChart extends JFrame {
 		
 		 //Create series. Start and end times are used as y intervals, and the room is represented by the x value
 		 XYIntervalSeries[]  series = new XYIntervalSeries[totalZoneCount];
-
-		
 		 
 		 //Integer[] barreJobs= new Integer[ficheToZones.keySet().size()];
+		
 		 for (Map.Entry<Integer, ArrayList<GammeType> > entry : ficheToZones.entrySet()) {
 			String lgamme =entry.getKey()+"-"+ ficheToGamme.get(entry.getKey());	
-			//pb ere
-			series[entry.getKey()-1] = new XYIntervalSeries(lgamme);
-			//barreJobs[entry.getKey()] = entry.getKey();
-			mDataset.addSeries(series[entry.getKey()-1]);
+			int barre=entry.getKey();
+			int index=barreToIndex.get(barre);			
+			series[index] = new XYIntervalSeries(lgamme);
+			
+			mDataset.addSeries(series[index]);
+			
 			
 		 }
 	
@@ -244,7 +264,8 @@ public class GanttChart extends JFrame {
 		 for (Entry<Integer, List<AssignedTask>> lset :  mTabAssignedJobsSorted.entrySet()) {
 			List<AssignedTask> listeTache=lset.getValue();
 			Integer barre=lset.getKey();
-			labelsModel.put(barre,new String[listeTache.size()]);
+			int index=barreToIndex.get(barre);
+			labelsModel.put(index,new String[listeTache.size()]);
 			//tasksTab.add(new AssignedTask[listeTache.size()]);
 			int cpt1=0;
 		    for(AssignedTask at :listeTache) {	
@@ -263,22 +284,24 @@ public class GanttChart extends JFrame {
 			    double incrementY=0.3;
 			    
 			    
+			    
+			    
 			    if(zonesCumul.containsKey(at.numzone)) {
 			    	//System.out.println("gamme:"+gamme+" "+df.get(at.taskID).codezone+" start:"+at.start+" IdPosteZOneCumul:"+IdPosteZOneCumul); 
 			    	double offset=incrementY*at.IdPosteZoneCumul;
 			    	double incrementSpaceY=0.45;
 			    	//Encode the room as x value. The width of the bar is only 0.6 to leave a small gap. The course starts 0.1 h/6 min after the end of the preceding course.
-				    series[barre-1].add(posteEncours, posteEncours - incrementSpaceY+offset, posteEncours -incrementSpaceY+offset+incrementY, dr[0],dr[0] ,dr[1]);
+				    series[index].add(posteEncours, posteEncours - incrementSpaceY+offset, posteEncours -incrementSpaceY+offset+incrementY, dr[0],dr[0] ,dr[1]);
 				 }
 			   
 			    else {
-			    	 series[barre-1].add(posteEncours,posteEncours - 0.3,posteEncours +0.3, 
+			    	 series[index].add(posteEncours,posteEncours - 0.3,posteEncours +0.3, 
 			    			 dr[0],dr[0] ,dr[1] );
 			    	 
 			    	
 			    }
 		    
-			    labelsModel.get(barre)[cpt1]="start:"+at.start+", durée:"+toMinutes(at.duration)+", fin:"+(at.derive)
+			    labelsModel.get(index)[cpt1]="start:"+at.start+", durée:"+toMinutes(at.duration)+", fin:"+(at.derive)
 			    		+ " dérive: " +(at.derive-dr[1])+", égouttage:"+df.get(at.taskID).egouttage+ ", " +df.get(at.taskID).codezone;
 			    
 			    
@@ -376,8 +399,9 @@ public class GanttChart extends JFrame {
 		 //TODO
 		 //PB -> faire un serie+1 ne suffira pas si les barres en moins sont mal placées dans la lis
 		 public String generateToolTip(XYDataset dataset, int series, int item) {    	
+			 int barre=indexToBarreIndex.get(series);
 			 	//System.out.println("series:"+series+" "+" item:"+item+" val="+labelsModel[series][item]);    	
-			 	return  labelsModel.get(series+1)[item]+ " temps avant sortie :"+ tmpsAvantSortie(mTabAssignedJobsSorted.get(series+1).get(item).derive);
+			 	return  labelsModel.get(series)[item]+ " temps avant sortie :"+ tmpsAvantSortie(mTabAssignedJobsSorted.get(barre).get(item).derive);
 		    }
 		 };
 	     renderer.setSeriesToolTipGenerator(0, ttgen); 

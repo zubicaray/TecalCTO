@@ -20,6 +20,7 @@ import java.util.StringJoiner;
 
 import org.ini4j.Ini;
 import org.ini4j.InvalidFileFormatException;
+import org.tecal.scheduler.CST;
 import org.tecal.scheduler.types.GammeType;
 import org.tecal.scheduler.types.PosteBDD;
 import org.tecal.scheduler.types.PosteProd;
@@ -84,6 +85,10 @@ public class SQL_DATA {
 			String database=ini.get("BDD", "database");
 			String password=ini.get("BDD", "password");
 			String server=ini.get("BDD", "server");
+			String modeCPO_TEXT=ini.get("DIVERS", "TEST");
+			if(modeCPO_TEXT.equals("1")) {
+				CST.TEST=true;
+			}
 			
 			
 			connectionUrl =

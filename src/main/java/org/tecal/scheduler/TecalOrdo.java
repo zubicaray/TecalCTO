@@ -91,14 +91,12 @@ public class TecalOrdo {
 
 	// map de toutes les gammes
 	private HashMap<String, ArrayList<GammeType>> 	mGammes;
-	private HashMap<Integer, ArrayList<GammeType>>	mBarreFutures;
-	private HashMap<Integer, ArrayList<GammeType>>	mBarresAll;
-	private LinkedHashMap<Integer, String> 			mBarreLabels;
-	
+	// geston des barres
+	private HashMap<Integer, ArrayList<GammeType>>	mBarreFutures;	
+	private LinkedHashMap<Integer, ArrayList<GammeType>>	mBarresAll;
+	private LinkedHashMap<Integer, String> 			mBarreLabels;	
 	private ArrayList<Integer> 						mBarresEnCours;
-	public ArrayList<Integer> getBarresEnCours() {
-		return mBarresEnCours;
-	}
+	public ArrayList<Integer> getBarresEnCours() {		return mBarresEnCours;	}
 
 	public void setBarresEnCours(ArrayList<Integer> nouvellesBarresEnCours) {
 		this.mBarresEnCours.addAll(nouvellesBarresEnCours) ;
@@ -186,7 +184,7 @@ public class TecalOrdo {
 	public TecalOrdo(int source) {
 
 		mBarreFutures = new HashMap<>();
-		mBarresAll = new HashMap<>();
+		mBarresAll = new LinkedHashMap<>();
 		mBarreLabels = new LinkedHashMap<>();
 	
 		mBarresEnCours	=new ArrayList<>();
@@ -276,12 +274,29 @@ public class TecalOrdo {
 			int numbarre = entry.getKey();
 			String gamme = entry.getValue();
 			mBarreFutures.put(numbarre, mGammes.get(gamme));
-			//if (!mBarresAll.containsKey(numbarre)) {
-				mBarresAll.put(numbarre, mGammes.get(gamme));
+			
+			
+			if(!mBarreLabels.containsKey(numbarre)) {
 				mBarreLabels.put(numbarre, gamme);
-			//}
+				mBarresAll.put(numbarre, mGammes.get(gamme));
+			}
+		
 
 		}
+		
+		// on enlève les barres précédentes qui ne sont pas en cours et plus à faire (enlevées dans l'IHM)
+		ArrayList<Integer> barresToRemove=new ArrayList<Integer>();
+		for(Integer barre : mBarresAll.keySet()) {			
+			if(!mBarresEnCours.contains(barre) && ! mBarreFutures.containsKey(barre)) {
+				barresToRemove.add(barre);				
+			}
+		}
+		for( int barre:barresToRemove) {
+			mBarreLabels.remove(barre);
+			mBarresAll.remove(barre);
+		}
+		
+		
 
 	}
 
@@ -319,6 +334,7 @@ public class TecalOrdo {
 		// PRECEDENCES
 		// --------------------------------------------------------------------------------------------
 		jobsPrecedence();
+	
 
 		// --------------------------------------------------------------------------------------------
 		// CONSTRAINTES SUR CHAQUE POSTE
@@ -344,6 +360,9 @@ public class TecalOrdo {
 
 
 		}
+		
+	
+		
 
 		model.addMaxEquality(objVar, ends);
 		model.minimize(objVar);
@@ -843,7 +862,8 @@ public class TecalOrdo {
 
 	}
 
-	public HashMap<Integer, ArrayList<GammeType>> getBarreZonesAll() {
+	public LinkedHashMap<Integer, ArrayList<GammeType>> getBarreZonesAll() {
 		return mBarresAll;
 	}
+	
 }

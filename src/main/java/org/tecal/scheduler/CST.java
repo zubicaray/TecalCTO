@@ -43,6 +43,7 @@ public class CST {
 	public final static String gammesTest[] =test26janvier;
 	
 	public final static int TEMPS_MAX_SOLVEUR=20;
+	public  static boolean TEST=false;
 	
 	//------------------------------------------------------------
 	// -----------------  VITESSE --------------------------------

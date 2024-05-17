@@ -25,7 +25,6 @@ import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -62,7 +61,6 @@ public class CPO_Panel extends JPanel {
 	private JTextArea textArea;
 	private DefaultTableModel mModelGammes;
 	private Integer mNumBarre;
-	private JCheckBox chckbxPrio ;
 
 	@SuppressWarnings("unused")
 	private CPO_IHM mCPO_IHM;
@@ -144,9 +142,6 @@ public class CPO_Panel extends JPanel {
 		btnRun = new JButton("GO");
 		btnRun.setHorizontalAlignment(SwingConstants.LEFT);
 
-		chckbxPrio = new JCheckBox(" prioriser");
-		chckbxPrio.setFont(new Font("Tahoma", Font.PLAIN, 13));
-
 		JButton btnDownButton = new JButton();
 		btnDownButton.setHorizontalAlignment(SwingConstants.CENTER);
 
@@ -178,7 +173,7 @@ public class CPO_Panel extends JPanel {
 							.addGap(18)
 							.addGroup(gl_panelCPO.createParallelGroup(Alignment.TRAILING)
 								.addComponent(btnRun, GroupLayout.PREFERRED_SIZE, 81, GroupLayout.PREFERRED_SIZE)
-								.addComponent(chckbxPrio, GroupLayout.PREFERRED_SIZE, 81, GroupLayout.PREFERRED_SIZE)
+								
 								.addGroup(gl_panelCPO.createSequentialGroup()
 									.addGroup(gl_panelCPO.createParallelGroup(Alignment.TRAILING)
 										.addComponent(btnDownButton, GroupLayout.PREFERRED_SIZE, 31, GroupLayout.PREFERRED_SIZE)
@@ -207,7 +202,7 @@ public class CPO_Panel extends JPanel {
 							.addPreferredGap(ComponentPlacement.RELATED)
 							.addComponent(btnDownButton)
 							.addPreferredGap(ComponentPlacement.UNRELATED)
-							.addComponent(chckbxPrio)
+						
 							.addPreferredGap(ComponentPlacement.RELATED, 158, Short.MAX_VALUE)
 							.addComponent(btnRun)))
 					.addGap(47)
@@ -250,9 +245,9 @@ public class CPO_Panel extends JPanel {
 
 	            @Override
 	            public boolean isCellEditable(int row, int column) {
-	              return column == 2 || column == 3;
+	              return column == 2 || column == 3|| column == 4;
 	            }
-
+	           
 
 	        };
 
@@ -332,12 +327,7 @@ public class CPO_Panel extends JPanel {
 		setLayout(gl_panelCPO);
 	}
 
-	public JCheckBox getChckbxPrio() {
-		return chckbxPrio;
-	}
-	public void setChckbxPrio(JCheckBox chckbxPrio) {
-		this.chckbxPrio = chckbxPrio;
-	}
+	
 	public DefaultTableModel getModelBarres() {
 		return mModelBarres;
 	}
@@ -347,7 +337,7 @@ public class CPO_Panel extends JPanel {
         for (Map.Entry<Integer, String> entry : set.entrySet()) {
         	Integer barre = entry.getKey();
             String value = entry.getValue();
-            Object[] rowO = { barre,value,"normale","normale" };
+            Object[] rowO = { barre,value,"normale","normale",false };
 			if(barre>mNumBarre) mNumBarre=barre;
 			mModelBarres.addRow(rowO);
         }
@@ -370,7 +360,8 @@ public class CPO_Panel extends JPanel {
 					if(mTableBarres.getRowCount()<2) {
 						JOptionPane.showMessageDialog(mCPO_IHM, "Minimum deux barres requises !","Tecal CPO", JOptionPane.ERROR_MESSAGE);
 					}else {
-
+						// TODO
+						// utiliser un objet de classe Barre ave vitesse et prio
 						gammes.clear();
 						for (int count = 0; count < mTableBarres.getRowCount(); count++){
 							gammes.put((int)mTableBarres.getValueAt(count, 0),mTableBarres.getValueAt(count, 1).toString());
@@ -404,6 +395,7 @@ public class CPO_Panel extends JPanel {
 	    columnNames.add("gamme");
 	    columnNames.add("montée");
 	    columnNames.add("desc.");
+	    columnNames.add("prio.");
 
 	    mModelBarres.setColumnIdentifiers(columnNames);
 
@@ -411,6 +403,7 @@ public class CPO_Panel extends JPanel {
         mTableBarres.setModel(mModelBarres);
 
         TableColumn colMontee =mTableBarres.getColumnModel().getColumn(2);
+        
         // créer un ComboBox
         JComboBox<String> cb = new JComboBox<>();
         cb.addItem("lente");
@@ -422,7 +415,11 @@ public class CPO_Panel extends JPanel {
         TableColumn colDescente =mTableBarres.getColumnModel().getColumn(3);
         //définir l'éditeur par défaut
         colDescente.setCellEditor(new DefaultCellEditor(cb));
-
+        
+        
+        TableColumn colPrio =mTableBarres.getColumnModel().getColumn(4);
+        colPrio.setCellEditor(mTableBarres.getDefaultEditor(Boolean.class));
+        colPrio.setCellRenderer(mTableBarres.getDefaultRenderer(Boolean.class));
 
         mTableBarres.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     	TableColumnModel columnModel = mTableBarres.getColumnModel();
@@ -471,7 +468,7 @@ public class CPO_Panel extends JPanel {
     	        if (mouseEvent.getClickCount() == 2 && table.getSelectedRow() != -1) {
     	        	String gamme=table.getModel().getValueAt(row, 0).toString();
 
-    	        	Object[] rowO = {++mNumBarre, gamme,"normale","normale" };
+    	        	Object[] rowO = {++mNumBarre, gamme,"normale","normale",false };
     	        	mModelBarres.addRow(rowO);
 
     	        }
