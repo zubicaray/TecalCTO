@@ -97,7 +97,7 @@ public class CPO_IHM extends JFrame {
 				try {
 					CPO_IHM frame = new CPO_IHM();
 					frame.setTitle("Tecal Ordonnanceur");
-					if(CST.TEST) 
+					if(System.getenv("TEST_CPO") != null && System.getenv("TEST_CPO").equals("1")) 
 						frame.runTest();
 					frame.setVisible(true);
 				} catch (Exception e) {
@@ -128,6 +128,10 @@ public class CPO_IHM extends JFrame {
 
 
 		execute();
+		
+		if(mTecalOrdo.hasSolution()) 
+			tabbedPane.setSelectedIndex(1);
+		
 		setCursor(Cursor.getDefaultCursor());
 
 	}

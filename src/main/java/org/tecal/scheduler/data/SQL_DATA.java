@@ -20,7 +20,6 @@ import java.util.StringJoiner;
 
 import org.ini4j.Ini;
 import org.ini4j.InvalidFileFormatException;
-import org.tecal.scheduler.CST;
 import org.tecal.scheduler.types.GammeType;
 import org.tecal.scheduler.types.PosteBDD;
 import org.tecal.scheduler.types.PosteProd;
@@ -31,9 +30,9 @@ class TempsDeplacement 		extends HashMap<List<Integer>,Integer[]>	{	private stat
 public class SQL_DATA {
 	private Connection mConnection ;
 	private Statement mStatement;
-	
+
 	private  HashMap<Integer,ZoneType>  zones;
-	
+
 	public HashMap<Integer, ZoneType> getZones() {
 		return zones;
 	}
@@ -42,13 +41,13 @@ public class SQL_DATA {
 	}
 	public  ArrayList<Integer>   zonesSecu;
 	public  HashMap<Integer,Integer>  relatedZones;
-	private HashMap<String, ArrayList<GammeType> > gammes;		
+	private HashMap<String, ArrayList<GammeType> > gammes;
 	private HashSet<String> mMissingTimeMovesGammes;
-	static TempsDeplacement  mTempsDeplacement;		
+	static TempsDeplacement  mTempsDeplacement;
 	private   final SimpleDateFormat FMT =
 	            new SimpleDateFormat( "yyyyMMdd" );
 
-	
+
 	public static String quote(String s) {
 	    return new StringBuilder()
 	        .append('\'')
@@ -57,40 +56,37 @@ public class SQL_DATA {
 	        .toString();
 	}
 	public static String toClause(String[] arrayS) {
-		
+
 		StringJoiner joiner = new StringJoiner(",");
-		
-		
+
+
 		for(String s : arrayS) {
 			joiner.add(quote(s));
 		}
 		return joiner.toString();
 	}
 	private static final SQL_DATA instance = new SQL_DATA();
-	
+
 	public static SQL_DATA getInstance() {
 
 		return instance;
 
 	}
-	
+
 	private  SQL_DATA()  {
-		
+
 		String connectionUrl = null;
 		File fileToParse = new File("TecalCPO.ini");
-		
+
 		try {
 			Ini ini = new Ini(fileToParse);
 			String user=ini.get("BDD", "user");
 			String database=ini.get("BDD", "database");
 			String password=ini.get("BDD", "password");
 			String server=ini.get("BDD", "server");
-			String modeCPO_TEXT=ini.get("DIVERS", "TEST");
-			if(modeCPO_TEXT.equals("1")) {
-				CST.TEST=true;
-			}
-			
-			
+
+
+
 			connectionUrl =
 	                "jdbc:sqlserver://"+server+";"
 	                + "database="+database+";"
@@ -99,8 +95,8 @@ public class SQL_DATA {
 	                + "encrypt=true;"
 	                +"integratedSecurity=true;"
 	                + "trustServerCertificate=true;";
-	    
-			
+
+
 		} catch (InvalidFileFormatException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -108,12 +104,12 @@ public class SQL_DATA {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		
-			
-		
-		
-		
+
+
+
+
+
+
 		try {
 			mConnection = DriverManager.getConnection(connectionUrl);
 			mStatement= mConnection.createStatement();
@@ -121,17 +117,17 @@ public class SQL_DATA {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-       
-		
+
+
 		setZones();
 		setZonesSecu();
 		setRelatedZones();
 		setLignesGammes();
 		setTempsDeplacements();
 		setMissingTimeMovesGammes();
-	
+
 	}
-	
+
 
 
 
@@ -139,63 +135,64 @@ public class SQL_DATA {
  * permet de relier par exemple la zone C32 qui fait partie d ela multizone C31->C32
  */
 private void setRelatedZones() {
-	
-	relatedZones = new HashMap<Integer,Integer>();
+
+	relatedZones = new HashMap<>();
 	for(ZoneType  z1: zones.values()) {
 		for(ZoneType  z2: zones.values()) {
-			if(z1.numzone == z2.numzone)
+			if(z1.numzone == z2.numzone) {
 				continue;
-			
+			}
+
 			if( z2.idPosteFin>z2.idPosteDeb &&  // z2 est une multi zone
 				z2.idPosteDeb <= z1.idPosteDeb && z2.idPosteFin >= z1.idPosteFin // z1 est comprise dedans
 			) {
 				relatedZones.put(z1.numzone,z2.numzone);
 			}
-			
+
 		}
-		
+
 	}
 }
 
 
 private  void setZonesSecu() {
-	
-	ResultSet resultSet = null;   
-	zonesSecu = new ArrayList<Integer>();
-	
+
+	ResultSet resultSet = null;
+	zonesSecu = new ArrayList<>();
+
     // Create and execute a SELECT SQL statement.
     String selectSql = "select Z.numzone "
     		+ " from  ZONES Z  where SecuritePonts=1 "
     		+ "order by numzone";
-    
+
     try {
 		resultSet = mStatement.executeQuery(selectSql);
-	
+
 		// Print results from select statement
         while (resultSet.next()) {
-           
+
             zonesSecu.add(resultSet.getInt(1));
-            
+
         }
 	} catch (SQLException e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
 	}
 
-	
+
 }
-	
+
 
 private  void setZones() {
-		
-	ResultSet resultSet = null;        
-	zones = new HashMap<Integer,ZoneType>();
+
+	ResultSet resultSet = null;
+	zones = new HashMap<>();
     // Create and execute a SELECT SQL statement.
     String selectSql = "select Z.numzone,Z.CodeZone, Z.NumDernierPoste-Z.NumPremierPoste+1 as cumul,derive ,"
     		+ "NumPremierPoste,NumDernierPoste"
     		+ " from   "
     		+ "ZONES Z order by numzone";
-    
+
     try {
 		resultSet = mStatement.executeQuery(selectSql);
 		int idzone=0;
@@ -212,16 +209,16 @@ private  void setZones() {
 		e.printStackTrace();
 	}
 
-	
+
 }
-	
+
 
 //TODO
 //appeler deux fois pour le diag de prod
 public HashMap<Integer,PosteBDD> getPostes(String[] listeOF) {
-		
-		ResultSet resultSet = null;        
-		HashMap<Integer,PosteBDD> res = new HashMap<Integer,PosteBDD>();
+
+		ResultSet resultSet = null;
+		HashMap<Integer,PosteBDD> res = new HashMap<>();
 		int cpt=0;
         // Create and execute a SELECT SQL statement.
         String selectSql = "select distinct P.Nomposte +' - ' + P.LibellePoste,P.numposte from   "
@@ -235,7 +232,7 @@ public HashMap<Integer,PosteBDD> getPostes(String[] listeOF) {
         		+ "on P.Numposte=DF.Numposte "
         		+ " where DF.numficheproduction in  ("+toClause(listeOF)+")  "
         		+ "order by P.numposte, P.Nomposte +' - ' + P.LibellePoste";
-        
+
         try {
 			resultSet = mStatement.executeQuery(selectSql);
 			// Print results from select statement
@@ -249,22 +246,22 @@ public HashMap<Integer,PosteBDD> getPostes(String[] listeOF) {
 			e.printStackTrace();
 		}
 
-        
-        
+
+
 		return res;
 	}
 public HashMap<String, ArrayList<GammeType> >  getLignesGammesAll() {
-	
+
 	return gammes;
 }
 
 private void  setLignesGammes() {
-		
-		ResultSet resultSet = null;    
-		
-		
-		
-		gammes  = new HashMap<String, ArrayList<GammeType> >();
+
+		ResultSet resultSet = null;
+
+
+
+		gammes  = new HashMap< >();
         // Create and execute a SELECT SQL statement.
         String selectSql = ""
         		+ "select  "
@@ -282,24 +279,24 @@ private void  setLignesGammes() {
 			// Print results from select statement
 	        while (resultSet.next()) {
 	            //System.out.println("numzone:"+resultSet.getInt(4)+"   "+resultSet.getString(1) + " " + resultSet.getString(2));
-	            
+
 	            int numzone=resultSet.getInt(4);
-	            
-	            GammeType gt=new GammeType(resultSet.getString(1),	          
-		            resultSet.getString(2),	  
-		            resultSet.getInt(3),	            
+
+	            GammeType gt=new GammeType(resultSet.getString(1),
+		            resultSet.getString(2),
+		            resultSet.getInt(3),
 		            numzone,
 		            resultSet.getInt(5),
 		            zones.get(numzone).idzonebdd,
 		            resultSet.getInt(6),
-		           
+
 		            resultSet.getInt(8));
-	            
-	          
+
+
 	            if (!gammes.containsKey(gt.numgamme)) {
-	            	gammes.put(gt.numgamme, new ArrayList<GammeType>());
+	            	gammes.put(gt.numgamme, new ArrayList<>());
 	            }
-	            
+
 	            gammes.get(gt.numgamme).add(gt);
 	        }
 		} catch (SQLException e) {
@@ -307,25 +304,25 @@ private void  setLignesGammes() {
 			e.printStackTrace();
 		}
 
-		
+
 	}
 public  ResultSet getEnteteGammes() {
-	ResultSet resultSet = null;    
-	
-	
-	
+	ResultSet resultSet = null;
+
+
+
     // Create and execute a SELECT SQL statement.
     String selectSql = ""
     		+ "SELECT [NumGamme] as numero"
-    		+ ",[NomGamme] as designation "    	
+    		+ ",[NomGamme] as designation "
     		+ "  FROM [GammesAnodisation] "
     		+ "order by NumGamme "
     		;
     try {
-    	
+
 		resultSet = mStatement.executeQuery(selectSql);
 		// Print results from select statement
-    
+
 	} catch (SQLException e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
@@ -334,11 +331,11 @@ public  ResultSet getEnteteGammes() {
 	return resultSet;
 }
 public void  setMissingTimeMovesGammes() {
-	ResultSet resultSet = null;    
-	mMissingTimeMovesGammes = new HashSet<>();  
-	
-	
-	
+	ResultSet resultSet = null;
+	mMissingTimeMovesGammes = new HashSet<>();
+
+
+
     // Create and execute a SELECT SQL statement.
     String selectSql = "SELECT DISTINCT NumGamme FROM\r\n"
     		+ "(\r\n"
@@ -357,13 +354,13 @@ public void  setMissingTimeMovesGammes() {
     		+ "order by NumGamme "
     		;
     try {
-    	
+
 		resultSet = mStatement.executeQuery(selectSql);
 		 while (resultSet.next()) {
 	            //System.out.println(resultSet.getString(1) + " " + resultSet.getString(2));
 			 mMissingTimeMovesGammes.add(resultSet.getString(1));
 	        }
-    
+
 	} catch (SQLException e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
@@ -373,7 +370,7 @@ public void  setMissingTimeMovesGammes() {
 
 public boolean updateTpsMvts(String of,boolean updateNoNull) {
 	boolean res= false;
-	
+
 	String req="Update  [TempsDeplacements] \r\n"
 			+ "SET normal=T.tps\r\n"
 			+ "FROM \r\n"
@@ -407,12 +404,12 @@ public boolean updateTpsMvts(String of,boolean updateNoNull) {
 	if(!updateNoNull) {
 		req+="where normal=0";
 	}
-	
-		
+
+
 	    try {
 			res = mStatement.execute(req);
 			// Print results from select statement
-	    
+
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -420,14 +417,14 @@ public boolean updateTpsMvts(String of,boolean updateNoNull) {
 		}
 
 	    return res;
-	
+
 }
 
 public ResultSet getTpsMvts() {
-	ResultSet resultSet = null;    
-	
-	
-	
+	ResultSet resultSet = null;
+
+
+
     // Create and execute a SELECT SQL statement.
     String selectSql = "SELECT [depart],Z1.CodeZone\r\n"
     		+ "      ,[arrivee],Z2.CodeZone\r\n"
@@ -439,13 +436,13 @@ public ResultSet getTpsMvts() {
     		+ "  [Zones] Z2\r\n"
     		+ "  WHERE\r\n"
     		+ "  Z1.NumZone=T.depart and Z2.numzone=T.arrivee"
-    	
-    		
+
+
     		;
     try {
 		resultSet = mStatement.executeQuery(selectSql);
 		// Print results from select statement
-    
+
 	} catch (SQLException e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
@@ -453,20 +450,20 @@ public ResultSet getTpsMvts() {
 
 	return resultSet;
 }
-	
+
 
 public ResultSet getVisuProd(java.util.Date inDate) {
-	ResultSet resultSet = null;    
-	
+	ResultSet resultSet = null;
+
 	java.util.Date dt = inDate;
-	Calendar c = Calendar.getInstance(); 
-	c.setTime(dt); 
+	Calendar c = Calendar.getInstance();
+	c.setTime(dt);
 	c.add(Calendar.DATE, 1);
 	dt = c.getTime();
-	
+
 	String deb=toSQLServerFormat(inDate);
 	String fin=toSQLServerFormat(dt);
-	
+
     // Create and execute a SELECT SQL statement.
     String selectSql = "select distinct  DG.numficheproduction as [N° OF], 	DC.NumGammeANodisation as [gamme ],DC.NumBarre as  [barre] \r\n"
     		+ "from   	[DetailsGammesProduction]  DG 	\r\n"
@@ -478,13 +475,13 @@ public ResultSet getVisuProd(java.util.Date inDate) {
     		+ "on   		DC.numficheproduction=DF.numficheproduction \r\n"
     		+ "WHERE		DF.DateEntreePoste BETWEEN   '"+deb+"'  and '"+fin+"'      "
     		+ "order by DG.numficheproduction ,DC.NumBarre"
-    	
-    		
+
+
     		;
     try {
 		resultSet = mStatement.executeQuery(selectSql);
 		// Print results from select statement
-    
+
 	} catch (SQLException e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
@@ -492,19 +489,19 @@ public ResultSet getVisuProd(java.util.Date inDate) {
 
 	return resultSet;
 }
-	
+
 private String toSQLServerFormat(java.util.Date d) {
-	
+
         java.sql.Date       date = new java.sql.Date( d.getTime());
         return  FMT.format( date ) ;
 
-	
+
 }
-	
-	
+
+
 public HashMap<String, String>  getFicheGamme(String[] listeOF) {
-		
-		ResultSet resultSet = null;        
+
+		ResultSet resultSet = null;
 		HashMap<String, String> res = new HashMap<>();
         // Create and execute a SELECT SQL statement.
         String selectSql = "select distinct DF.numficheproduction,NumGammeAnodisation "
@@ -512,7 +509,7 @@ public HashMap<String, String>  getFicheGamme(String[] listeOF) {
         		+ " INNER JOIN   [DetailsFichesProduction] DF "
         		+ "on   "
         		+ "	DC.numficheproduction=DF.numficheproduction  "
-        		
+
         		+" and DF.numficheproduction in ("+toClause(listeOF)+") " ;
         try {
 			resultSet = mStatement.executeQuery(selectSql);
@@ -531,34 +528,34 @@ public HashMap<String, String>  getFicheGamme(String[] listeOF) {
 
 
 public void setTempsDeplacements() {
-	
-	 ResultSet resultSet = null;        
-     
+
+	 ResultSet resultSet = null;
+
 	 mTempsDeplacement = new TempsDeplacement();
-	 
-	 
+
+
      String selectSql = "SELECT [depart]"
      		+ "      ,[arrivee]"
      		+ "      ,[lent]"
      		+ "      ,[normal]"
      		+ "      ,[rapide]"
      		+ "  FROM [TempsDeplacements]";
-     
+
      try {
 			resultSet = mStatement.executeQuery(selectSql);
 			// Print results from select statement
 	        while (resultSet.next()) {
-	        
+
 	            int depart=resultSet.getInt(1);
 	            int arrivee=resultSet.getInt(2);
 	            int lent=resultSet.getInt(3);
 	            int normal=resultSet.getInt(4);
 	            int rapide=resultSet.getInt(5);
-	            
+
 	            List<Integer> key=Arrays.asList(depart, arrivee);
 	            Integer values[]= {lent,normal,rapide};
 	            mTempsDeplacement.put(key,values);
-	            
+
 	        }
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -566,19 +563,19 @@ public void setTempsDeplacements() {
 		}
 
 
-	
+
 }
     // Connect to your database.
     // Replace server name, username, and password with your credentials
     public  HashMap <String, LinkedHashMap<Integer,PosteProd> > getTempsAuPostes(String[] listeOF,Date ds) {
-        
 
-        ResultSet resultSet = null;        
-        
-        HashMap <String, LinkedHashMap<Integer,PosteProd> >finalArray = new HashMap <String, LinkedHashMap<Integer,PosteProd>>();
+
+        ResultSet resultSet = null;
+
+        HashMap <String, LinkedHashMap<Integer,PosteProd> >finalArray = new HashMap <>();
 
         HashMap<Integer,PosteBDD> postes= getPostes(listeOF);
-        
+
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd");
         String format = formatter.format(ds);
 
@@ -586,7 +583,7 @@ public void setTempsDeplacements() {
          * tri par DF.Numposte,DG.NumLigne
          * car c l'ordre d'affichage des cases de la gamme dans jfreechart
          */
-        
+
         String selectSql = "select DG.numficheproduction,P.Nomposte +' - ' + P.LibellePoste,   "
         		+ "DATEDIFF(SECOND, DATEADD(DAY, DATEDIFF(DAY, 0, '"+format+"'), 0),DF.DateEntreePoste), "
         		+ "DATEDIFF(SECOND, DATEADD(DAY, DATEDIFF(DAY, 0, '"+format+"'), 0),DF.DateSortiePoste)	,DF.NumLigne, DF.Numposte  from   "
@@ -598,9 +595,9 @@ public void setTempsDeplacements() {
         		+ " "
         		+ "INNER JOIN POSTES P "
         		+ "on P.Numposte=DF.Numposte "
-        		+ " and DF.numficheproduction in ("+toClause(listeOF)+") " 
+        		+ " and DF.numficheproduction in ("+toClause(listeOF)+") "
         		+ "  order by DG.numficheproduction, DF.Numposte,DG.NumLigne";
-        
+
         try {
 			resultSet = mStatement.executeQuery(selectSql);
 			// Print results from select statement
@@ -611,18 +608,18 @@ public void setTempsDeplacements() {
 	            String Nomposte=resultSet.getString(2);
 	            int numligne=resultSet.getInt(5);
 	            int numposte=resultSet.getInt(6);
-	            
+
 	            if (!finalArray.containsKey(fiche)) {
-	            	finalArray.put(fiche, new  LinkedHashMap<Integer,PosteProd> ());
+	            	finalArray.put(fiche, new  LinkedHashMap<> ());
 	            }
 	            int[] arrMinutes=   {resultSet.getInt(3),resultSet.getInt(4)};
-	            
+
 	            int numligneBDD=postes.get(numposte).numligne;
 	            // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	            //numligne: numéro de ligne de prod ( permet de différencier deux C06 différents pour une même gamme
 	            //numligneBDD id sans trou de la game Postes
 	            finalArray.get(fiche).put( numligne,new PosteProd(numposte,numligneBDD,Nomposte, arrMinutes[0],arrMinutes[1]));
-	            
+
 	        }
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -630,14 +627,14 @@ public void setTempsDeplacements() {
 		}
 
       return finalArray;
-       
+
     }
 
 
     static TempsDeplacement getmTempsDeplacement() {
 		return mTempsDeplacement;
 	}
-    public  int getTempsDeplacement(int dep,int arr,int vitesse) {    	
+    public  int getTempsDeplacement(int dep,int arr,int vitesse) {
 		return mTempsDeplacement.get(Arrays.asList(dep, arr))[vitesse];
 	}
 

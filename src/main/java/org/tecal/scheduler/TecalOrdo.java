@@ -382,35 +382,11 @@ public class TecalOrdo {
 			else {
 				endByBarreIdNonPrio.put(job.mBarreId,task.getFin());
 			}
-						
-			
 			
 			
 		}
 		
-		for( IntVar prio:endByBarreIdPrio.values()) {
-		
-			// la fin de la barre prio est inférieure à celles des non prio
-			for( IntVar v :endByBarreIdNonPrio.values()) {
-				model.addLessThan(prio,v);
-			}			
-		
-		}
-		Iterator<Integer> it = mBarresPrioritaires.iterator(); 
-		 
-	     
-        while (it.hasNext()) { 
-  
-            // Print HashSet values 
-           int barre=it.next(); 
-           if(it.hasNext()) {
-        	   int next=it.next(); 
-               model.addLessThan(endByBarreIdPrio.get(barre),endByBarreIdPrio.get(next));
-               
-           }
-          
-          // System.out.print(b+" -> "+next); 
-        } 
+		priorisationBarres(endByBarreIdNonPrio, endByBarreIdPrio); 
 		
 		
 	
@@ -502,6 +478,33 @@ public class TecalOrdo {
 		outputMsg.append(String.format("  conflits: %d%n", solver.numConflicts()));
 		outputMsg.append(String.format("  branches : %d%n", solver.numBranches()));
 		outputMsg.append(String.format("  temps %f s%n", solver.wallTime()));
+	}
+
+	private void priorisationBarres(HashMap<Integer, IntVar> endByBarreIdNonPrio,
+			HashMap<Integer, IntVar> endByBarreIdPrio) {
+		for( IntVar prio:endByBarreIdPrio.values()) {
+		
+			// la fin de la barre prio est inférieure à celles des non prio
+			for( IntVar v :endByBarreIdNonPrio.values()) {
+				model.addLessThan(prio,v);
+			}			
+		
+		}
+		Iterator<Integer> it = mBarresPrioritaires.iterator(); 
+		 
+	    //s'il y a lusieurs barres prioritaires il faut respecter l'ordre du LinkedHashSet 
+        while (it.hasNext()) { 
+  
+            // Print HashSet values 
+           int barre=it.next(); 
+           if(it.hasNext()) {
+        	   int next=it.next(); 
+               model.addLessThan(endByBarreIdPrio.get(barre),endByBarreIdPrio.get(next));
+               
+           }
+          
+          // System.out.print(b+" -> "+next); 
+        }
 	}
 
 	private void createAssignedTasks() {

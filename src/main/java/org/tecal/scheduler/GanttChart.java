@@ -81,7 +81,8 @@ public class GanttChart extends JFrame {
 		 barreToIndex=new HashMap<>();	
 		 indexToBarreIndex=new HashMap<>();	
 		 
-		 buildPlot();
+		
+		 mChartPanel=  new ChartPanel(null);
 		 setTimer(new timerGantt());
 		   
 	}
@@ -319,7 +320,7 @@ public class GanttChart extends JFrame {
 	     
 	     	   
 	     
-	    
+		 buildPlot();
 	
 	}
 
@@ -426,7 +427,8 @@ public class GanttChart extends JFrame {
 	     mPlot.getDomainAxis().setTickLabelPaint(Color.WHITE);
 	     mPlot.getDomainAxis().setLabelPaint(Color.WHITE);
 	     
-	     mChartPanel=  new ChartPanel(j);
+	     //mChartPanel=  new ChartPanel(j);
+	     mChartPanel.setChart(j);
 	     
 	}
 

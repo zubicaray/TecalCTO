@@ -45,7 +45,6 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
-import org.tecal.scheduler.TecalOrdo;
 import org.tecal.scheduler.data.SQL_DATA;
 import org.tecal.scheduler.types.Barre;
 
@@ -78,7 +77,7 @@ public class CPO_Panel extends JPanel {
 	}
 	public CPO_Panel( ) {
 
-		
+
 		mNumBarre=0;
 		createPanelCPO();
 
@@ -91,7 +90,7 @@ public class CPO_Panel extends JPanel {
 
 	private void createPanelCPO() {
 		JScrollPane scrollPaneMsg = new JScrollPane();
-		
+
 		// créer un ComboBox
         vitesseCombo = new JComboBox<>();
         vitesseCombo.addItem("lente");
@@ -103,11 +102,11 @@ public class CPO_Panel extends JPanel {
 
 		JTextField textFiltre = new JTextField();
 		textFiltre.setColumns(10);
-		
+
 		JButton btnReload  = new JButton();
 		setIconButton(this,btnReload,"icons8-update-16.png");
-		
-		
+
+
 		btnReload.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -120,7 +119,7 @@ public class CPO_Panel extends JPanel {
 
 				}
 			});
-		
+
 
 		textFiltre.addKeyListener(new KeyAdapter() {
 			@Override
@@ -130,7 +129,7 @@ public class CPO_Panel extends JPanel {
 
 			    mTableGammes.setRowSorter(sorter);
 			    mTableGammes.repaint();
-			  
+
 			}
 		});
 		textFiltre.addActionListener(new ActionListener() {
@@ -173,7 +172,7 @@ public class CPO_Panel extends JPanel {
 									.addGap(70)
 									.addComponent(btnReload, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 										)
-									
+
 								.addComponent(scrollPane_gamme, GroupLayout.DEFAULT_SIZE, 364, Short.MAX_VALUE))
 							.addGap(18)
 							.addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING, false)
@@ -182,7 +181,7 @@ public class CPO_Panel extends JPanel {
 							.addGap(18)
 							.addGroup(gl_panelCPO.createParallelGroup(Alignment.TRAILING)
 								.addComponent(btnRun, GroupLayout.PREFERRED_SIZE, 81, GroupLayout.PREFERRED_SIZE)
-								
+
 								.addGroup(gl_panelCPO.createSequentialGroup()
 									.addGroup(gl_panelCPO.createParallelGroup(Alignment.TRAILING)
 										.addComponent(btnDownButton, GroupLayout.PREFERRED_SIZE, 31, GroupLayout.PREFERRED_SIZE)
@@ -211,7 +210,7 @@ public class CPO_Panel extends JPanel {
 							.addPreferredGap(ComponentPlacement.RELATED)
 							.addComponent(btnDownButton)
 							.addPreferredGap(ComponentPlacement.UNRELATED)
-						
+
 							.addPreferredGap(ComponentPlacement.RELATED, 158, Short.MAX_VALUE)
 							.addComponent(btnRun)))
 					.addGap(47)
@@ -256,7 +255,7 @@ public class CPO_Panel extends JPanel {
 	            public boolean isCellEditable(int row, int column) {
 	              return column == 2 || column == 3|| column == 4;
 	            }
-	           
+
 
 	        };
 
@@ -305,16 +304,16 @@ public class CPO_Panel extends JPanel {
 	   	                if (isRowSelected(row)) {
 	   	                     c.setBackground(Color.black);
 	   	                     c.setForeground(Color.white);
-	   	                 } 
+	   	                 }
 	                    return c;
 	                }
 
-	       	};;
+	       	};
 
-	     	
+
 
 			buildTableModelGamme();
-					
+
 	     	mTableGammes.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
 
 
@@ -331,12 +330,12 @@ public class CPO_Panel extends JPanel {
 
 
 	    setActionListener();
-	    mTableGammes.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);	
+	    mTableGammes.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		scrollPane_gamme.setViewportView(mTableGammes);
 		setLayout(gl_panelCPO);
 	}
 
-	
+
 	public DefaultTableModel getModelBarres() {
 		return mModelBarres;
 	}
@@ -344,11 +343,13 @@ public class CPO_Panel extends JPanel {
 		mModelBarres.setRowCount(0);
 		mNumBarre=0;
         for (Map.Entry<Integer, Barre> entry : set.entrySet()) {
-        	
+
         	Barre b=  entry.getValue();
-           
+
             Object[] rowO = { b.idbarre,b.gamme,"normale","normale",b.prioritaire };
-			if(b.idbarre>mNumBarre) mNumBarre=b.idbarre;
+			if(b.idbarre>mNumBarre) {
+				mNumBarre=b.idbarre;
+			}
 			mModelBarres.addRow(rowO);
         }
 
@@ -368,24 +369,24 @@ public class CPO_Panel extends JPanel {
 
 					LinkedHashMap<Integer,String> gammes=new LinkedHashMap <>();
 					LinkedHashMap<Integer,Barre> barres=new LinkedHashMap <>();
-					
+
 					if(mTableBarres.getRowCount()<2) {
 						JOptionPane.showMessageDialog(mCPO_IHM, "Minimum deux barres requises !","Tecal CPO", JOptionPane.ERROR_MESSAGE);
 					}else {
-					
+
 						// utiliser un objet de classe Barre ave vitesse et prio
 						gammes.clear();
 						for (int count = 0; count < mTableBarres.getRowCount(); count++){
 							int idbarre=(int) mTableBarres.getValueAt(count, 0);
 							String gamme=mTableBarres.getValueAt(count, 1).toString();
-							
+
 							vitesseCombo.setSelectedItem( mTableBarres.getValueAt(count, 2) );
 							int indexMontee= vitesseCombo.getSelectedIndex();
-							
-							
+
+
 							vitesseCombo.setSelectedItem( mTableBarres.getValueAt(count, 3) );
 							int indexDesc = vitesseCombo.getSelectedIndex();
-							
+
 							boolean prio=(Boolean) mTableBarres.getValueAt(count, 4);
 							gammes.put(idbarre,gamme);
 							barres.put(idbarre,new Barre(idbarre,gamme,indexMontee,indexDesc,prio));
@@ -394,7 +395,7 @@ public class CPO_Panel extends JPanel {
 
 						mCPO_IHM.run(barres);
 
-						
+
 
 
 
@@ -427,16 +428,16 @@ public class CPO_Panel extends JPanel {
         mTableBarres.setModel(mModelBarres);
 
         TableColumn colMontee =mTableBarres.getColumnModel().getColumn(2);
-        
-        
+
+
         //définir l'éditeur par défaut
         colMontee.setCellEditor(new DefaultCellEditor(vitesseCombo));
 
         TableColumn colDescente =mTableBarres.getColumnModel().getColumn(3);
         //définir l'éditeur par défaut
         colDescente.setCellEditor(new DefaultCellEditor(vitesseCombo));
-        
-        
+
+
         TableColumn colPrio =mTableBarres.getColumnModel().getColumn(4);
         colPrio.setCellEditor(mTableBarres.getDefaultEditor(Boolean.class));
         colPrio.setCellRenderer(mTableBarres.getDefaultRenderer(Boolean.class));
@@ -455,9 +456,11 @@ public class CPO_Panel extends JPanel {
     	        Point point = mouseEvent.getPoint();
     	        int row = table.rowAtPoint(point);
     	        if (mouseEvent.getClickCount() == 2 && table.getSelectedRow() != -1) {
-    	        	if(model.getDataVector().get(row).get(0)==mNumBarre) mNumBarre--;
+    	        	if(model.getDataVector().get(row).get(0)==mNumBarre) {
+						mNumBarre--;
+					}
     	        	model.removeRow(row);
-    	        	
+
     	        }
     	    }
     	});
@@ -494,30 +497,30 @@ public class CPO_Panel extends JPanel {
     	        }
     	    }
     	});
-        
+
         mTableGammes.setDefaultRenderer(Object.class, new DefaultTableCellRenderer(){
-            
+
 			private static final long serialVersionUID = 1L;
 
 			@Override
             public Component getTableCellRendererComponent(JTable table,
                     Object value, boolean isSelected, boolean hasFocus, int row, int col) {
                 super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
-                
-                int modelIndex = table.convertRowIndexToModel(row)      ;         
-                
+
+                int modelIndex = table.convertRowIndexToModel(row)      ;
+
                 String gamme = (String)table.getModel().getValueAt(modelIndex, 0);
-              
-                
+
+
                 if (SQL_DATA.getInstance().getMissingTimeMovesGammes().contains(gamme)) {
                     setBackground(Color.RED);
                     setForeground(Color.BLACK);
                 } else {
                     setBackground(table.getBackground());
                     setForeground(table.getForeground());
-                }       
+                }
                 return this;
-            }   
+            }
         });
 
 
