@@ -41,6 +41,7 @@ import org.tecal.scheduler.GanttChart.timerGantt;
 import org.tecal.scheduler.TecalOrdo;
 import org.tecal.scheduler.data.SQL_DATA;
 import org.tecal.scheduler.types.AssignedTask;
+import org.tecal.scheduler.types.Barre;
 
 
 public class CPO_IHM extends JFrame {
@@ -62,13 +63,13 @@ public class CPO_IHM extends JFrame {
 	private timerGantt mTimer;
 	
 
-	private LinkedHashMap<Integer,String> mGammes;
+	private LinkedHashMap<Integer,Barre> mBarres;
 
-	public LinkedHashMap<Integer, String> getGammes() {
-		return mGammes;
+	public LinkedHashMap<Integer,Barre> getBarres() {
+		return mBarres;
 	}
-	public void setGammes(LinkedHashMap<Integer, String> mGammes) {
-		this.mGammes = mGammes;
+	public void setBarres(LinkedHashMap<Integer,Barre> mBarres) {
+		this.mBarres = mBarres;
 	}
 	public TecalOrdo getTecalOrdo() {
 		return mTecalOrdo;
@@ -108,22 +109,22 @@ public class CPO_IHM extends JFrame {
 
 	public void runTest () {
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-		mGammes=mTecalOrdo.runTest();
-		mCPO_PANEL.setModelBarres(mGammes);
+		mBarres=mTecalOrdo.runTest();
+		mCPO_PANEL.setModelBarres(mBarres);
 		execute();
 		setCursor(Cursor.getDefaultCursor());
 	}
 
-	public void run (LinkedHashMap<Integer,String> gammes) {
+	public void run (LinkedHashMap<Integer,Barre> barres) {
 
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-		mGammes=gammes;
+		mBarres=barres;
 
 		// on garde les jobs en cours des générations précédentes
 		keepOngoingJobs();
-		mCPO_PANEL.setModelBarres(mGammes);
+		mCPO_PANEL.setModelBarres(mBarres);
 		
-		mTecalOrdo.run(gammes);
+		mTecalOrdo.run(mBarres);
 
 
 		execute();
@@ -155,7 +156,7 @@ public class CPO_IHM extends JFrame {
 		mTecalOrdo.setBarresEnCours(barresToRemove);
 
 		for(Integer barreId:barresToRemove) {
-			mGammes.remove(barreId);
+			mBarres.remove(barreId);
 		}
 	}
 
@@ -381,7 +382,7 @@ public class CPO_IHM extends JFrame {
 				try {
 					mCPO_PANEL.setRessource(rs);
 				} catch (SQLException e1) {
-					// TODO Auto-generated catch block
+					
 					e1.printStackTrace();
 				}
 			}

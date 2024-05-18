@@ -45,7 +45,9 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
+import org.tecal.scheduler.TecalOrdo;
 import org.tecal.scheduler.data.SQL_DATA;
+import org.tecal.scheduler.types.Barre;
 
 
 public class CPO_Panel extends JPanel {
@@ -59,6 +61,7 @@ public class CPO_Panel extends JPanel {
 	private DefaultTableModel mModelBarres;
 	private JButton btnRun;
 	private JTextArea textArea;
+	JComboBox<String> vitesseCombo ;
 	private DefaultTableModel mModelGammes;
 	private Integer mNumBarre;
 
@@ -88,6 +91,12 @@ public class CPO_Panel extends JPanel {
 
 	private void createPanelCPO() {
 		JScrollPane scrollPaneMsg = new JScrollPane();
+		
+		// créer un ComboBox
+        vitesseCombo = new JComboBox<>();
+        vitesseCombo.addItem("lente");
+        vitesseCombo.addItem("normale");
+        vitesseCombo.addItem("rapide");
 
 		JLabel lblGammes = new JLabel("gammes:");
 		lblGammes.setFont(new Font("Tahoma", Font.PLAIN, 13));
@@ -257,7 +266,7 @@ public class CPO_Panel extends JPanel {
 
 
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 		}
 		mTableBarres.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -313,7 +322,7 @@ public class CPO_Panel extends JPanel {
 
 
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 		}
 
@@ -331,14 +340,15 @@ public class CPO_Panel extends JPanel {
 	public DefaultTableModel getModelBarres() {
 		return mModelBarres;
 	}
-	public void setModelBarres(LinkedHashMap<Integer, String> set) {
+	public void setModelBarres(LinkedHashMap<Integer, Barre> set) {
 		mModelBarres.setRowCount(0);
 		mNumBarre=0;
-        for (Map.Entry<Integer, String> entry : set.entrySet()) {
-        	Integer barre = entry.getKey();
-            String value = entry.getValue();
-            Object[] rowO = { barre,value,"normale","normale",false };
-			if(barre>mNumBarre) mNumBarre=barre;
+        for (Map.Entry<Integer, Barre> entry : set.entrySet()) {
+        	
+        	Barre b=  entry.getValue();
+           
+            Object[] rowO = { b.idbarre,b.gamme,"normale","normale",b.prioritaire };
+			if(b.idbarre>mNumBarre) mNumBarre=b.idbarre;
 			mModelBarres.addRow(rowO);
         }
 
@@ -357,18 +367,32 @@ public class CPO_Panel extends JPanel {
 				public void actionPerformed(ActionEvent e) {
 
 					LinkedHashMap<Integer,String> gammes=new LinkedHashMap <>();
+					LinkedHashMap<Integer,Barre> barres=new LinkedHashMap <>();
+					
 					if(mTableBarres.getRowCount()<2) {
 						JOptionPane.showMessageDialog(mCPO_IHM, "Minimum deux barres requises !","Tecal CPO", JOptionPane.ERROR_MESSAGE);
 					}else {
-						// TODO
+					
 						// utiliser un objet de classe Barre ave vitesse et prio
 						gammes.clear();
 						for (int count = 0; count < mTableBarres.getRowCount(); count++){
-							gammes.put((int)mTableBarres.getValueAt(count, 0),mTableBarres.getValueAt(count, 1).toString());
+							int idbarre=(int) mTableBarres.getValueAt(count, 0);
+							String gamme=mTableBarres.getValueAt(count, 1).toString();
+							
+							vitesseCombo.setSelectedItem( mTableBarres.getValueAt(count, 2) );
+							int indexMontee= vitesseCombo.getSelectedIndex();
+							
+							
+							vitesseCombo.setSelectedItem( mTableBarres.getValueAt(count, 3) );
+							int indexDesc = vitesseCombo.getSelectedIndex();
+							
+							boolean prio=(Boolean) mTableBarres.getValueAt(count, 4);
+							gammes.put(idbarre,gamme);
+							barres.put(idbarre,new Barre(idbarre,gamme,indexMontee,indexDesc,prio));
 						}
 
 
-						mCPO_IHM.run(gammes);
+						mCPO_IHM.run(barres);
 
 						
 
@@ -404,17 +428,13 @@ public class CPO_Panel extends JPanel {
 
         TableColumn colMontee =mTableBarres.getColumnModel().getColumn(2);
         
-        // créer un ComboBox
-        JComboBox<String> cb = new JComboBox<>();
-        cb.addItem("lente");
-        cb.addItem("normale");
-        cb.addItem("rapide");
+        
         //définir l'éditeur par défaut
-        colMontee.setCellEditor(new DefaultCellEditor(cb));
+        colMontee.setCellEditor(new DefaultCellEditor(vitesseCombo));
 
         TableColumn colDescente =mTableBarres.getColumnModel().getColumn(3);
         //définir l'éditeur par défaut
-        colDescente.setCellEditor(new DefaultCellEditor(cb));
+        colDescente.setCellEditor(new DefaultCellEditor(vitesseCombo));
         
         
         TableColumn colPrio =mTableBarres.getColumnModel().getColumn(4);

@@ -8,17 +8,21 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import org.jfree.ui.RefineryUtilities;
 import org.tecal.scheduler.data.CSV_DATA;
 import org.tecal.scheduler.data.SQL_DATA;
 import org.tecal.scheduler.types.AssignedTask;
+import org.tecal.scheduler.types.Barre;
 import org.tecal.scheduler.types.GammeType;
 import org.tecal.scheduler.types.ZoneType;
 
@@ -75,6 +79,8 @@ class SortTasks implements Comparator<AssignedTask> {
 	}
 }
 
+
+
 class Task {
 	int numzone;
 	int duration;
@@ -92,10 +98,13 @@ public class TecalOrdo {
 	// map de toutes les gammes
 	private HashMap<String, ArrayList<GammeType>> 	mGammes;
 	// geston des barres
-	private HashMap<Integer, ArrayList<GammeType>>	mBarreFutures;	
+	private HashMap<Integer, ArrayList<GammeType>>			mBarreFutures;	
 	private LinkedHashMap<Integer, ArrayList<GammeType>>	mBarresAll;
-	private LinkedHashMap<Integer, String> 			mBarreLabels;	
-	private ArrayList<Integer> 						mBarresEnCours;
+	private LinkedHashMap<Integer, String> 					mBarreLabels;	
+	private ArrayList<Integer> 								mBarresEnCours;
+	private LinkedHashSet<Integer> 							mBarresPrioritaires;
+	
+	
 	public ArrayList<Integer> getBarresEnCours() {		return mBarresEnCours;	}
 
 	public void setBarresEnCours(ArrayList<Integer> nouvellesBarresEnCours) {
@@ -188,6 +197,7 @@ public class TecalOrdo {
 		mBarreLabels = new LinkedHashMap<>();
 	
 		mBarresEnCours	=new ArrayList<>();
+		mBarresPrioritaires=new LinkedHashSet<>();
 
 		assignedTasksByNumzone = new HashMap<>();
 		assignedTasksByBarreId = new LinkedHashMap<>();
@@ -232,8 +242,9 @@ public class TecalOrdo {
 			try {
 				csv = new CSV_DATA();
 			} catch (IOException | CsvException | URISyntaxException e) {
-				// TODO Auto-generated catch block
+				
 				e.printStackTrace();
+				JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
 			}
 			mGammes = csv.getLignesGammesAll();
 			zonesBDD = csv.getZones();
@@ -244,17 +255,20 @@ public class TecalOrdo {
 
 	}
 
-	public LinkedHashMap<Integer, String> setBarresTest() {
+	public LinkedHashMap<Integer, Barre> setBarresTest() {
 
+		LinkedHashMap<Integer, Barre> res= new LinkedHashMap<>();
 		int i = 0;
 		for (String gamme : CST.gammesTest) {
 			i++;
-			mBarreFutures.put(i, mGammes.get(gamme));
-			mBarresAll.put(i, mGammes.get(gamme));
+			Barre b=new Barre(i,gamme,0,0,false);
+			mBarreFutures.put(i, mGammes.get(b.gamme));
+			mBarresAll.put(i, mGammes.get(b.gamme));
 			mBarreLabels.put(i, gamme);
+			res.put(i,b);
 		}
 
-		return mBarreLabels;
+		return res;
 	}
 
 	public Map<Integer, List<AssignedTask>> getAssignedJobs() {
@@ -265,20 +279,24 @@ public class TecalOrdo {
 		return mBarreFutures;
 	}
 
-	public void setBarres(LinkedHashMap<Integer, String> inBarres) {
+	public void setBarres(LinkedHashMap<Integer, Barre> inBarres) {
 
 		// mBarreLabels=inBarres;
 		mBarreFutures.clear();
-		for (Map.Entry<Integer, String> entry : inBarres.entrySet()) {
+		mBarresPrioritaires.clear();
+		for (Map.Entry<Integer, Barre> entry : inBarres.entrySet()) {
 
 			int numbarre = entry.getKey();
-			String gamme = entry.getValue();
-			mBarreFutures.put(numbarre, mGammes.get(gamme));
+			Barre barre = entry.getValue();
+			
+			if(barre.prioritaire) mBarresPrioritaires.add(barre.idbarre);
+
+			mBarreFutures.put(numbarre, mGammes.get(barre.gamme));
 			
 			
 			if(!mBarreLabels.containsKey(numbarre)) {
-				mBarreLabels.put(numbarre, gamme);
-				mBarresAll.put(numbarre, mGammes.get(gamme));
+				mBarreLabels.put(numbarre, barre.gamme);
+				mBarresAll.put(numbarre, mGammes.get(barre.gamme));
 			}
 		
 
@@ -286,9 +304,9 @@ public class TecalOrdo {
 		
 		// on enlève les barres précédentes qui ne sont pas en cours et plus à faire (enlevées dans l'IHM)
 		ArrayList<Integer> barresToRemove=new ArrayList<Integer>();
-		for(Integer barre : mBarresAll.keySet()) {			
-			if(!mBarresEnCours.contains(barre) && ! mBarreFutures.containsKey(barre)) {
-				barresToRemove.add(barre);				
+		for(Integer idbarre : mBarresAll.keySet()) {			
+			if(!mBarresEnCours.contains(idbarre) && ! mBarreFutures.containsKey(idbarre)) {
+				barresToRemove.add(idbarre);				
 			}
 		}
 		for( int barre:barresToRemove) {
@@ -300,9 +318,9 @@ public class TecalOrdo {
 
 	}
 
-	public LinkedHashMap<Integer, String> runTest() {
+	public LinkedHashMap<Integer, Barre> runTest() {
 
-		LinkedHashMap<Integer, String> res = setBarresTest();
+		LinkedHashMap<Integer, Barre> res = setBarresTest();
 		int[] params = { CST.TEMPS_ZONE_OVERLAP_MIN, CST.TEMPS_MVT_PONT_MIN_JOB, CST.GAP_ZONE_NOOVERLAP,
 				CST.TEMPS_MVT_PONT, CST.TEMPS_ANO_ENTRE_P1_P2, 8// CST.TEMPS_MAX_SOLVEUR
 		};
@@ -313,7 +331,7 @@ public class TecalOrdo {
 		return res;
 	}
 
-	public void run(LinkedHashMap<Integer, String> inBarres) {
+	public void run(LinkedHashMap<Integer, Barre> inBarres) {
 
 
 
@@ -333,9 +351,7 @@ public class TecalOrdo {
 		// --------------------------------------------------------------------------------------------
 		// PRECEDENCES
 		// --------------------------------------------------------------------------------------------
-		jobsPrecedence();
-	
-
+		jobsPrecedence();	
 		// --------------------------------------------------------------------------------------------
 		// CONSTRAINTES SUR CHAQUE POSTE
 		// --------------------------------------------------------------------------------------------
@@ -350,16 +366,52 @@ public class TecalOrdo {
 		// Makespan objective.
 		IntVar objVar = model.newIntVar(0, horizon, "makespan");
 		List<IntVar> ends = new ArrayList<>();
-		//TODO
+		HashMap<Integer,IntVar> endByBarreIdNonPrio	= new HashMap<> ();
+		HashMap<Integer,IntVar> endByBarreIdPrio	= new HashMap<> ();
+
 		for (JobType job: mJobsFuturs.values()) {
 
 			int last=job.tasksJob.size()-1;
 			TaskOrdo task=job.mTaskOrdoList.get(last);
-
 			ends.add(task.getFin());
-
-
+			
+			if(mBarresPrioritaires.contains(job.mBarreId))
+			{
+				endByBarreIdPrio.put(job.mBarreId,task.getFin());
+			}
+			else {
+				endByBarreIdNonPrio.put(job.mBarreId,task.getFin());
+			}
+						
+			
+			
+			
 		}
+		
+		for( IntVar prio:endByBarreIdPrio.values()) {
+		
+			// la fin de la barre prio est inférieure à celles des non prio
+			for( IntVar v :endByBarreIdNonPrio.values()) {
+				model.addLessThan(prio,v);
+			}			
+		
+		}
+		Iterator<Integer> it = mBarresPrioritaires.iterator(); 
+		 
+	     
+        while (it.hasNext()) { 
+  
+            // Print HashSet values 
+           int barre=it.next(); 
+           if(it.hasNext()) {
+        	   int next=it.next(); 
+               model.addLessThan(endByBarreIdPrio.get(barre),endByBarreIdPrio.get(next));
+               
+           }
+          
+          // System.out.print(b+" -> "+next); 
+        } 
+		
 		
 	
 		
@@ -654,9 +706,7 @@ public class TecalOrdo {
 					LinearExpr debInter = interval.getStartExpr();
 					LinearExpr finInter = interval.getEndExpr();
 
-					// TODO
-					// !!!
-					// comprendre pourquoi ca bloque ici quand les params changent
+					
 					IntervalVar deb = getNoOverlapZone(model, debInter, mTEMPS_ANO_ENTRE_P1_P2, mTEMPS_ANO_ENTRE_P1_P2);
 					IntervalVar fin = getNoOverlapZone(model, finInter, mTEMPS_ANO_ENTRE_P1_P2, mTEMPS_ANO_ENTRE_P1_P2);
 

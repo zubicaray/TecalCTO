@@ -396,8 +396,7 @@ public class GanttChart extends JFrame {
 
 		     
 		 private static final long serialVersionUID = 1L;
-		 //TODO
-		 //PB -> faire un serie+1 ne suffira pas si les barres en moins sont mal placées dans la lis
+		 
 		 public String generateToolTip(XYDataset dataset, int series, int item) {    	
 			 int barre=indexToBarreIndex.get(series);
 			 	//System.out.println("series:"+series+" "+" item:"+item+" val="+labelsModel[series][item]);    	

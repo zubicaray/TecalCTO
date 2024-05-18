@@ -67,6 +67,7 @@ import org.jfree.ui.RefineryUtilities;
 import org.tecal.scheduler.CST;
 import org.tecal.scheduler.GanttChart;
 import org.tecal.scheduler.data.SQL_DATA;
+import org.tecal.scheduler.types.Barre;
 
 import com.formdev.flatlaf.FlatDarkLaf;
 
@@ -243,7 +244,7 @@ public class TecalGUI {
 
 
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 		} // usable in Java 9+
 
@@ -275,7 +276,7 @@ public class TecalGUI {
 				try {
 					buildTableModelVisuProd();
 				} catch (SQLException e1) {
-					// TODO Auto-generated catch block
+					JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
 					e1.printStackTrace();
 				}
 			}
@@ -351,9 +352,16 @@ public class TecalGUI {
 				 }
 
 
-				 LinkedHashMap<Integer,String> gammes=new LinkedHashMap <>();
+				 LinkedHashMap<Integer,Barre> barres=new LinkedHashMap <>();
 				 for(int i=0;i<sel.length;i++) {
-					 gammes.put(i+1,tableOF.getModel().getValueAt(sel[i], 1).toString());
+					 Barre b=new Barre( 
+							 i+1,
+							 tableOF.getModel().getValueAt(sel[i], 1).toString(),
+							 0,
+							 0,
+							 false);
+					 
+					 barres.put(b.idbarre,b);
 				 }
 
 
@@ -374,7 +382,7 @@ public class TecalGUI {
 				mCPO_IHM=new CPO_IHM(params);
 				frmTecalOrdonnanceur.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				//mTecalOrdo.run(mCPO_IHM);
-				mCPO_IHM.run(gammes);
+				mCPO_IHM.run(barres);
 				frmTecalOrdonnanceur.setCursor(Cursor.getDefaultCursor());
 				mCPO_IHM.setVisible(true);
 
@@ -548,7 +556,7 @@ public class TecalGUI {
 		 try {
 			buildTableModelMvts();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 		}
 		 //scrollMvtsTable.add(tableTpsMvts);

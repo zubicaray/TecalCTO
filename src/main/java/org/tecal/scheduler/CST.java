@@ -5,6 +5,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import javax.swing.JOptionPane;
+
 public class CST {
 	
 	
@@ -14,8 +16,9 @@ public class CST {
 		try {
 			return formatter.parse("s");
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
+			
 			e.printStackTrace();
+			JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
 		}
 		return null;
 	}
