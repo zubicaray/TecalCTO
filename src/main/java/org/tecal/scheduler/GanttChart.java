@@ -27,8 +27,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import javax.swing.JFrame;
 
@@ -44,7 +42,7 @@ public class GanttChart extends JFrame {
 	private static final long serialVersionUID = 1L;
 
 	
-	private timerGantt mTimer;
+	
 	@SuppressWarnings("unused")
 	private String[] mZonesAllGamme;
 	private XYIntervalSeriesCollection mDataset;
@@ -52,6 +50,8 @@ public class GanttChart extends JFrame {
 	private Map<Integer, List<AssignedTask>> mTabAssignedJobsSorted;
 	HashMap<Integer,Integer> barreToIndex;
 	HashMap<Integer,Integer> indexToBarreIndex;
+	
+	private long mLowerBound;
 	
 	private XYPlot mPlot;
 	private ChartPanel  mChartPanel;
@@ -83,7 +83,10 @@ public class GanttChart extends JFrame {
 		 
 		
 		 mChartPanel=  new ChartPanel(null);
-		 setTimer(new timerGantt());
+		
+		 timeBar = new ValueMarker(1500);  // position is the value on the axis
+	     timeBar.setPaint(Color.red);
+		 timeBar.setValue(CST.CPT_GANTT_OFFSET);
 		   
 	}
 	
@@ -128,28 +131,9 @@ public class GanttChart extends JFrame {
 	    	  
 	      }
 	    }
-	 /**
-	 * 
-	 * AssignedTask.idtask  = id machine/zone GOOGLE.OR pour toutes les gammes 
-	 * task.idzone  = id de la zone propre à la gamme
-	 * 
-	 * 
-	 */
 	
-	public class timerGantt extends TimerTask {
-	    @Override
-	    public void run() {
-	        //System.out.println("Email sent at: "	          + LocalDateTime.ofInstant(Instant.ofEpochMilli(scheduledExecutionTime()), ZoneId.systemDefault()));
-	    	
-	    	timeBar.setValue(timeBar.getValue()+1);
-	       
-	    }
-	}
-	public void startTime() {
-		
-		new Timer().schedule(mTimer, 0, 1000);	
-		
-	}
+	
+
 	
 	public String toMinutes(int t) {		
 		return String.format("%02d:%02d",  t / 60, (t % 60));
@@ -173,6 +157,7 @@ public class GanttChart extends JFrame {
 	
 	public void model_diag(TecalOrdo  inTecalOrdo){
 		
+		mLowerBound=0;
 		
 		LinkedHashMap<Integer, ArrayList<GammeType> > ficheToZones	= inTecalOrdo.getBarreZonesAll();
 		LinkedHashMap<Integer,String> ficheToGamme				= inTecalOrdo.getBarreLabels();
@@ -279,6 +264,10 @@ public class GanttChart extends JFrame {
 	      
 			    long[] dr={at.start,at.start+at.duration,at.start+at.duration+at.derive};		
 		
+			    
+			    if(at.start < mLowerBound || mLowerBound==0) {
+			    	mLowerBound=at.start;
+			    }
 			    //System.out.println("gamme:"+gamme+" "+df.get(at.taskID).codezone+" start:"+at.start+" numligne:"+df.get(at.taskID).numligne); 
 			    //System.out.println("at.duration="+at.duration );
 			      
@@ -387,6 +376,7 @@ public class GanttChart extends JFrame {
          renderer.setBaseItemLabelsVisible(true);
 		 
 		 XYBarRenderer.setDefaultShadowsVisible(false);
+		
 		 
 		 renderer.setBaseItemLabelGenerator(new StandardXYItemLabelGenerator());
 		 renderer.setBaseItemLabelsVisible(false);
@@ -412,20 +402,25 @@ public class GanttChart extends JFrame {
 		 
 		 mPlot.setOrientation(PlotOrientation.HORIZONTAL);
 	     
-	     timeBar = new ValueMarker(1500);  // position is the value on the axis
-	     timeBar.setPaint(Color.red);
+	     
 	     //marker.setLabel("here"); // see JavaDoc for labels, colors, strokes
-	     timeBar.setValue(CST.CPT_GANTT_OFFET);
+	    
 	    
 	     mPlot.addRangeMarker(timeBar);
 	     
 	     JFreeChart j= new JFreeChart(mPlot);	
-	     
+	     //NumberAxis xAxis = (NumberAxis) mPlot.getDomainAxis();
+	  
+	     //xAxis.setLowerBound(mLowerBound+0.0);
+	     ((NumberAxis)mPlot.getRangeAxis()).setAutoRangeIncludesZero(false);
+	    
 	     //LegendTitle sl = j.getLegend();	     sl.setItemPaint(Color.white);
-	     
+	    
 	     mPlot.getRangeAxis().setTickLabelPaint(Color.WHITE);
 	     mPlot.getDomainAxis().setTickLabelPaint(Color.WHITE);
 	     mPlot.getDomainAxis().setLabelPaint(Color.WHITE);
+	     
+	    
 	     
 	     //mChartPanel=  new ChartPanel(j);
 	     mChartPanel.setChart(j);
@@ -572,12 +567,6 @@ public class GanttChart extends JFrame {
 	     JFreeChart chart = new JFreeChart(plot);
 	     getContentPane().add(new ChartPanel(chart));
 	}
-	public timerGantt getTimer() {
-		return mTimer;
-	}
-	public void setTimer(timerGantt mTimer) {
-		this.mTimer = mTimer;
-	}
-	
+
 
 }

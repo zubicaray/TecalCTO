@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -94,6 +95,8 @@ class Task {
 }
 
 public class TecalOrdo {
+	
+	long mCurrentTime;
 
 	// map de toutes les gammes
 	private HashMap<String, ArrayList<GammeType>> 	mGammes;
@@ -101,11 +104,11 @@ public class TecalOrdo {
 	private HashMap<Integer, ArrayList<GammeType>>			mBarreFutures;	
 	private LinkedHashMap<Integer, ArrayList<GammeType>>	mBarresAll;
 	private LinkedHashMap<Integer, String> 					mBarreLabels;	
-	private ArrayList<Integer> 								mBarresEnCours;
+	private HashSet<Integer> 								mBarresEnCours;
 	private LinkedHashSet<Integer> 							mBarresPrioritaires;
 	
 	
-	public ArrayList<Integer> getBarresEnCours() {		return mBarresEnCours;	}
+	public HashSet<Integer> getBarresEnCours() {		return mBarresEnCours;	}
 
 	public void setBarresEnCours(ArrayList<Integer> nouvellesBarresEnCours) {
 		this.mBarresEnCours.addAll(nouvellesBarresEnCours) ;
@@ -128,9 +131,9 @@ public class TecalOrdo {
 	private Integer[] numzoneArr;
 
 	// Creates the model.
-	private LinkedHashMap<Integer, JobType> mJobsEnCours = new LinkedHashMap<>();
-	private LinkedHashMap<Integer, JobType> mJobsFuturs = new LinkedHashMap<>();
-	private LinkedHashMap<Integer, JobType> mAllJobs = new LinkedHashMap<>();
+	private LinkedHashMap<Integer, JobType> mJobsEnCours 	= new LinkedHashMap<>();
+	private LinkedHashMap<Integer, JobType> mJobsFuturs 	= new LinkedHashMap<>();
+	private LinkedHashMap<Integer, JobType> mAllJobs 		= new LinkedHashMap<>();
 
 	public LinkedHashMap<Integer, JobType> getJobsFutur() {
 		return mJobsFuturs;
@@ -191,12 +194,14 @@ public class TecalOrdo {
 	private int mTEMPS_MAX_SOLVEUR = 0;
 
 	public TecalOrdo(int source) {
+		
+		mCurrentTime=0;
 
 		mBarreFutures = new HashMap<>();
 		mBarresAll = new LinkedHashMap<>();
 		mBarreLabels = new LinkedHashMap<>();
 	
-		mBarresEnCours	=new ArrayList<>();
+		mBarresEnCours	=new HashSet<>();
 		mBarresPrioritaires=new LinkedHashSet<>();
 
 		assignedTasksByNumzone = new HashMap<>();
@@ -210,9 +215,20 @@ public class TecalOrdo {
 
 		outputMsg = new StringBuilder();
 		model = new CpModel();
+		
+		
 
 		setDataSource(source);
 
+	}
+	
+	public void removeBarreFinie(int idbarre) {
+		
+		mJobsEnCours.remove(idbarre);
+		mAllJobs.remove(idbarre);
+		mBarresEnCours.remove(idbarre);
+		mBarreLabels.remove(idbarre);
+		mBarresAll.remove(idbarre);
 	}
 
 	public void setParams(int[] inParams) {
@@ -331,10 +347,10 @@ public class TecalOrdo {
 		return res;
 	}
 
-	public void run(LinkedHashMap<Integer, Barre> inBarres) {
+	public void run(LinkedHashMap<Integer, Barre> inBarres,Long currentTime) {
 
 
-
+		mCurrentTime=currentTime;
 
 
 		setBarres(inBarres);
@@ -366,6 +382,7 @@ public class TecalOrdo {
 		// Makespan objective.
 		IntVar objVar = model.newIntVar(0, horizon, "makespan");
 		List<IntVar> ends = new ArrayList<>();
+		List<IntVar> starts = new ArrayList<>();
 		HashMap<Integer,IntVar> endByBarreIdNonPrio	= new HashMap<> ();
 		HashMap<Integer,IntVar> endByBarreIdPrio	= new HashMap<> ();
 
@@ -374,6 +391,7 @@ public class TecalOrdo {
 			int last=job.tasksJob.size()-1;
 			TaskOrdo task=job.mTaskOrdoList.get(last);
 			ends.add(task.getFin());
+			starts.add(job.mTaskOrdoList.get(0).getStart());
 			
 			if(mBarresPrioritaires.contains(job.mBarreId))
 			{
@@ -387,6 +405,12 @@ public class TecalOrdo {
 		}
 		
 		priorisationBarres(endByBarreIdNonPrio, endByBarreIdPrio); 
+		
+		// les nouvelles barres doivent commencer après celles déjà présentes
+		if(mCurrentTime>CST.CPT_GANTT_OFFSET)
+			for(IntVar iv:starts ) {
+				model.addLessThan(LinearExpr.constant(mCurrentTime),iv);
+			}
 		
 		
 	
@@ -893,6 +917,9 @@ public class TecalOrdo {
 
 	public boolean hasSolution() {
 		return hasSolution;
+	}
+	public void setHasSolution(boolean b) {
+		 hasSolution=b;
 	}
 
 	public LinkedHashMap<Integer, String> getBarreLabels() {

@@ -52,7 +52,7 @@ public class CST {
 	// -----------------  VITESSE --------------------------------
 	//------------------------------------------------------------
 	public final static int VITESSE =1;
-	public final static int CPT_GANTT_OFFET =100;
+	public final static int CPT_GANTT_OFFSET =100;
 	
 	
 	//------------------------------------------------------------
