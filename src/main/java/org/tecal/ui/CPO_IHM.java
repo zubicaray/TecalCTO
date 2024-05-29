@@ -15,9 +15,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.Map.Entry;
 
 import javax.swing.DefaultRowSorter;
 import javax.swing.GroupLayout;
@@ -39,9 +39,7 @@ import javax.swing.table.TableRowSorter;
 
 import org.tecal.scheduler.CST;
 import org.tecal.scheduler.GanttChart;
-
 import org.tecal.scheduler.TecalOrdo;
-
 import org.tecal.scheduler.data.SQL_DATA;
 import org.tecal.scheduler.types.AssignedTask;
 import org.tecal.scheduler.types.Barre;
@@ -61,9 +59,9 @@ public class CPO_IHM extends JFrame {
 	private GanttChart mGanttTecalOR;
 	private timerGantt mTimer;
 	private TecalOrdo mTecalOrdo;
-	
 
-	
+
+
 
 	private LinkedHashMap<Integer,Barre> mBarresFutures;
 
@@ -99,8 +97,9 @@ public class CPO_IHM extends JFrame {
 				try {
 					CPO_IHM frame = new CPO_IHM();
 					frame.setTitle("Tecal Ordonnanceur");
-					if(System.getenv("TEST_CPO") != null && System.getenv("TEST_CPO").equals("1")) 
+					if(System.getenv("TEST_CPO") != null && System.getenv("TEST_CPO").equals("1")) {
 						frame.runTest();
+					}
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -126,7 +125,7 @@ public class CPO_IHM extends JFrame {
 		manageOngoingJobs();
 		mCPO_PANEL.setModelBarres(mBarresFutures);
 		if(mBarresFutures.size()>0) {
-			mTecalOrdo.run(mBarresFutures,(long)mGanttTecalOR.getTimeBar().getValue());			
+			mTecalOrdo.run(mBarresFutures,(long)mGanttTecalOR.getTimeBar().getValue());
 		}
 		else {
 			mTecalOrdo.setHasSolution(true);
@@ -134,15 +133,43 @@ public class CPO_IHM extends JFrame {
 
 
 		execute();
-		
+
 		if(mTecalOrdo.hasSolution()) {
 			tabbedPane.setSelectedIndex(1);
 			//mCPO_PANEL.getModelBarres().setRowCount(0);
 		}
-		
+
 		setCursor(Cursor.getDefaultCursor());
 
 	}
+	
+
+	public class timerGantt extends TimerTask {
+	    @Override
+	    public void run() {
+	        //System.out.println("Email sent at: "	          + LocalDateTime.ofInstant(Instant.ofEpochMilli(scheduledExecutionTime()), ZoneId.systemDefault()));
+
+	    	mGanttTecalOR.getTimeBar().setValue(mGanttTecalOR.getTimeBar().getValue()+1);
+	    	
+	    	//TODO
+	    	// mutualiser avec fct manageOngoingJobs
+	    	double current_time=mGanttTecalOR.getTimeBar().getValue();
+	    	for( Entry<Integer, List<AssignedTask>> entry  :mTecalOrdo.getAssignedTasksByBarreId().entrySet()) {
+
+				List<AssignedTask> values=entry.getValue();
+				AssignedTask first=values.get(0);
+				int barreid=entry.getKey();
+				if( first.start<current_time) {
+					// on ne garde pas les taches du job car il n'a pas encore commencé
+					mCPO_PANEL.removeBarre(barreid);
+				}
+
+			}
+
+	    }
+	}
+	
+	
 	private void manageOngoingJobs() {
 
 
@@ -160,19 +187,14 @@ public class CPO_IHM extends JFrame {
 			AssignedTask last=values.get(values.size()-1);
 			int barreid=entry.getKey();
 			if(first.end<current_time && last.start>current_time) {
-				// on ne garde pas les taches du job car il n'a pas encore commencé
+				//job commencé et non fini
 				barresCommencantes.add(barreid);
 			}
-			
+
 			if(last.start<current_time) {
-				//TODO:
-				//check si barre en cours est fini, si oui, l'enlever du Gantt
+				// job fini
 				mTecalOrdo.removeBarreFinie(barreid);
 			}
-			
-		
-			
-
 		}
 
 		mTecalOrdo.setBarresEnCours(barresCommencantes);
@@ -191,30 +213,18 @@ public class CPO_IHM extends JFrame {
 		setDerives();
 
 	}
-	
-	public class timerGantt extends TimerTask {
-	    @Override
-	    public void run() {
-	        //System.out.println("Email sent at: "	          + LocalDateTime.ofInstant(Instant.ofEpochMilli(scheduledExecutionTime()), ZoneId.systemDefault()));
-	    	
-	    	mGanttTecalOR.getTimeBar().setValue(mGanttTecalOR.getTimeBar().getValue()+1);
-	       
-	    }
-	}
+
 
 	public void startTime() {
 
 		if(mTecalOrdo.hasSolution()) {
-			
+
 			if(mTimer == null) {
 				this.mTimer=new timerGantt();
-				new Timer().schedule(mTimer, 0, 1000);	
-				
+				new Timer().schedule(mTimer, 0, 1000);
+
 			}
-			
-
 		}
-
 
 	}
 
@@ -223,7 +233,7 @@ public class CPO_IHM extends JFrame {
 		DefaultTableModel modelDerives =getDerives();
 
 		modelDerives.setRowCount(0);
-		
+
 		for(List<AssignedTask> lat : mTecalOrdo.getAssignedJobs().values()) {
 			for(AssignedTask at :lat) {
 				if(at.derive>at.end) {
@@ -236,10 +246,10 @@ public class CPO_IHM extends JFrame {
 								minutes };
 						modelDerives.addRow(rowO);
 					}
-					
+
 				}
 			}
-			
+
 		}
 	}
 
@@ -265,11 +275,11 @@ public class CPO_IHM extends JFrame {
 
 
 
-	
+
 
 		mTecalOrdo=new TecalOrdo(CST.SQLSERVER);
 		mTecalOrdo.setParams(params);
-		
+
 		init();
 
 
@@ -277,11 +287,11 @@ public class CPO_IHM extends JFrame {
 	}
 	private void init() {
 
-	
+
 		TecalGUI.cosmeticGUI();
 		mGanttTecalOR = new GanttChart("Diagramme Gantt de la production");
-		
-		
+
+
 
 
 		mCPO_PANEL= new CPO_Panel(this);
@@ -342,7 +352,7 @@ public class CPO_IHM extends JFrame {
 		panelButtons.add(btnForeButton);
 		JButton bigFore = new JButton();
 		panelButtons.add(bigFore);
-		
+
 		panelGantt.setLayout(gl_panelGantt);
 		CPO_Panel.setIconButton(this,btnForeButton,"icons8-fore-16.png");
 
@@ -377,7 +387,7 @@ public class CPO_IHM extends JFrame {
 			}
 		});
 		CPO_Panel.setIconButton(this,bigFore,"icons8-fore-16.png");
-		
+
 		bigFore.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -431,12 +441,12 @@ public class CPO_IHM extends JFrame {
 		this.addComponentListener(new ComponentAdapter() {
 			@Override
 			public void componentShown(ComponentEvent e) {
-				
+
 				ResultSet rs= SQL_DATA.getInstance().getEnteteGammes();
 				try {
 					mCPO_PANEL.setRessource(rs);
 				} catch (SQLException e1) {
-					
+
 					e1.printStackTrace();
 				}
 			}

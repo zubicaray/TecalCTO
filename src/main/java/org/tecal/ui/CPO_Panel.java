@@ -173,11 +173,11 @@ public class CPO_Panel extends JPanel {
 									.addComponent(btnReload, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 										)
 
-								.addComponent(scrollPane_gamme, GroupLayout.DEFAULT_SIZE, 364, Short.MAX_VALUE))
+								.addComponent(scrollPane_gamme, GroupLayout.DEFAULT_SIZE, 304, Short.MAX_VALUE))
 							.addGap(18)
 							.addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING, false)
 								.addComponent(lblBarreLabel, Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 204, GroupLayout.PREFERRED_SIZE)
-								.addComponent(scrollPaneBarres, Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 207, GroupLayout.PREFERRED_SIZE))
+								.addComponent(scrollPaneBarres, Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 247, GroupLayout.PREFERRED_SIZE))
 							.addGap(18)
 							.addGroup(gl_panelCPO.createParallelGroup(Alignment.TRAILING)
 								.addComponent(btnRun, GroupLayout.PREFERRED_SIZE, 81, GroupLayout.PREFERRED_SIZE)
@@ -341,7 +341,7 @@ public class CPO_Panel extends JPanel {
 	}
 	public void setModelBarres(LinkedHashMap<Integer, Barre> set) {
 		mModelBarres.setRowCount(0);
-		mNumBarre=0;
+		//mNumBarre=0;
         for (Map.Entry<Integer, Barre> entry : set.entrySet()) {
 
         	Barre b=  entry.getValue();
@@ -370,9 +370,9 @@ public class CPO_Panel extends JPanel {
 					LinkedHashMap<Integer,String> gammes=new LinkedHashMap <>();
 					LinkedHashMap<Integer,Barre> barres=new LinkedHashMap <>();
 
-					if(mTableBarres.getRowCount()<2) {
-						JOptionPane.showMessageDialog(mCPO_IHM, "Minimum deux barres requises !","Tecal CPO", JOptionPane.ERROR_MESSAGE);
-					}else {
+					//if(mTableBarres.getRowCount()<2) {
+					//	JOptionPane.showMessageDialog(mCPO_IHM, "Minimum deux barres requises !","Tecal CPO", JOptionPane.ERROR_MESSAGE);
+					//}else {
 
 						// utiliser un objet de classe Barre ave vitesse et prio
 						gammes.clear();
@@ -399,7 +399,7 @@ public class CPO_Panel extends JPanel {
 
 
 
-					}
+					//}
 
 
 				}
@@ -444,8 +444,8 @@ public class CPO_Panel extends JPanel {
 
         mTableBarres.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     	TableColumnModel columnModel = mTableBarres.getColumnModel();
-        columnModel.getColumn(0).setPreferredWidth(40);
-        columnModel.getColumn(0).setMaxWidth(40);
+        columnModel.getColumn(0).setPreferredWidth(50);
+        columnModel.getColumn(0).setMaxWidth(50);
         mTableBarres.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
 
         mTableBarres.addMouseListener(new MouseAdapter() {
@@ -457,7 +457,7 @@ public class CPO_Panel extends JPanel {
     	        int row = table.rowAtPoint(point);
     	        if (mouseEvent.getClickCount() == 2 && table.getSelectedRow() != -1) {
     	        	if(model.getDataVector().get(row).get(0)==mNumBarre) {
-						mNumBarre--;
+						//mNumBarre--;
 					}
     	        	model.removeRow(row);
 
@@ -471,6 +471,22 @@ public class CPO_Panel extends JPanel {
 
 	}
 
+	public void removeBarre(int barre) {
+		int i =0;
+		boolean found = false;
+		 for (; i < mTableBarres.getRowCount(); i++) {  // Loop through the rows
+		       
+	        if(barre== (int)mTableBarres.getValueAt(i, 0)) {
+	        	found=true;
+	        	break;
+	        }
+		 }
+		 if(found) {
+			 mModelBarres.removeRow(i);
+			 mTableBarres.addNotify();
+			 }
+	}
+	
 	public  void buildTableModelGamme()
 	        throws SQLException {
 

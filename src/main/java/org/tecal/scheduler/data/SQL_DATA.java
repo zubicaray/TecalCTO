@@ -18,6 +18,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.StringJoiner;
 
+import javax.swing.JOptionPane;
+
 import org.ini4j.Ini;
 import org.ini4j.InvalidFileFormatException;
 import org.tecal.scheduler.types.GammeType;
@@ -98,11 +100,12 @@ public class SQL_DATA {
 
 
 		} catch (InvalidFileFormatException e) {
-			// TODO Auto-generated catch block
+			JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
+			JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
 		}
 
 
@@ -114,7 +117,7 @@ public class SQL_DATA {
 			mConnection = DriverManager.getConnection(connectionUrl);
 			mStatement= mConnection.createStatement();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 		}
 
@@ -175,7 +178,7 @@ private  void setZonesSecu() {
 
         }
 	} catch (SQLException e) {
-		// TODO Auto-generated catch block
+		JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
 		e.printStackTrace();
 	}
 
@@ -205,7 +208,7 @@ private  void setZones() {
             idzone++;
         }
 	} catch (SQLException e) {
-		// TODO Auto-generated catch block
+		JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
 		e.printStackTrace();
 	}
 
@@ -242,7 +245,7 @@ public HashMap<Integer,PosteBDD> getPostes(String[] listeOF) {
 	            cpt++;
 	        }
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 		}
 
@@ -300,7 +303,7 @@ private void  setLignesGammes() {
 	            gammes.get(gt.numgamme).add(gt);
 	        }
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 		}
 
@@ -324,7 +327,7 @@ public  ResultSet getEnteteGammes() {
 		// Print results from select statement
 
 	} catch (SQLException e) {
-		// TODO Auto-generated catch block
+		JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
 		e.printStackTrace();
 	}
 
@@ -362,7 +365,7 @@ public void  setMissingTimeMovesGammes() {
 	        }
 
 	} catch (SQLException e) {
-		// TODO Auto-generated catch block
+		JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
 		e.printStackTrace();
 	}
 
@@ -411,7 +414,7 @@ public boolean updateTpsMvts(String of,boolean updateNoNull) {
 			// Print results from select statement
 
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 			res=false;
 		}
@@ -444,7 +447,7 @@ public ResultSet getTpsMvts() {
 		// Print results from select statement
 
 	} catch (SQLException e) {
-		// TODO Auto-generated catch block
+		JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
 		e.printStackTrace();
 	}
 
@@ -483,7 +486,7 @@ public ResultSet getVisuProd(java.util.Date inDate) {
 		// Print results from select statement
 
 	} catch (SQLException e) {
-		// TODO Auto-generated catch block
+		JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
 		e.printStackTrace();
 	}
 
@@ -519,7 +522,7 @@ public HashMap<String, String>  getFicheGamme(String[] listeOF) {
 	            res.put(resultSet.getString(1), resultSet.getString(2));
 	        }
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 		}
 
@@ -558,7 +561,7 @@ public void setTempsDeplacements() {
 
 	        }
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 		}
 
@@ -622,7 +625,7 @@ public void setTempsDeplacements() {
 
 	        }
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 		}
 

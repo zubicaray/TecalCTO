@@ -26,6 +26,7 @@ public class TaskOrdo {
 	IntervalVar maximumDerive;
 	int tempsDeplacement;
 	int egouttage;
+	int derive;
 	int duration;
 	boolean zoneSecu=false;
 	
@@ -122,12 +123,13 @@ public class TaskOrdo {
 					"intervalReel fixe");
 	}
 
-	TaskOrdo(CpModel model,int induration,int inderive,int minDebut,int intempsDeplacement,int egouttage,String suffix){
+	TaskOrdo(CpModel model,int induration,int inderive,int intempsDeplacement,int egouttage,String suffix){
 	
 	
 		tempsDeplacement=intempsDeplacement;
 		duration=induration;
 		this.egouttage=egouttage;
+		this.derive=inderive;
 		
 		if(inderive+duration>=CST.TEMPS_ZONE_OVERLAP_MIN){
 			isOverlapable=true;

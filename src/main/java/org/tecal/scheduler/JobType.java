@@ -23,8 +23,7 @@ public class JobType {
 	ListeZone mNoOverlapP1P2;
 	
 	TaskOrdo taskAnod;
-	TaskOrdo taskColmatage;
-	TaskOrdo taskDechargement;
+
 
 	
 	protected boolean isFixed=false;
@@ -50,12 +49,7 @@ public class JobType {
 
 
 	int indexAnod=-1;
-	int indexColmatage=-1;
-	int indexDechargement=-1;
-	
-	int indexLastZoneP1=-1;
-	int indexFirstZoneP2=-1;
-	
+
 
 	List<GammeType> zones;
 	
@@ -119,7 +113,7 @@ public class JobType {
 					deb=TecalOrdo.getBackward(TecalOrdo.model,(IntVar) mTaskOrdoList.get(indexAnod).getEndBDD(),CST.TEMPS_ANO_ENTRE_P1_P2);
 				}
 				
-				if(taskID+1 == indexAnod) {
+				if(indexAnod > 0 && taskID+1 == indexAnod) {
 					fin=(IntVar) mTaskOrdoList.get(indexAnod).getStart();
 					
 				}else {
@@ -127,13 +121,14 @@ public class JobType {
 				}
 				
 				int taskID2 = taskID+1;
-				while(mTaskOrdoList.get(taskID2).zoneSecu && taskID2 < mTaskOrdoList.size())
+				
+				while(taskID2 < mTaskOrdoList.size() && mTaskOrdoList.get(taskID2).zoneSecu )
 				{
 					taskID2++;
 				}
 				
 				if(taskID2>taskID+1) {
-					if(taskID2 == indexAnod) {
+					if(indexAnod > 0 && taskID2 == indexAnod) {
 						fin=TecalOrdo.getForeward(TecalOrdo.model,(IntVar) mTaskOrdoList.get(indexAnod).getStart(),CST.TEMPS_ANO_ENTRE_P1_P2);;
 						
 					}else {
@@ -179,7 +174,7 @@ public class JobType {
 			if(taskID != mTaskOrdoList.size()-1) 
 				taskOrdoNext = mTaskOrdoList.get(taskID+1);
 		
-			if(taskID >indexAnod) {
+			if(indexAnod > 0 && taskID >indexAnod) {
 				bridge=1;								
 			}
 			ListeZone lBridgeMoves=bridgesMoves.get(bridge);
@@ -244,9 +239,7 @@ public class JobType {
 	private void buildTaskOrdo(Map<List<Integer>, TaskOrdo> allTasks,  int taskID, Task task,
 			String suffix, ZoneType zt) {
 		
-		int minDebut=0;
-		
-			
+	
 		if(!isFixed) {
 
 			if(task.numzone == CST.DECHARGEMENT_NUMZONE )
@@ -258,10 +251,12 @@ public class JobType {
 			
 			
 			TaskOrdo taskOrdo;
-			if(task.numzone == CST.DECHARGEMENT_NUMZONE ) {
-				taskOrdo = new TaskOrdo(TecalOrdo.model,task.duration,zt.derive, minDebut,0,task.egouttage,suffix);   
+			
+			if(task.numzone == CST.DECHARGEMENT_NUMZONE  || taskID==  tasksJob.size()-1) {
+				taskOrdo = new TaskOrdo(TecalOrdo.model,task.duration,zt.derive, 0,task.egouttage,suffix);   
 			}
 			else {
+				
 				Task taskSuivante = tasksJob.get(taskID+1);
 				
 				int tps=SQL_DATA.getInstance().getTempsDeplacement(task.numzone,taskSuivante.numzone,CST.VITESSE);
@@ -270,7 +265,9 @@ public class JobType {
 					System.out.println("task.numzone "+task.numzone);
 					System.out.println("task.numzone "+taskSuivante.numzone);
 				}
-				taskOrdo = new TaskOrdo(TecalOrdo.model,task.duration,zt.derive, minDebut,tps,task.egouttage,suffix);   
+				taskOrdo = new TaskOrdo(TecalOrdo.model,task.duration,zt.derive, tps,task.egouttage,suffix);   
+				
+				
 			}
 			
 			//minDebut+=task.duration;
@@ -308,22 +305,15 @@ public class JobType {
 		for (int i = 0; i < zones.size(); i++) {
 			GammeType gt = zones.get(i);
 			tasksJob.add(new Task(gt.time, gt.numzone,gt.egouttage));
-			//System.out.println("debZone: "+gt.codezone);
+			if(CST.PrintGroupementZones) 
+				System.out.println("debZone: "+gt.codezone+", gt.time="+gt.time);
 			
 			
 			
 			if (gt.numzone == CST.ANODISATION_NUMZONE) {
 				indexAnod=i;
-				indexLastZoneP1=i-1;
-				indexFirstZoneP2=i+1;
+			
 			}
-			if (gt.numzone == CST.COLMATAGE_NUMZONE) {
-				indexColmatage=i;
-			}
-			if (gt.numzone == CST.DECHARGEMENT_NUMZONE) {
-				indexDechargement=i;
-			}
-
 
 
 		}
@@ -342,17 +332,8 @@ public class JobType {
 		
 		JobTypeFixed jf=new JobTypeFixed(mBarreId, name);
 		
-		jf.indexAnod=indexAnod;
-		jf.indexColmatage=indexColmatage;
-		jf.indexDechargement=indexDechargement;
-		
-		jf.indexLastZoneP1=indexLastZoneP1;
-		jf.indexFirstZoneP2=indexFirstZoneP2;
-		
-		jf.taskAnod=taskAnod;
-		jf.taskColmatage=taskColmatage;
-		jf.taskDechargement=taskDechargement;
-	
+		jf.indexAnod=indexAnod;		
+		jf.taskAnod=taskAnod;		
 
 		jf.zones=zones;
 		int cpt=0;
@@ -361,8 +342,7 @@ public class JobType {
 			jf.mTaskOrdoList.add(t);
 			cpt++;
 		}
-		for (Task t : tasksJob) {
-			
+		for (Task t : tasksJob) {			
 			jf.tasksJob.add(t);
 		}
 		

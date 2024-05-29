@@ -3,3 +3,5 @@ gammes  78 et 119 => no solution
 
 
 pb avec gammes 6, 4 et  9
+
+9 7 10

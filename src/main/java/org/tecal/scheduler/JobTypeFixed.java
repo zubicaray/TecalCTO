@@ -7,7 +7,6 @@ public class JobTypeFixed extends JobType {
 	JobTypeFixed(int barre, String inname) {
 		super(barre, inname);
 		isFixed=true;
-		// TODO Auto-generated constructor stub
 	}
 	
 void makeSafetyBetweenBridges() {
@@ -25,7 +24,7 @@ void makeSafetyBetweenBridges() {
 					deb=mTaskOrdoList.get(indexAnod).getFixedEndBDD()-CST.TEMPS_ANO_ENTRE_P1_P2;
 				}
 				
-				if(taskID+1 == indexAnod) {
+				if(indexAnod > 0 && taskID+1 == indexAnod) {
 					fin= mTaskOrdoList.get(indexAnod).getFixedStartBDD();
 					
 				}else {
@@ -39,7 +38,7 @@ void makeSafetyBetweenBridges() {
 				}
 				
 				if(taskID2>taskID+1) {
-					if(taskID2 == indexAnod) {
+					if(indexAnod > 0 && taskID2 == indexAnod) {
 						fin=mTaskOrdoList.get(indexAnod).getFixedStartBDD()+CST.TEMPS_ANO_ENTRE_P1_P2;
 						
 					}else {

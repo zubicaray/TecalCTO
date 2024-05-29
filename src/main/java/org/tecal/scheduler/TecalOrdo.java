@@ -295,12 +295,12 @@ public class TecalOrdo {
 		return mBarreFutures;
 	}
 
-	public void setBarres(LinkedHashMap<Integer, Barre> inBarres) {
+	public void setBarres(LinkedHashMap<Integer, Barre> inBarresFutures) {
 
 		// mBarreLabels=inBarres;
 		mBarreFutures.clear();
 		mBarresPrioritaires.clear();
-		for (Map.Entry<Integer, Barre> entry : inBarres.entrySet()) {
+		for (Map.Entry<Integer, Barre> entry : inBarresFutures.entrySet()) {
 
 			int numbarre = entry.getKey();
 			Barre barre = entry.getValue();
@@ -347,13 +347,13 @@ public class TecalOrdo {
 		return res;
 	}
 
-	public void run(LinkedHashMap<Integer, Barre> inBarres,Long currentTime) {
+	public void run(LinkedHashMap<Integer, Barre> inBarresFutures,Long currentTime) {
 
 
 		mCurrentTime=currentTime;
 
 
-		setBarres(inBarres);
+		setBarres(inBarresFutures);
 		execute();
 	}
 
@@ -377,7 +377,7 @@ public class TecalOrdo {
 		// --------------------------------------------------------------------------------------------
 		// sur les postes d'oxy, faire en sorte que le pont 2 ne puisse pas croiser le
 		// pont et réciproquement
-		zoneCumulConstraints();
+		//zoneCumulConstraints();
 
 		// Makespan objective.
 		IntVar objVar = model.newIntVar(0, horizon, "makespan");
@@ -412,9 +412,6 @@ public class TecalOrdo {
 				model.addLessThan(LinearExpr.constant(mCurrentTime),iv);
 			}
 		
-		
-	
-		
 
 		model.addMaxEquality(objVar, ends);
 		model.minimize(objVar);
@@ -440,9 +437,6 @@ public class TecalOrdo {
 		if (status == CpSolverStatus.OPTIMAL || status == CpSolverStatus.FEASIBLE) {
 
 			hasSolution = true;
-
-
-
 			
 			
 			if(status == CpSolverStatus.OPTIMAL) {
@@ -540,25 +534,25 @@ public class TecalOrdo {
 				List<Integer> key = Arrays.asList(barre, taskID);
 
 				long debut = allTasks.get(key).getStartValue();
-				long fin =  allTasks.get(key).getEndBDDValue();
+				long finBDD =  allTasks.get(key).getEndBDDValue();
 
 				long derive;
 				// on ne sait pas à quel moment entre le min et le max de dérive
 				// le solveur a choisit => on doit regarder quand commence la tache d'apres
-				// pour calculer la dérive
-				if (task.numzone != CST.DECHARGEMENT_NUMZONE) {
+				// pour calculer la dérive			
+				
+				if(task.numzone == CST.DECHARGEMENT_NUMZONE || task.numzone == CST.CHARGEMENT_NUMZONE || taskID +1== tasks.size()) {
+					derive = finBDD;
+				}else {
 					List<Integer> keySuivante = Arrays.asList(barre, taskID + 1);
+					//todo bug
 					derive = allTasks.get(keySuivante).getStartValue()
 							- allTasks.get(key).tempsDeplacement - allTasks.get(key).egouttage;
-				} else {
-					derive = fin;//allTasks.get(key).getDeriveMaxValue();
 				}
+				
+				
 
-				if (task.numzone == CST.CHARGEMENT_NUMZONE) {
-					fin = derive;
-				}
-
-				AssignedTask assignedTask = new AssignedTask(barre, taskID, task.numzone, debut, (int) (fin - debut),(int) derive);
+				AssignedTask assignedTask = new AssignedTask(barre, taskID, task.numzone, debut, (int) (finBDD - debut),(int) derive);
 				assignedTasksByNumzone.computeIfAbsent(task.numzone, (Integer k) -> new ArrayList<>());
 				assignedTasksByNumzone.get(task.numzone).add(assignedTask);
 
@@ -652,7 +646,7 @@ public class TecalOrdo {
 			// regroupement des zones qui pourraient être trop proches de zones d'autre jobs
 			// sur pont adverses
 			job.makeSafetyBetweenBridges();
-
+			
 		}
 
 	}
@@ -664,7 +658,8 @@ public class TecalOrdo {
 			//int cpt=0;
 			for (Task task : job.tasksJob) {
 				//System.out.println("task "+cpt+"="+ task.duration );
-				horizon += task.duration;
+				
+				horizon += task.duration+CST.TEMPS_MVT_PONT;
 				//cpt++;
 			}
 		}
@@ -688,7 +683,7 @@ public class TecalOrdo {
 				List<IntervalVar> intervalParZone = zoneToIntervals.get(numzone);
 				model.addNoOverlap(intervalParZone);
 			}
-			if (multiZoneIntervals.containsKey(numzone)) {
+			if (multiZoneIntervals.containsKey(numzone) ) {
 				List<IntervalVar> listCumul = multiZoneIntervals.get(numzone);
 				ZoneType zt = zonesBDD.get(numzone);
 				// zone autorisant le "chevauchement" => zone contenant plus de 1 postes
@@ -721,6 +716,7 @@ public class TecalOrdo {
 	}
 
 	// on impose du temps entre la fin du zone et le début d'une autre
+	@SuppressWarnings("unused")
 	private void zoneCumulConstraints() {
 
 		if (CST.CSTR_ECART_ZONES_CUMULS) {
@@ -756,18 +752,24 @@ public class TecalOrdo {
 		for (JobType job: mJobsFuturs.values()) {
 			List<Task> jobTasks = job.tasksJob;
 
-			for (int taskID = 0; taskID < jobTasks.size() - 1; ++taskID) {
+			for (int taskID = 0; taskID < jobTasks.size() -1; ++taskID) {
 
-
+				//if(taskID==2) continue;
+				//if(taskID==1) continue;
+				
 				TaskOrdo prev=job.mTaskOrdoList.get(taskID);
 				TaskOrdo next=job.mTaskOrdoList.get(taskID+1);
 
 				// last OK
 				// le debut de la zone suivante doit etre compris
 				// entre le début et la fin de la dérive
-				model.addLessOrEqual(next.getStart(), prev.getFin());
+				
+				model.addLessOrEqual(next.getStart(), prev.getFin());			
 				model.addGreaterOrEqual(next.getStart(), prev.getDeriveNulle());
-
+				//model.addLessOrEqual( prev.getDeriveNulle(),next.getStart());
+				
+				
+				
 			}
 
 
@@ -781,10 +783,8 @@ public class TecalOrdo {
 
 		if (CST.CSTR_BRIDGES_SECURITY) {
 			ListeZone zonesAutourAnodisation = new ListeZone();
-			for (JobType job : mAllJobs.values()) {
-				
+			for (JobType job : mAllJobs.values()) {				
 				zonesAutourAnodisation.addAll(job.mNoOverlapP1P2);
-
 			}
 			model.addNoOverlap(zonesAutourAnodisation);
 		}
