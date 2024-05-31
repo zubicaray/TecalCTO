@@ -338,7 +338,7 @@ public class TecalOrdo {
 
 		LinkedHashMap<Integer, Barre> res = setBarresTest();
 		int[] params = { CST.TEMPS_ZONE_OVERLAP_MIN, CST.TEMPS_MVT_PONT_MIN_JOB, CST.GAP_ZONE_NOOVERLAP,
-				CST.TEMPS_MVT_PONT, CST.TEMPS_ANO_ENTRE_P1_P2, 8// CST.TEMPS_MAX_SOLVEUR
+				CST.TEMPS_MVT_PONT, CST.TEMPS_ANO_ENTRE_P1_P2,  CST.TEMPS_MAX_SOLVEUR
 		};
 
 		setParams(params);
@@ -653,14 +653,12 @@ public class TecalOrdo {
 
 	private void computeHorizon() {
 		horizon = 0;
-		for (JobType job : arrayAllJobs) {
-			//System.out.println("job="+job.getName() );
-			//int cpt=0;
-			for (Task task : job.tasksJob) {
-				//System.out.println("task "+cpt+"="+ task.duration );
-				
-				horizon += task.duration+CST.TEMPS_MVT_PONT;
-				//cpt++;
+		int factor=1;
+		if(arrayAllJobs.size()<3) factor=3;
+		
+		for (JobType job : arrayAllJobs) {			
+			for (Task task : job.tasksJob) {	
+				horizon += task.duration+CST.TEMPS_MVT_PONT*factor;
 			}
 		}
 

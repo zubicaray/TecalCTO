@@ -228,12 +228,12 @@ public HashMap<Integer,PosteBDD> getPostes(String[] listeOF) {
         		+ "[DetailsGammesProduction]  DG "
         		+ "INNER JOIN   [DetailsFichesProduction] DF "
         		+ "on   "
-        		+ "	DG.numficheproduction=DF.numficheproduction and "
+        		+ "	DG.numficheproduction=DF.numficheproduction  COLLATE FRENCH_CI_AS  and "
         		+ "	DG.numligne=DF.NumLigne and DG.NumPosteReel=DF.NumPoste "
         		+ " "
         		+ "INNER JOIN  POSTES P "
         		+ "on P.Numposte=DF.Numposte "
-        		+ " where DF.numficheproduction in  ("+toClause(listeOF)+")  "
+        		+ " where DF.numficheproduction in  ("+toClause(listeOF)+")   "
         		+ "order by P.numposte, P.Nomposte +' - ' + P.LibellePoste";
 
         try {
@@ -387,20 +387,20 @@ public boolean updateTpsMvts(String of,boolean updateNoNull) {
 			+ "		from \r\n"
 			+ "			DetailsFichesProduction  F1\r\n"
 			+ "			INNER JOIN DetailsFichesProduction  F2\r\n"
-			+ "			ON F1.NumFicheProduction =F2.NumFicheProduction\r\n"
+			+ "			ON F1.NumFicheProduction =F2.NumFicheProduction  COLLATE FRENCH_CI_AS \r\n"
 			+ "				AND F1.NumLigne=F2.NumLigne-1\r\n"
 			+ "			INNER JOIN POSTES P1\r\n"
 			+ "				on P1.Numposte=F1.Numposte\r\n"
 			+ "			INNER JOIN POSTES P2\r\n"
 			+ "				on P2.Numposte=F2.Numposte\r\n"
 			+ "			INNER JOIN DetailsGammesProduction DP1\r\n"
-			+ "			ON F1.NumFicheProduction =DP1.NumFicheProduction and \r\n"
+			+ "			ON F1.NumFicheProduction =DP1.NumFicheProduction  COLLATE FRENCH_CI_AS and \r\n"
 			+ "			 F1.NumLigne=DP1.NumLigne\r\n"
 			+ "			INNER JOIN DetailsGammesProduction DP2\r\n"
-			+ "			ON F2.NumFicheProduction =DP2.NumFicheProduction and \r\n"
+			+ "			ON F2.NumFicheProduction =DP2.NumFicheProduction  COLLATE FRENCH_CI_AS and \r\n"
 			+ "			 F2.NumLigne=DP2.NumLigne"
 			+ "	\r\n"
-			+ "		where F1.NumFicheProduction = '"+of+"' \r\n"
+			+ "		where F1.NumFicheProduction = '"+of+"'   COLLATE FRENCH_CI_AS  \r\n"
 			+ "	--order by F1.NumLigne\r\n"
 			+ "	)  T\r\n"
 			+ "	ON TPS.depart=T.N1 and TPS.arrivee=T.N2 ";
@@ -471,11 +471,11 @@ public ResultSet getVisuProd(java.util.Date inDate) {
     String selectSql = "select distinct  DG.numficheproduction as [N° OF], 	DC.NumGammeANodisation as [gamme ],DC.NumBarre as  [barre] \r\n"
     		+ "from   	[DetailsGammesProduction]  DG 	\r\n"
     		+ "INNER JOIN   [DetailsFichesProduction] DF 	on   		\r\n"
-    		+ "DG.numficheproduction=DF.numficheproduction and 		\r\n"
+    		+ "DG.numficheproduction=DF.numficheproduction COLLATE FRENCH_CI_AS and 		\r\n"
     		+ "DG.numligne=DF.NumLigne  and DF.NumLigne=1 	\r\n"
     		+ "INNER JOIN ( select distinct numficheproduction,NumGammeANodisation,NumBarre from [DetailsChargesProduction] where numligne=1\r\n"
     		+ ") DC 	\r\n"
-    		+ "on   		DC.numficheproduction=DF.numficheproduction \r\n"
+    		+ "on   		DC.numficheproduction=DF.numficheproduction  COLLATE FRENCH_CI_AS \r\n"
     		+ "WHERE		DF.DateEntreePoste BETWEEN   '"+deb+"'  and '"+fin+"'      "
     		+ "order by DG.numficheproduction ,DC.NumBarre"
 
@@ -511,9 +511,9 @@ public HashMap<String, String>  getFicheGamme(String[] listeOF) {
         		+ "from  [DetailsChargesProduction] DC"
         		+ " INNER JOIN   [DetailsFichesProduction] DF "
         		+ "on   "
-        		+ "	DC.numficheproduction=DF.numficheproduction  "
+        		+ "	DC.numficheproduction=DF.numficheproduction   COLLATE FRENCH_CI_AS "
 
-        		+" and DF.numficheproduction in ("+toClause(listeOF)+") " ;
+        		+" and DF.numficheproduction in ("+toClause(listeOF)+")  " ;
         try {
 			resultSet = mStatement.executeQuery(selectSql);
 			// Print results from select statement
@@ -593,12 +593,12 @@ public void setTempsDeplacements() {
         		+ "[DetailsGammesProduction]  DG "
         		+ "INNER JOIN   [DetailsFichesProduction] DF "
         		+ "on   "
-        		+ "	DG.numficheproduction=DF.numficheproduction and "
+        		+ "	DG.numficheproduction=DF.numficheproduction  COLLATE FRENCH_CI_AS  and "
         		+ "	DG.numligne=DF.NumLigne and DG.NumPosteReel=DF.NumPoste "
         		+ " "
         		+ "INNER JOIN POSTES P "
         		+ "on P.Numposte=DF.Numposte "
-        		+ " and DF.numficheproduction in ("+toClause(listeOF)+") "
+        		+ " and DF.numficheproduction in ("+toClause(listeOF)+")  "
         		+ "  order by DG.numficheproduction, DF.Numposte,DG.NumLigne";
 
         try {
