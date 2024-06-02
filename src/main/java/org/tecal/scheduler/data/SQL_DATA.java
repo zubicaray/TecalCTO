@@ -375,7 +375,7 @@ public boolean updateTpsMvts(String of,boolean updateNoNull) {
 	boolean res= false;
 
 	String req="Update  [TempsDeplacements] \r\n"
-			+ "SET normal=T.tps\r\n"
+			+ "SET normal=dbo.InlineMax(0,T.tps) \r\n"
 			+ "FROM \r\n"
 			+ "	[TempsDeplacements] TPS\r\n"
 			+ "	INNER JOIN (\r\n"
@@ -470,13 +470,13 @@ public ResultSet getVisuProd(java.util.Date inDate) {
     // Create and execute a SELECT SQL statement.
     String selectSql = "select distinct  DG.numficheproduction as [N° OF], 	DC.NumGammeANodisation as [gamme ],DC.NumBarre as  [barre] \r\n"
     		+ "from   	[DetailsGammesProduction]  DG 	\r\n"
-    		+ "INNER JOIN   [DetailsFichesProduction] DF 	on   		\r\n"
+    		+ "LEFT OUTER JOIN   [DetailsFichesProduction] DF 	on   		\r\n"
     		+ "DG.numficheproduction=DF.numficheproduction COLLATE FRENCH_CI_AS and 		\r\n"
     		+ "DG.numligne=DF.NumLigne  and DF.NumLigne=1 	\r\n"
     		+ "INNER JOIN ( select distinct numficheproduction,NumGammeANodisation,NumBarre from [DetailsChargesProduction] where numligne=1\r\n"
     		+ ") DC 	\r\n"
     		+ "on   		DC.numficheproduction=DF.numficheproduction  COLLATE FRENCH_CI_AS \r\n"
-    		+ "WHERE		DF.DateEntreePoste BETWEEN   '"+deb+"'  and '"+fin+"'      "
+    		+ "WHERE		DF.DateEntreePoste >=  '"+deb+"'  and DF.DateEntreePoste < '"+fin+"'      "
     		+ "order by DG.numficheproduction ,DC.NumBarre"
 
 
@@ -587,11 +587,11 @@ public void setTempsDeplacements() {
          * car c l'ordre d'affichage des cases de la gamme dans jfreechart
          */
 
-        String selectSql = "select DG.numficheproduction,P.Nomposte +' - ' + P.LibellePoste,   "
+        String selectSql = "select DF.numficheproduction,P.Nomposte +' - ' + P.LibellePoste,   "
         		+ "DATEDIFF(SECOND, DATEADD(DAY, DATEDIFF(DAY, 0, '"+format+"'), 0),DF.DateEntreePoste), "
         		+ "DATEDIFF(SECOND, DATEADD(DAY, DATEDIFF(DAY, 0, '"+format+"'), 0),DF.DateSortiePoste)	,DF.NumLigne, DF.Numposte  from   "
         		+ "[DetailsGammesProduction]  DG "
-        		+ "INNER JOIN   [DetailsFichesProduction] DF "
+        		+ "RIGHT OUTER JOIN   [DetailsFichesProduction] DF "
         		+ "on   "
         		+ "	DG.numficheproduction=DF.numficheproduction  COLLATE FRENCH_CI_AS  and "
         		+ "	DG.numligne=DF.NumLigne and DG.NumPosteReel=DF.NumPoste "
@@ -599,7 +599,7 @@ public void setTempsDeplacements() {
         		+ "INNER JOIN POSTES P "
         		+ "on P.Numposte=DF.Numposte "
         		+ " and DF.numficheproduction in ("+toClause(listeOF)+")  "
-        		+ "  order by DG.numficheproduction, DF.Numposte,DG.NumLigne";
+        		+ "  order by DF.numficheproduction, DF.Numposte,DG.NumLigne";
 
         try {
 			resultSet = mStatement.executeQuery(selectSql);

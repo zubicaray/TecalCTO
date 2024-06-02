@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
 
 
@@ -503,6 +504,11 @@ public class GanttChart extends JFrame {
 		for(int currentFiche = 0; currentFiche < totalFicheProdCount; currentFiche++){
 			String fiche=fichesProd[currentFiche];
 			int cptt=0;
+			
+			if(!tempsAuPostes.containsKey(fiche)) {
+				System.out.println( "Alerte exception ! numfiche="+fiche);
+				//continue;
+			}
 			labels.add(new String[tempsAuPostes.get(fiche).size()]);
 			for (Entry<Integer, PosteProd> set :  tempsAuPostes.get(fiche).entrySet()) {
 	 
