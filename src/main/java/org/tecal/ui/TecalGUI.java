@@ -837,7 +837,7 @@ public class TecalGUI {
 	            		
 	            		if(resultGammeChanged==0) {
             				//JOptionPane.showMessageDialog(frmTecalOrdonnanceur, "Right-click gamme="+tableOF.getModel().getValueAt(row, 1).toString());
-    	            		int result = JOptionPane.showConfirmDialog((Component) null, "Voulez-vous aussi écraser les valeurs non nulles?","alert", JOptionPane.YES_NO_CANCEL_OPTION);
+    	            		int result = JOptionPane.showConfirmDialog((Component) null, "OF choisi: "+of+". Voulez-vous aussi écraser les valeurs non nulles?","alert", JOptionPane.YES_NO_CANCEL_OPTION);
 
     	            		if(result!=2) {
     	            			boolean b = (result == 0);
@@ -848,6 +848,8 @@ public class TecalGUI {
     	            		}
             			}
 	            		
+	            	}else {
+	            		JOptionPane.showMessageDialog(frmTecalOrdonnanceur, "Sélectionner une ligne.");
 	            	}
 	            }
 	        });

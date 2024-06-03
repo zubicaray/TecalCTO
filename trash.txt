@@ -2,7 +2,4 @@ gammes  78 et 119 => no solution
 3 mars 2022 : prod better than CPO !!
 
 
-gamme 51 et 33 559
-659
-
-coloration:799,773,713,619
+20240403 :bug prod chart

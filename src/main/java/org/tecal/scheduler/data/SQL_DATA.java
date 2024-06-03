@@ -226,7 +226,7 @@ public HashMap<Integer,PosteBDD> getPostes(String[] listeOF) {
         // Create and execute a SELECT SQL statement.
         String selectSql = "select distinct P.Nomposte +' - ' + P.LibellePoste,P.numposte from   "
         		+ "[DetailsGammesProduction]  DG "
-        		+ "INNER JOIN   [DetailsFichesProduction] DF "
+        		+ " RIGHT OUTER  JOIN [DetailsFichesProduction] DF "
         		+ "on   "
         		+ "	DG.numficheproduction=DF.numficheproduction  COLLATE FRENCH_CI_AS  and "
         		+ "	DG.numligne=DF.NumLigne and DG.NumPosteReel=DF.NumPoste "
@@ -639,6 +639,8 @@ public void setTempsDeplacements() {
 	            String Nomposte=resultSet.getString(2);
 	            int numligne=resultSet.getInt(5);
 	            int numposte=resultSet.getInt(6);
+	            
+	            System.out.println( "fiche= "+fiche+" ,numposte= " + numposte);
 
 	            if (!finalArray.containsKey(fiche)) {
 	            	finalArray.put(fiche, new  LinkedHashMap<> ());
