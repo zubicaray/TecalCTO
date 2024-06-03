@@ -128,6 +128,7 @@ public class TecalGUI {
 	private JTextField textEnd;
 	private JTextField textStart;
 	private  JTable tableTpsMvts;
+	private JButton btnRefresh;
 
 
 	/**
@@ -549,6 +550,53 @@ public class TecalGUI {
 
 
 		 panelMvtPonts.add(buttonsPanel, BorderLayout.PAGE_START);
+		 
+		 btnRefresh = new JButton("");
+		 CPO_Panel.setIconButton(this,btnRefresh,"icons8-update-16.png");
+		 
+		 btnRefresh.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+
+					Vector<Vector<Object>> data = new Vector<>();
+					Vector<String> columnNames;
+					DefaultTableModel modelMvts ;
+					try {
+						columnNames = getTpsMvts(data);
+						modelMvts = new DefaultTableModel(data, columnNames) {
+	
+					    	    /**
+								 *
+								 */
+								private static final long serialVersionUID = 1L;
+	
+								@Override
+					    	    public boolean isCellEditable(int row, int column) {
+					    	       //all cells false
+					    	       return false;
+					    	    }
+					    	};
+					    	tableTpsMvts.setModel(modelMvts);
+					} catch (SQLException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					
+
+					TableColumnModel tcm = tableTpsMvts.getColumnModel();
+					tcm.removeColumn( tcm.getColumn(0) );
+			    	tcm.removeColumn( tcm.getColumn(1) );
+			    	tcm.removeColumn( tcm.getColumn(2) );
+			    	tcm.removeColumn( tcm.getColumn(3) );
+				
+					tableTpsMvts.repaint();
+
+
+				}
+			});
+		 
+		 
+		 buttonsPanel.add(btnRefresh);
 		 panelMvtPonts.add(scrollMvtsTable, BorderLayout.CENTER);
 
 		 tableTpsMvts = new JTable();
@@ -612,25 +660,8 @@ public class TecalGUI {
 	        throws SQLException {
 
 
-		ResultSet rs =sqlCnx.getTpsMvts();
-	    ResultSetMetaData metaData = rs.getMetaData();
-
-	    // names of columns
-	    Vector<String> columnNames = new Vector<>();
-	    int columnCount = metaData.getColumnCount();
-	    for (int column = 1; column <= columnCount; column++) {
-	        columnNames.add(metaData.getColumnName(column));
-	    }
-
-	    // data of the table
-	    Vector<Vector<Object>> data = new Vector<>();
-	    while (rs.next()) {
-	        Vector<Object> vector = new Vector<>();
-	        for (int columnIndex = 1; columnIndex <= columnCount; columnIndex++) {
-	            vector.add(rs.getObject(columnIndex));
-	        }
-	        data.add(vector);
-	    }
+		Vector<Vector<Object>> data = new Vector<>();
+		Vector<String> columnNames = getTpsMvts(data);
 
 	    DefaultTableModel modelMvts = new DefaultTableModel(data, columnNames) {
 
@@ -650,6 +681,9 @@ public class TecalGUI {
     	TableColumnModel tcm = tableTpsMvts.getColumnModel();
     	tcm.removeColumn( tcm.getColumn(0) );
     	tcm.removeColumn( tcm.getColumn(1) );
+    	tcm.removeColumn( tcm.getColumn(2) );
+    	tcm.removeColumn( tcm.getColumn(3) );
+    
 
 
 
@@ -658,6 +692,29 @@ public class TecalGUI {
 
 
 
+	}
+
+	private Vector<String> getTpsMvts(Vector<Vector<Object>> data) throws SQLException {
+		ResultSet rs =sqlCnx.getTpsMvts();
+	    ResultSetMetaData metaData = rs.getMetaData();
+
+	    // names of columns
+	    Vector<String> columnNames = new Vector<>();
+	    int columnCount = metaData.getColumnCount();
+	    for (int column = 1; column <= columnCount; column++) {
+	        columnNames.add(metaData.getColumnName(column));
+	    }
+
+	    // data of the table
+	   
+	    while (rs.next()) {
+	        Vector<Object> vector = new Vector<>();
+	        for (int columnIndex = 1; columnIndex <= columnCount; columnIndex++) {
+	            vector.add(rs.getObject(columnIndex));
+	        }
+	        data.add(vector);
+	    }
+		return columnNames;
 	}
 
 
@@ -766,20 +823,31 @@ public class TecalGUI {
 
 
 	            	if(row>=0) {
-
-
-
-	            		//JOptionPane.showMessageDialog(frmTecalOrdonnanceur, "Right-click gamme="+tableOF.getModel().getValueAt(row, 1).toString());
-	            		int result = JOptionPane.showConfirmDialog((Component) null, "Voulez-vous aussi écraser les valeurs non nulles?","alert", JOptionPane.YES_NO_CANCEL_OPTION);
-
-	            		if(result!=2) {
-	            			boolean b = (result == 0);
-	            			if(!SQL_DATA.getInstance().updateTpsMvts(tableOF.getModel().getValueAt(row, 0).toString(), b)){
-	            				//MAJ des gammes
-	            				SQL_DATA.getInstance().setMissingTimeMovesGammes();
-	            			}
+	            		String of=tableOF.getModel().getValueAt(row, 0).toString();
+	            		String gamme=tableOF.getModel().getValueAt(row, 1).toString();
+	            		int resultGammeChanged=0;
+	            		if(SQL_DATA.getInstance().gammeChangedAfterOF(of,gamme)){
+	            			resultGammeChanged = JOptionPane.showConfirmDialog((Component) null,
+	            					"La gamme a changé depuis que cet OF est passé en prod. Des mouvements peuvent manquer ... continuer?",
+	            					"alert", JOptionPane.YES_NO_OPTION);
+	            			
+	            		
 	            		}
+	            		
+	            		
+	            		if(resultGammeChanged==0) {
+            				//JOptionPane.showMessageDialog(frmTecalOrdonnanceur, "Right-click gamme="+tableOF.getModel().getValueAt(row, 1).toString());
+    	            		int result = JOptionPane.showConfirmDialog((Component) null, "Voulez-vous aussi écraser les valeurs non nulles?","alert", JOptionPane.YES_NO_CANCEL_OPTION);
 
+    	            		if(result!=2) {
+    	            			boolean b = (result == 0);
+    	            			if(!SQL_DATA.getInstance().updateTpsMvts(of, b)){
+    	            				//MAJ des gammes
+    	            				SQL_DATA.getInstance().setMissingTimeMovesGammes();
+    	            			}
+    	            		}
+            			}
+	            		
 	            	}
 	            }
 	        });

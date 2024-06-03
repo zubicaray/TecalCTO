@@ -371,24 +371,52 @@ public void  setMissingTimeMovesGammes() {
 
 }
 
+
+public boolean gammeChangedAfterOF(String of,String gamme) {
+	boolean res= false;
+	ResultSet resultSet;
+	String req="select 1 \r\n"
+			+ "from \r\n"
+			+ "	DetailsFichesProduction P\r\n"
+			+ "	INNER JOIN DetailsGammesProduction PA\r\n"
+			+ "		on  PA.numligne=P.numligne and P.NumFicheProduction=PA.NumFicheProduction\r\n"
+			+ "	INNER JOIN  DetailsGammesAnodisation  G\r\n"
+			+ "		on PA.numligne=G.numligne and G.numzone != PA.numzone\r\n"			
+			+ "where  P.NumFicheProduction='"+of+"' and G.NumGamme='"+gamme+"' ;";
+	
+
+
+	    try {
+	    	resultSet = mStatement.executeQuery(req);
+			// Print results from select statement
+	    	if(resultSet.isBeforeFirst()) return true;
+
+		} catch (SQLException e) {
+			JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
+			e.printStackTrace();
+			res=false;
+		}
+
+	    return res;
+
+}
 public boolean updateTpsMvts(String of,boolean updateNoNull) {
 	boolean res= false;
 
 	String req="Update  [TempsDeplacements] \r\n"
-			+ "SET normal=dbo.InlineMax(0,T.tps) \r\n"
+			//+ "SET normal=dbo.InlineMax(0,T.tps) \r\n"
+			+ "SET normal=T.tps \r\n"
 			+ "FROM \r\n"
 			+ "	[TempsDeplacements] TPS\r\n"
 			+ "	INNER JOIN (\r\n"
 			+ "\r\n"
 			+ "		select DP1.NumZone N1,P1.NomPoste M1, DP2.NumZone N2,P2.NomPoste M2,\r\n"
-			+ "			DATEDIFF(SECOND, DATEADD(DAY, DATEDIFF(DAY, 0, F2.DateEntreePoste), 0),F2.DateEntreePoste) -\r\n"
-			+ "				DATEDIFF(SECOND, DATEADD(DAY, DATEDIFF(DAY, 0, F1.DateSortiePoste), 0),F1.DateSortiePoste)-\r\n"
-			+ "				DP1.TempsEgouttageSecondes	as tps\r\n"
+			+ "			DATEDIFF(SECOND, F1.DateSortiePoste,F2.DateEntreePoste)-DP1.TempsEgouttageSecondes	as tps\r\n"
 			+ "		from \r\n"
 			+ "			DetailsFichesProduction  F1\r\n"
 			+ "			INNER JOIN DetailsFichesProduction  F2\r\n"
 			+ "			ON F1.NumFicheProduction =F2.NumFicheProduction  COLLATE FRENCH_CI_AS \r\n"
-			+ "				AND F1.NumLigne=F2.NumLigne-1\r\n"
+			+ "				AND F1.NumLigne=F2.NumLigne-1 and F1.DateEntreePoste<F2.DateEntreePoste\r\n"
 			+ "			INNER JOIN POSTES P1\r\n"
 			+ "				on P1.Numposte=F1.Numposte\r\n"
 			+ "			INNER JOIN POSTES P2\r\n"
