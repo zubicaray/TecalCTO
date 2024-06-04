@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -129,6 +130,14 @@ public class TecalGUI {
 	private JTextField textStart;
 	private  JTable tableTpsMvts;
 	private JButton btnRefresh;
+	private JButton btnEraseButton;
+	private JButton btnImport;
+	private JPanel panelCalibrage;
+	private JTextField   filterTextField;
+	private TableRowSorter<DefaultTableModel> sorter;
+	
+	 private JTable tableCalibrage;
+	 private DefaultTableModel tableModelCalibrage;
 
 
 	/**
@@ -222,6 +231,7 @@ public class TecalGUI {
 		//panelCPO.setLayout(gl_panel);
 		buildVisuProd();
 		buildMvtPonts();
+		buildCalibrageTab();
 		buildParamsTab(tabbedPaneMain);
 
 		frmTecalOrdonnanceur.getContentPane().setLayout(groupLayout);
@@ -394,8 +404,190 @@ public class TecalGUI {
 
 
 	}
+	 private void loadData() {
+	        try {
+	            Statement stmt =  SQL_DATA.getInstance().getStatement();
+	            ResultSet rs = stmt.executeQuery("SELECT * FROM CalibrageTempsGammes ");
+	            ResultSetMetaData metaData = rs.getMetaData();
+
+	            // Create column names
+	            int columnCount = metaData.getColumnCount();
+	            String[] columnNames = new String[columnCount];
+	            for (int i = 1; i <= columnCount; i++) {
+	                columnNames[i - 1] = metaData.getColumnName(i);
+	            }
+
+	            // Create table model
+	            tableModelCalibrage = new DefaultTableModel(columnNames, 0) {
+	            	 /**
+					 * 
+					 */
+					private static final long serialVersionUID = 1L;
+
+					@Override
+	            	    public boolean isCellEditable(int row, int column) {
+	            	       //all cells false
+	            	       return false;
+	            	    }
+	            };
+	            tableCalibrage = new JTable(tableModelCalibrage);
+	            tableCalibrage.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+	            sorter = new TableRowSorter<>(tableModelCalibrage);
+	            tableCalibrage.setRowSorter(sorter);
+	            
+	            
+	            
+	            // Add mouse listener for row deletion
+	            tableCalibrage.addMouseListener(new MouseAdapter() {
+	                public void mouseClicked(MouseEvent e) {
+	                    if (e.getClickCount() == 2) {
+	                        int row = tableCalibrage.getSelectedRow();
+	                        if (row != -1) {
+	                            deleteRow(row);
+	                        }
+	                    }
+	                }
+	            });
+
+	            
+	            // Add rows to table model
+	            while (rs.next()) {
+	                Object[] rowData = new Object[columnCount];
+	                for (int i = 1; i <= columnCount; i++) {
+	                    rowData[i - 1] = rs.getObject(i);
+	                }
+	                tableModelCalibrage.addRow(rowData);
+	            }
+
+	        } catch (SQLException e) {
+	            e.printStackTrace();
+	            JOptionPane.showMessageDialog(null, "Error loading data: " + e.getMessage());
+	        }
+	    }
+
+	    private void saveChanges() {
+	        try {
+	            for (int i = 0; i < tableModelCalibrage.getRowCount(); i++) {
+	                StringBuilder query = new StringBuilder("UPDATE CalibrageTempsGammes SET ");
+	                StringBuilder whereClause = new StringBuilder(" WHERE ");
+	                boolean firstColumn = true;
+	                boolean firstWhere = true;
+
+	                for (int j = 0; j < tableModelCalibrage.getColumnCount(); j++) {
+	                    String columnName = tableModelCalibrage.getColumnName(j);
+	                    Object value = tableModelCalibrage.getValueAt(i, j);
+
+	                    if (firstColumn) {
+	                        firstColumn = false;
+	                    } else {
+	                        query.append(", ");
+	                    }
+	                    query.append(columnName).append(" = '").append(value).append("'");
+
+	                    // Assuming the first column is the primary key
+	                    if (j == 0) {
+	                        if (firstWhere) {
+	                            firstWhere = false;
+	                        } else {
+	                            whereClause.append(" AND ");
+	                        }
+	                        whereClause.append(columnName).append(" = '").append(value).append("'");
+	                    }
+	                }
+
+	                query.append(whereClause);
+	                Statement stmt = SQL_DATA.getInstance().getStatement();
+	                stmt.executeUpdate(query.toString());
+	            }
+
+	            JOptionPane.showMessageDialog(null, "Changes saved successfully.");
+	        } catch (SQLException e) {
+	            e.printStackTrace();
+	            JOptionPane.showMessageDialog(null, "Error saving changes: " + e.getMessage());
+	        }
+	    }
+	    
+    private void applyFilter() {
+        String text = filterTextField.getText();
+        if (text.trim().length() == 0) {
+            sorter.setRowFilter(null);
+        } else {
+            sorter.setRowFilter(RowFilter.regexFilter( ".*"+ text+".*",0));
+           
+        }
+    }
+    
+    private void deleteRow(int row) {
+        try {
+            StringBuilder whereClause = new StringBuilder(" WHERE ");
+            for (int j = 0; j < tableModelCalibrage.getColumnCount(); j++) {
+                String columnName = tableModelCalibrage.getColumnName(j);
+                Object value = tableModelCalibrage.getValueAt(row, j);
+
+                if (j > 0) {
+                    whereClause.append(" AND ");
+                }
+                whereClause.append(columnName).append(" = '").append(value).append("'");
+            }
+
+            String deleteQuery = "DELETE FROM CalibrageTempsGammes" + whereClause.toString();
+            Statement stmt =  SQL_DATA.getInstance().getStatement();
+            stmt.executeUpdate(deleteQuery);
+
+            tableModelCalibrage.removeRow(row);
+            JOptionPane.showMessageDialog(null, "Row deleted successfully.");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error deleting row: " + e.getMessage());
+        }
+    }
+    
+	private void buildCalibrageTab() {
+		
+		panelCalibrage = new JPanel();
+		tabbedPaneMain.addTab("Fiche de calibrages", null, panelCalibrage, null);
+		
+		
+		JPanel filterPanel = new JPanel();
+		filterTextField = new JTextField();
+		JButton filterButton = new JButton("Filtrer");
+
+        filterButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                applyFilter();
+            }
+        });
+        filterPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+
+        filterPanel.add(new JLabel("Filtrer sur la gamme: "));
+        filterPanel.add(filterTextField);
+        filterPanel.add(filterButton);
+		
+		
+		loadData();
+
+        // Add save button
+        JButton saveButton = new JButton("Save Changes");
+        saveButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                saveChanges();
+            }
+        });
+        saveButton.setVisible(false);
+
+        // Layout the components
+        panelCalibrage.setLayout(new BorderLayout());
+        panelCalibrage.add(new JScrollPane(tableCalibrage), BorderLayout.CENTER);
+        panelCalibrage.add(saveButton, BorderLayout.SOUTH);	        
+       
+        panelCalibrage.add(filterPanel, BorderLayout.NORTH);
+	}
 
 	private void buildParamsTab(JTabbedPane tabbedPane) {
+		
+		
 
 
 
@@ -597,6 +789,48 @@ public class TecalGUI {
 		 
 		 
 		 buttonsPanel.add(btnRefresh);
+		 
+		 btnEraseButton = new JButton("RAZ");
+		 btnEraseButton.addActionListener(new ActionListener() {
+		 	public void actionPerformed(ActionEvent e) {
+		 		
+		 	
+		 		
+		 		int result = JOptionPane.showConfirmDialog((Component) null,
+    					"Attention ! Vous allez mettre tous les temps à zéro ! Continuer?",
+    					"alerte", JOptionPane.YES_NO_OPTION);
+		 		if(result==0) {
+		 			frmTecalOrdonnanceur.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		 			if(!SQL_DATA.getInstance().eraseTpsMvts()) {
+		 				JOptionPane.showMessageDialog(null,  "Echec de la  RAZ !");
+		 			}else {
+		 				JOptionPane.showMessageDialog(null,  "RAZ réussie!");
+		 			}
+		 			frmTecalOrdonnanceur.setCursor(Cursor.getDefaultCursor());
+		 		}
+		 	}
+		 });
+		 buttonsPanel.add(btnEraseButton);
+		 
+		 btnImport = new JButton("Calcul auto.");
+		 btnImport.addActionListener(new ActionListener() {
+		 	public void actionPerformed(ActionEvent e) {
+		 		
+		 		int result = JOptionPane.showConfirmDialog((Component) null,
+    					"Attention ! Vous allez recalculer tous les temps ! Continuer?",
+    					"alerte", JOptionPane.YES_NO_OPTION);
+		 		if(result==0) {
+		 			if(!SQL_DATA.getInstance().resetAllTpsMvts()) {
+		 				JOptionPane.showMessageDialog(null,  "Echec de la  MAJ !");
+		 			}else {
+		 				JOptionPane.showMessageDialog(null,  "MAJ réussie!");
+		 			}
+		 		}
+		 		
+		 		
+		 	}
+		 });
+		 buttonsPanel.add(btnImport);
 		 panelMvtPonts.add(scrollMvtsTable, BorderLayout.CENTER);
 
 		 tableTpsMvts = new JTable();
@@ -813,7 +1047,7 @@ public class TecalGUI {
 
 
 		 final JPopupMenu popupMenu = new JPopupMenu();
-	        JMenuItem item = new JMenuItem("Etalonnage  des mouvements");
+	        JMenuItem item = new JMenuItem("Calibrage des mouvements de la gamme");
 	        item.addActionListener(new ActionListener() {
 
 	            @Override
@@ -825,6 +1059,7 @@ public class TecalGUI {
 	            	if(row>=0) {
 	            		String of=tableOF.getModel().getValueAt(row, 0).toString();
 	            		String gamme=tableOF.getModel().getValueAt(row, 1).toString();
+	            		
 	            		int resultGammeChanged=0;
 	            		if(SQL_DATA.getInstance().gammeChangedAfterOF(of,gamme)){
 	            			resultGammeChanged = JOptionPane.showConfirmDialog((Component) null,
@@ -835,7 +1070,9 @@ public class TecalGUI {
 	            		}
 	            		
 	            		
-	            		if(resultGammeChanged==0) {
+	            		if(resultGammeChanged==0) {            			
+	            			
+	            			
             				//JOptionPane.showMessageDialog(frmTecalOrdonnanceur, "Right-click gamme="+tableOF.getModel().getValueAt(row, 1).toString());
     	            		int result = JOptionPane.showConfirmDialog((Component) null, "OF choisi: "+of+". Voulez-vous aussi écraser les valeurs non nulles?","alert", JOptionPane.YES_NO_CANCEL_OPTION);
 
@@ -846,6 +1083,17 @@ public class TecalGUI {
     	            				SQL_DATA.getInstance().setMissingTimeMovesGammes();
     	            			}
     	            		}
+    	            		java.util.Date d=(java.util.Date) datePicker.getModel().getValue();
+    	            		
+    	            		if(SQL_DATA.getInstance().gammeCalibrageExists(gamme)) {
+    	            			result = JOptionPane.showConfirmDialog((Component) null, "La gamme a déjà un OF de calibré, MAJ ?","alert", JOptionPane.YES_NO_OPTION);
+
+        	            		if(result==0)        	            			
+        	            			SQL_DATA.getInstance().updateCalibrageGamme(gamme, of, d);
+    	            		}else {
+    	            			SQL_DATA.getInstance().insertCalibrageGamme(gamme, of,d );
+    	            		}
+    	            		
             			}
 	            		
 	            	}else {

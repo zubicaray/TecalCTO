@@ -215,7 +215,11 @@ private  void setZones() {
 
 }
 
+public Statement getStatement() throws SQLException {
 
+	return mConnection.createStatement();
+
+}
 //TODO
 //appeler deux fois pour le diag de prod
 public HashMap<Integer,PosteBDD> getPostes(String[] listeOF) {
@@ -400,6 +404,87 @@ public boolean gammeChangedAfterOF(String of,String gamme) {
 	    return res;
 
 }
+
+public boolean gammeCalibrageExists(String gamme) {
+	boolean res= false;
+	ResultSet resultSet;
+	String req="select 1 \r\n"
+			+ "from \r\n"
+			+ "	CalibrageTempsGammes \r\n"
+			+ "	Where NumGamme='"+gamme+"' ;";
+	
+
+
+	    try {
+	    	resultSet = mStatement.executeQuery(req);
+			// Print results from select statement
+	    	if(resultSet.isBeforeFirst()) return true;
+
+		} catch (SQLException e) {
+			JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
+			e.printStackTrace();
+			res=false;
+		}
+
+	    return res;
+
+}
+
+public boolean updateCalibrageGamme(String gamme,String of,java.util.Date d) {
+	boolean res= false;
+	String date=toSQLServerFormat(d); 
+	String req="update \r\n"
+			+ "	CalibrageTempsGammes \r\n"
+			+" set NumFicheProduction='"+of+"' , date='"+date+"'"
+			+ "	Where NumGamme='"+gamme+"' ;";
+	
+
+
+	    try {
+	    	res = mStatement.execute(req);
+			// Print results from select statement
+	    	
+
+		} catch (SQLException e) {
+			JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
+			e.printStackTrace();
+			res=false;
+		}
+
+	    return res;
+
+}
+
+public boolean insertCalibrageGamme(String gamme,String of,java.util.Date d) {
+	boolean res= false;
+	
+	String date=toSQLServerFormat(d); 
+	
+	String req="insert into  \r\n"
+			+ "	CalibrageTempsGammes (NumGamme,NumFicheProduction,date) values \r\n"
+			+"( '"+gamme+"','"+of+"','"+date+"' )";
+	
+
+
+	    try {
+	    	res = mStatement.execute(req);
+			// Print results from select statement
+	    	
+
+		} catch (SQLException e) {
+			JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
+			e.printStackTrace();
+			res=false;
+		}
+
+	    return res;
+
+}
+
+
+
+
+
 public boolean updateTpsMvts(String of,boolean updateNoNull) {
 	boolean res= false;
 
@@ -450,6 +535,76 @@ public boolean updateTpsMvts(String of,boolean updateNoNull) {
 	    return res;
 
 }
+
+public boolean eraseTpsMvts() {
+	boolean res= true;
+
+	String req="Update  [TempsDeplacements]  set normal=0; ";
+	
+
+	    try {
+			mStatement.execute(req);
+			// Print results from select statement
+
+		} catch (SQLException e) {
+			JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
+			e.printStackTrace();
+			res=false;
+		}
+
+	    return res;
+
+}
+
+public boolean resetAllTpsMvts() {
+	boolean res= true;
+
+	String req="Update  [TempsDeplacements] \r\n"
+			+ "SET normal=T.tps\r\n"
+			+ "FROM \r\n"
+			+ "	[TempsDeplacements] TPS\r\n"
+			+ "	INNER JOIN (\r\n"
+			+ "\r\n"
+			+ "		select F1.NumPoste N1,P1.NomPoste M1,F2.NumPoste N2,P2.NomPoste M2,AVG(\r\n"
+			+ "			DATEDIFF(SECOND, DATEADD(DAY, DATEDIFF(DAY, 0, F2.DateEntreePoste), 0),F2.DateEntreePoste) -\r\n"
+			+ "				DATEDIFF(SECOND, DATEADD(DAY, DATEDIFF(DAY, 0, F1.DateSortiePoste), 0),F1.DateSortiePoste)-\r\n"
+			+ "				DP.TempsEgouttageSecondes)	as tps\r\n"
+			+ "		from \r\n"
+			+ "			DetailsFichesProduction  F1\r\n"
+			+ "			INNER JOIN DetailsFichesProduction  F2\r\n"
+			+ "			ON F1.NumFicheProduction =F2.NumFicheProduction\r\n"
+			+ "				AND F1.NumLigne=F2.NumLigne-1\r\n"
+			+ "			INNER JOIN POSTES P1\r\n"
+			+ "				on P1.Numposte=F1.Numposte\r\n"
+			+ "			INNER JOIN POSTES P2\r\n"
+			+ "				on P2.Numposte=F2.Numposte\r\n"
+			+ "			INNER JOIN DetailsGammesProduction DP\r\n"
+			+ "			ON F1.NumFicheProduction =DP.NumFicheProduction and \r\n"
+			+ "			 F1.NumLigne=DP.NumLigne\r\n"
+			+ "	\r\n"
+			+ "		where F1.NumFicheProduction in (select NumFicheProduction from CalibrageTempsGammes ) \r\n"
+			+ "		group by F1.NumPoste ,P1.NomPoste ,F2.NumPoste ,P2.NomPoste\r\n"
+			+ "	--order by F1.NumLigne\r\n"
+			+ "	)  T\r\n"
+			+ "	ON TPS.depart=T.N1 and TPS.arrivee=T.N2 ";
+	
+
+	    try {
+			mStatement.execute(req);
+			// Print results from select statement
+
+		} catch (SQLException e) {
+			JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
+			e.printStackTrace();
+			res=false;
+		}
+
+	    return res;
+
+}
+
+
+
 
 public ResultSet getTpsMvts() {
 	ResultSet resultSet = null;
