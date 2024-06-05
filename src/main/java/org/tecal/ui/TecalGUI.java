@@ -805,6 +805,8 @@ public class TecalGUI {
 		 				JOptionPane.showMessageDialog(null,  "Echec de la  RAZ !");
 		 			}else {
 		 				JOptionPane.showMessageDialog(null,  "RAZ réussie!");
+		 				//MAJ des gammes
+        				SQL_DATA.getInstance().setMissingTimeMovesGammes();
 		 			}
 		 			frmTecalOrdonnanceur.setCursor(Cursor.getDefaultCursor());
 		 		}
@@ -824,6 +826,8 @@ public class TecalGUI {
 		 				JOptionPane.showMessageDialog(null,  "Echec de la  MAJ !");
 		 			}else {
 		 				JOptionPane.showMessageDialog(null,  "MAJ réussie!");
+		 				//MAJ des gammes
+        				SQL_DATA.getInstance().setMissingTimeMovesGammes();
 		 			}
 		 		}
 		 		
