@@ -99,6 +99,9 @@ public class JobType {
 
 	void makeSafetyBetweenBridges() {
 		
+		if(indexAnod==-1) return ;
+		
+		
 		IntVar deb = null;
 		IntVar fin= null;
 		
@@ -175,6 +178,10 @@ public class JobType {
 				taskOrdoNext = mTaskOrdoList.get(taskID+1);
 		
 			if(indexAnod > 0 && taskID >indexAnod) {
+				bridge=1;								
+			}
+			// si pas de zone d'ano
+			if(indexAnod < 0 && tasksJob.get(taskID).numzone >=CST.ANODISATION_NUMZONE) {
 				bridge=1;								
 			}
 			ListeZone lBridgeMoves=bridgesMoves.get(bridge);

@@ -41,12 +41,12 @@ public class CST {
 	public final static String testBig[] ={"000054","000601","000485","000024","000601","000818","000812","000717","000002","000169",
 			"000020","000021","000164","000601","000467","000347","000169",
 			"000686","000212","000818","000818","000812","000811","000022","000601","000109","000818"};
-	public final static String testPbNoSolu[] ={"000009","000009"};
-	public final static String testPbNoSolu2[] ={"000008","000008"};
+	public final static String testPbNoSolu[] ={"000794","000794","000794"};
 	
-	public final static String gammesTest[] =testBig;
 	
-	public final static int TEMPS_MAX_SOLVEUR=20;
+	public final static String gammesTest[] =testPbNoSolu;
+	
+	public final static int TEMPS_MAX_SOLVEUR=40;
 	
 	
 	//------------------------------------------------------------

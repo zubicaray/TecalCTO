@@ -535,10 +535,10 @@ public class TecalGUI {
             stmt.executeUpdate(deleteQuery);
 
             tableModelCalibrage.removeRow(row);
-            JOptionPane.showMessageDialog(null, "Row deleted successfully.");
+            JOptionPane.showMessageDialog(null, "OF de calibrage supprimé.");
         } catch (SQLException e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(null, "Error deleting row: " + e.getMessage());
+            JOptionPane.showMessageDialog(null, "Echec de la suppression de l'OF de calibrage: " + e.getMessage());
         }
     }
     
@@ -568,7 +568,7 @@ public class TecalGUI {
 		loadData();
 
         // Add save button
-        JButton saveButton = new JButton("Save Changes");
+        JButton saveButton = new JButton("Sauver");
         saveButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -642,7 +642,7 @@ public class TecalGUI {
 		JLabel lblNewLabel_2_1 = new JLabel("TEMPS MAX SOLVER");
 
 		textTEMPS_MAX_SOLVEUR = new JTextField();
-		textTEMPS_MAX_SOLVEUR.setText("40");
+		textTEMPS_MAX_SOLVEUR.setText(Integer.toString(CST.TEMPS_MAX_SOLVEUR));
 		textTEMPS_MAX_SOLVEUR.setHorizontalAlignment(SwingConstants.RIGHT);
 		textTEMPS_MAX_SOLVEUR.setColumns(10);
 
@@ -822,6 +822,7 @@ public class TecalGUI {
     					"Attention ! Vous allez recalculer tous les temps ! Continuer?",
     					"alerte", JOptionPane.YES_NO_OPTION);
 		 		if(result==0) {
+		 			frmTecalOrdonnanceur.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		 			if(!SQL_DATA.getInstance().resetAllTpsMvts()) {
 		 				JOptionPane.showMessageDialog(null,  "Echec de la  MAJ !");
 		 			}else {
@@ -829,6 +830,7 @@ public class TecalGUI {
 		 				//MAJ des gammes
         				SQL_DATA.getInstance().setMissingTimeMovesGammes();
 		 			}
+		 			frmTecalOrdonnanceur.setCursor(Cursor.getDefaultCursor());
 		 		}
 		 		
 		 		

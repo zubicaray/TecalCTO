@@ -20,7 +20,7 @@ public class TaskOrdo {
 	//IntVar deb;
 	private IntVar fin;
 	private IntVar deriveNulle;
-	private IntVar deriveMax;
+
 	IntervalVar intervalReel;
 	IntervalVar minimumDerive;
 	IntervalVar maximumDerive;
@@ -75,9 +75,7 @@ public class TaskOrdo {
 		return TecalOrdo.solver.value(intervalReel.getEndExpr());
 	}
 	
-	public IntVar getDeriveMax() {
-		return deriveMax;
-	}
+
 	
 	public long getDeriveMaxValue() {
 		return TecalOrdo.solver.value(maximumDerive.getStartExpr());
@@ -140,8 +138,7 @@ public class TaskOrdo {
 		endBDD 		= model.newIntVar(0, TecalOrdo.horizon, "end"   + suffix);		
 		fin			= model.newIntVar(0, TecalOrdo.horizon, "fin_nooverlap");
 		deriveNulle	= model.newIntVar(0, TecalOrdo.horizon, "deriveNulle");
-		deriveMax	= model.newIntVar(0, TecalOrdo.horizon, "deriveMax");		
-		      
+		
 		intervalBDD = model.newIntervalVar(startBDD, LinearExpr.constant(duration),endBDD, "interval" + suffix);
 		  
 		intervalReel=model.newIntervalVar(
@@ -149,11 +146,7 @@ public class TaskOrdo {
 				LinearExpr.constant(duration+egouttage+inderive+tempsDeplacement),
 				fin,"");
 		
-		maximumDerive=model.newIntervalVar(
-				deriveMax,
-				LinearExpr.constant(tempsDeplacement+egouttage),
-				fin,"");
-		
+	
 		
 		minimumDerive=model.newIntervalVar(
 				endBDD,
