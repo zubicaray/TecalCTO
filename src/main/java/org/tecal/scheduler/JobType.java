@@ -13,6 +13,7 @@ import org.tecal.scheduler.types.ZoneType;
 
 import com.google.ortools.sat.IntVar;
 import com.google.ortools.sat.IntervalVar;
+import com.google.ortools.sat.LinearExpr;
 
 public class JobType {
 	List<Task> tasksJob;
@@ -212,21 +213,36 @@ public class JobType {
 			Map<Integer, List<IntervalVar>> cumulDemands) {
 
 		//System.out.println("Job "+name);
-		
-		
 		for (int taskID = 0; taskID < tasksJob.size(); ++taskID) {
 			Task task = tasksJob.get(taskID);
 			String suffix = "_" + mBarreId + "_" + taskID;
 			ZoneType  zt=SQL_DATA.getInstance().getZones().get(task.numzone);
 			buildTaskOrdo(inAllTasks,   taskID, task, suffix, zt);
+		}
+		
+		for (int taskID = 0; taskID < tasksJob.size(); ++taskID) {
+			Task task = tasksJob.get(taskID);
+			ZoneType  zt=SQL_DATA.getInstance().getZones().get(task.numzone);
 			
+			LinearExpr deb=mTaskOrdoList.get(taskID).intervalReel.getStartExpr();
+			LinearExpr end;
+			if(taskID == tasksJob.size()-1) {
+				end=mTaskOrdoList.get(taskID).intervalReel.getEndExpr();
+			}
+			else
+				end=mTaskOrdoList.get(taskID+1).intervalReel.getStartExpr();
+			
+			IntervalVar inter=TecalOrdo.model.newIntervalVar(deb,TecalOrdo.model.newIntVar(0, TecalOrdo.horizon, "") ,end,"");
+			//todo check cas chargement
 			if(zt.cumul>1) {
 				multiZoneIntervals.computeIfAbsent(task.numzone, (Integer k) -> new ArrayList<>());   
-				multiZoneIntervals.get(task.numzone).add(mTaskOrdoList.get(taskID).intervalReel);
+				//multiZoneIntervals.get(task.numzone).add(mTaskOrdoList.get(taskID).intervalReel);
+				multiZoneIntervals.get(task.numzone).add(inter);
 			}
 			else {
 				zoneToIntervals.computeIfAbsent(task.numzone, (Integer k) -> new ArrayList<>());              
-				zoneToIntervals.get(task.numzone).add(mTaskOrdoList.get(taskID).intervalReel);
+				//zoneToIntervals.get(task.numzone).add(mTaskOrdoList.get(taskID).intervalReel);
+				zoneToIntervals.get(task.numzone).add(inter);
 				
 				if(SQL_DATA.getInstance().relatedZones.containsKey(task.numzone)) {
 					int zoneToAdd=SQL_DATA.getInstance().relatedZones.get(task.numzone);
@@ -234,7 +250,8 @@ public class JobType {
 					if(!cumulDemands.containsKey(zoneToAdd)) {
 						cumulDemands.put(zoneToAdd,new ArrayList<IntervalVar>());
 					}
-					cumulDemands.get(zoneToAdd).add(mTaskOrdoList.get(taskID).intervalReel);
+					//cumulDemands.get(zoneToAdd).add(mTaskOrdoList.get(taskID).intervalReel);
+					cumulDemands.get(zoneToAdd).add(inter);
 				}
 
 			}
@@ -311,7 +328,7 @@ public class JobType {
 
 		for (int i = 0; i < zones.size(); i++) {
 			GammeType gt = zones.get(i);
-			tasksJob.add(new Task(gt.time, gt.numzone,gt.egouttage));
+			tasksJob.add(new Task(gt.time, gt.numzone,gt.egouttage,gt.derive));
 			if(CST.PrintGroupementZones) 
 				System.out.println("debZone: "+gt.codezone+", gt.time="+gt.time);
 			

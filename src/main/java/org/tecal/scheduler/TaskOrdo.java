@@ -22,6 +22,7 @@ public class TaskOrdo {
 	private IntVar deriveNulle;
 
 	IntervalVar intervalReel;
+	IntervalVar intervalMax;
 	IntervalVar minimumDerive;
 	IntervalVar maximumDerive;
 	int tempsDeplacement;
@@ -76,11 +77,7 @@ public class TaskOrdo {
 	}
 	
 
-	
-	public long getDeriveMaxValue() {
-		return TecalOrdo.solver.value(maximumDerive.getStartExpr());
-	}
-	
+
 	public IntVar getDeriveNulle() { return deriveNulle ;}
 	
 	public IntVar getEndBDD() {
@@ -133,25 +130,26 @@ public class TaskOrdo {
 			isOverlapable=true;
 		}		
 		
-		
+		int tempsIncompresible=egouttage+tempsDeplacement+duration;
 		startBDD 	= model.newIntVar(0, TecalOrdo.horizon, "start" + suffix); 
 		endBDD 		= model.newIntVar(0, TecalOrdo.horizon, "end"   + suffix);		
 		fin			= model.newIntVar(0, TecalOrdo.horizon, "fin_nooverlap");
-		deriveNulle	= model.newIntVar(0, TecalOrdo.horizon, "deriveNulle");
+		deriveNulle= model.newIntVar(0, TecalOrdo.horizon, "deriveNulle");
+		//deriveVar	= model.newIntVar(tempsIncompresible,tempsIncompresible+inderive, "deriveVar");
 		
 		intervalBDD = model.newIntervalVar(startBDD, LinearExpr.constant(duration),endBDD, "interval" + suffix);
 		  
 		intervalReel=model.newIntervalVar(
 				startBDD,
 				LinearExpr.constant(duration+egouttage+inderive+tempsDeplacement),
+				//TODO best solution to finish ?
+				//deriveVar,
 				fin,"");
 		
 	
 		
-		minimumDerive=model.newIntervalVar(
-				endBDD,
-				LinearExpr.constant(tempsDeplacement+egouttage),
-				deriveNulle,"");
+	
+		minimumDerive=model.newIntervalVar(	startBDD,LinearExpr.constant(tempsIncompresible),deriveNulle,"");
 		
 
 	}

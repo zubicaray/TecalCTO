@@ -95,12 +95,12 @@ public class SQL_DATA {
 	                + "user="+user+";"
 	                + "password="+password+";"
 	                + "encrypt=true;"
-	                +"integratedSecurity=true;"
+	                //+"integratedSecurity=true;"
 	                + "trustServerCertificate=true;";
 
 
 		} catch (InvalidFileFormatException e) {
-			JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(null, e, "Alerte exception ! \r\n"+ connectionUrl,JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 		} catch (IOException e) {
 			JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
@@ -491,7 +491,7 @@ public boolean updateTpsMvts(String of,boolean updateNoNull) {
 	String req="Update  [TempsDeplacements] \r\n"
 			+ "SET normal=T.tps\r\n"
 			+ "FROM \r\n"
-			+ "	[ANODISATION_SECOURS].[dbo].[TempsDeplacements] TPS\r\n"
+			+ "	[dbo].[TempsDeplacements] TPS\r\n"
 			+ "	INNER JOIN (\r\n"
 			+ "\r\n"
 			+ "		select \r\n"
@@ -563,7 +563,7 @@ public boolean resetAllTpsMvts() {
 	String req="Update  [TempsDeplacements] \r\n"
 			+ "SET normal=T.tps\r\n"
 			+ "FROM \r\n"
-			+ "	[ANODISATION_SECOURS].[dbo].[TempsDeplacements] TPS\r\n"
+			+ "	[dbo].[TempsDeplacements] TPS\r\n"
 			+ "	INNER JOIN (\r\n"
 			+ "\r\n"
 			+ "		select \r\n"

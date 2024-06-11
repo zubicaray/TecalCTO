@@ -86,11 +86,13 @@ class Task {
 	int numzone;
 	int duration;
 	int egouttage;
+	int derive;
 
-	Task(int duration, int numzone, int egouttage) {
+	Task(int duration, int numzone, int egouttage,int derive) {
 		this.duration = duration;
 		this.numzone = numzone;
 		this.egouttage = egouttage;
+		this.derive = derive;
 	}
 }
 
@@ -420,7 +422,7 @@ public class TecalOrdo {
 		solver = new CpSolver();
 		// solver.getParameters().setNumWorkers(1);
 		// if(modeFast) {
-		// solver.getParameters().setStopAfterFirstSolution(true);
+		//solver.getParameters().setStopAfterFirstSolution(true);
 		// }
 
 		// PARAM MIRACLE
@@ -653,15 +655,19 @@ public class TecalOrdo {
 
 	private void computeHorizon() {
 		horizon = 0;
-		int factor=1;
-		if(arrayAllJobs.size()<3) factor=3;
+		
+		
 		
 		for (JobType job : arrayAllJobs) {			
 			for (Task task : job.tasksJob) {	
-				horizon += task.duration+CST.TEMPS_MVT_PONT*factor;
+				horizon += task.duration+CST.TEMPS_MVT_PONT+task.derive;
 			}
 		}
-
+		if(arrayAllJobs.size()<3) 
+			 horizon*=2;
+		else horizon/=2;
+		
+		horizon=Math.min(horizon,24*3600);
 
 	}
 
@@ -762,10 +768,15 @@ public class TecalOrdo {
 				// le debut de la zone suivante doit etre compris
 				// entre le début et la fin de la dérive
 				
-				model.addLessOrEqual(next.getStart(), prev.getFin());			
-				model.addGreaterOrEqual(next.getStart(), prev.getDeriveNulle());
-				//model.addLessOrEqual( prev.getDeriveNulle(),next.getStart());
+	
+				//TODO best solution to finish ?
+				//model.addGreaterOrEqual(next.getStart(), prev.getFin());
 				
+				model.addLessOrEqual(next.getStart(), prev.getFin());        
+				model.addGreaterOrEqual(next.getStart(), prev.getDeriveNulle());
+
+				
+
 				
 				
 			}
