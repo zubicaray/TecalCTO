@@ -1,5 +1,7 @@
 package org.tecal.scheduler.types;
 
+import org.tecal.scheduler.TecalOrdo;
+
 public class ZoneType {
 	
 	public String codezone;
@@ -18,6 +20,11 @@ public class ZoneType {
         this.derive=derive;
         this.idPosteDeb=idPosteDeb;
         this.idPosteFin=idPosteFin;
+        
+        if(numzone== TecalOrdo.mNUMZONE_ANODISATION && TecalOrdo.mCAPACITE_ANODISATION >0) {
+        	//TODO changer: code lu qu au lancement
+        	this.cumul=TecalOrdo.mCAPACITE_ANODISATION;
+		}
         
       }
     

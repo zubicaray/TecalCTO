@@ -88,22 +88,26 @@ class Task {
 	int egouttage;
 	int derive;
 
+
 	Task(int duration, int numzone, int egouttage,int derive) {
 		this.duration = duration;
 		this.numzone = numzone;
 		this.egouttage = egouttage;
-		this.derive = derive;
+		this.derive = derive;	
+		
+		
 	}
 }
 
 public class TecalOrdo {
 	
-	long mCurrentTime;
+	private long mCurrentTime;
 
 	// map de toutes les gammes
 	private HashMap<String, ArrayList<GammeType>> 	mGammes;
 	// geston des barres
 	private HashMap<Integer, ArrayList<GammeType>>			mBarreFutures;	
+	private LinkedHashMap<Integer, Barre>					mBarresSettings;
 	private LinkedHashMap<Integer, ArrayList<GammeType>>	mBarresAll;
 	private LinkedHashMap<Integer, String> 					mBarreLabels;	
 	private HashSet<Integer> 								mBarresEnCours;
@@ -194,6 +198,12 @@ public class TecalOrdo {
 	private int mTEMPS_ANO_ENTRE_P1_P2 = 0;
 	@SuppressWarnings("unused")
 	private int mTEMPS_MAX_SOLVEUR = 0;
+	@SuppressWarnings("unused")
+	public  static int mNUMZONE_ANODISATION = CST.ANODISATION_NUMZONE;
+	@SuppressWarnings("unused")
+	public	static int mCAPACITE_ANODISATION = CST.CAPACITE_ANODISATION;
+	
+	
 
 	public TecalOrdo(int source) {
 		
@@ -246,6 +256,9 @@ public class TecalOrdo {
 		mTEMPS_ANO_ENTRE_P1_P2 	= inParams[4];
 
 		mTEMPS_MAX_SOLVEUR 		= inParams[5];
+		//TODO finish dynamic numzone
+		mNUMZONE_ANODISATION	= inParams[6];
+		mCAPACITE_ANODISATION	= inParams[7];
 	}
 
 	public void setDataSource(int source) {
@@ -297,12 +310,13 @@ public class TecalOrdo {
 		return mBarreFutures;
 	}
 
-	public void setBarres(LinkedHashMap<Integer, Barre> inBarresFutures) {
+	public void setBarres(final LinkedHashMap<Integer, Barre> inBarresSettingsFutures) {
 
 		// mBarreLabels=inBarres;
 		mBarreFutures.clear();
+		mBarresSettings=inBarresSettingsFutures;
 		mBarresPrioritaires.clear();
-		for (Map.Entry<Integer, Barre> entry : inBarresFutures.entrySet()) {
+		for (Map.Entry<Integer, Barre> entry : inBarresSettingsFutures.entrySet()) {
 
 			int numbarre = entry.getKey();
 			Barre barre = entry.getValue();
@@ -338,15 +352,14 @@ public class TecalOrdo {
 
 	public LinkedHashMap<Integer, Barre> runTest() {
 
-		LinkedHashMap<Integer, Barre> res = setBarresTest();
+		mBarresSettings = setBarresTest();
 		int[] params = { CST.TEMPS_ZONE_OVERLAP_MIN, CST.TEMPS_MVT_PONT_MIN_JOB, CST.GAP_ZONE_NOOVERLAP,
-				CST.TEMPS_MVT_PONT, CST.TEMPS_ANO_ENTRE_P1_P2,  CST.TEMPS_MAX_SOLVEUR
+				CST.TEMPS_MVT_PONT, CST.TEMPS_ANO_ENTRE_P1_P2,  CST.TEMPS_MAX_SOLVEUR,CST.ANODISATION_NUMZONE
 		};
 
 		setParams(params);
 		execute();
-
-		return res;
+		return mBarresSettings;
 	}
 
 	public void run(LinkedHashMap<Integer, Barre> inBarresFutures,Long currentTime) {
@@ -605,7 +618,7 @@ public class TecalOrdo {
 			int numBarre = entry.getKey();
 			String name = numBarre + "-" + mBarreLabels.get(numBarre);
 
-			JobType job = new JobType(numBarre, name);
+			JobType job = new JobType(numBarre,mBarresSettings.get(numBarre), name);
 
 			// String lgamme = entry.getKey();
 			List<GammeType> zones = entry.getValue();
@@ -656,8 +669,6 @@ public class TecalOrdo {
 	private void computeHorizon() {
 		horizon = 0;
 		
-		
-		
 		for (JobType job : arrayAllJobs) {			
 			for (Task task : job.tasksJob) {	
 				horizon += task.duration+CST.TEMPS_MVT_PONT+task.derive;
@@ -665,7 +676,7 @@ public class TecalOrdo {
 		}
 		if(arrayAllJobs.size()<3) 
 			 horizon*=2;
-		else horizon/=2;
+		else  horizon/=2;
 		
 		horizon=Math.min(horizon,24*3600);
 

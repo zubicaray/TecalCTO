@@ -191,7 +191,8 @@ private  void setZones() {
 	ResultSet resultSet = null;
 	zones = new HashMap<>();
     // Create and execute a SELECT SQL statement.
-    String selectSql = "select Z.numzone,Z.CodeZone, Z.NumDernierPoste-Z.NumPremierPoste+1 as cumul,derive ,"
+    String selectSql = "select Z.numzone,Z.CodeZone, NbrPostes as cumul"
+    		+ ",derive ,"
     		+ "NumPremierPoste,NumDernierPoste"
     		+ " from   "
     		+ "ZONES Z order by numzone";
@@ -801,7 +802,7 @@ public void setTempsDeplacements() {
 	            int numligne=resultSet.getInt(5);
 	            int numposte=resultSet.getInt(6);
 	            
-	            System.out.println( "fiche= "+fiche+" ,numposte= " + numposte);
+	            //System.out.println( "fiche= "+fiche+" ,numposte= " + numposte);
 
 	            if (!finalArray.containsKey(fiche)) {
 	            	finalArray.put(fiche, new  LinkedHashMap<> ());

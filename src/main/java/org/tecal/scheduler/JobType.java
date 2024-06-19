@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.tecal.scheduler.data.SQL_DATA;
 import org.tecal.scheduler.types.AssignedTask;
+import org.tecal.scheduler.types.Barre;
 import org.tecal.scheduler.types.GammeType;
 import org.tecal.scheduler.types.ZoneType;
 
@@ -24,6 +25,8 @@ public class JobType {
 	ListeZone mNoOverlapP1P2;
 	
 	TaskOrdo taskAnod;
+	
+	private Barre mBarre;
 
 
 	
@@ -54,18 +57,33 @@ public class JobType {
 
 	List<GammeType> zones;
 	
-	
+		
 
-	// groupement de zones non chevauchable sur le pont 1:
-	// liste qui contient , par exemple, des tableaux du type [date arrivée C3, date
-	// fin C4]
-	// ou encore [ entrée en C17, départ de C21]
+	JobType(int barreID, final Barre barre, String inname) {
+		mBarreId = barreID;
+		name = inname;
+		
+		mBarre =barre;
+		
+		tasksJob = new ArrayList<Task>();
+		mTaskOrdoList= new ArrayList<TaskOrdo>();
+		bridgesMoves = new ArrayListeZonePonts();
+			
+		mNoOverlapP1P2 = new ListeZone();
+		
 	
+		
+		for(int pont=0;pont< CST.NB_PONTS;pont++){
+			
+			ListeZone bridgeMove= new ListeZone();
+			bridgesMoves.add(bridgeMove);	
 	
-	
+		}
 
-	JobType(int barre, String inname) {
-		mBarreId = barre;
+	}
+	
+	JobType(int barreID,  String inname) {
+		mBarreId = barreID;
 		name = inname;
 		
 		
@@ -182,7 +200,7 @@ public class JobType {
 				bridge=1;								
 			}
 			// si pas de zone d'ano
-			if(indexAnod < 0 && tasksJob.get(taskID).numzone >=CST.ANODISATION_NUMZONE) {
+			if(indexAnod < 0 && tasksJob.get(taskID).numzone >=TecalOrdo.mNUMZONE_ANODISATION) {
 				bridge=1;								
 			}
 			ListeZone lBridgeMoves=bridgesMoves.get(bridge);
@@ -289,6 +307,9 @@ public class JobType {
 					System.out.println("task.numzone "+task.numzone);
 					System.out.println("task.numzone "+taskSuivante.numzone);
 				}
+				else {					
+					tps = gestionVitesseManutention(tps);										
+				}
 				taskOrdo = new TaskOrdo(TecalOrdo.model,task.duration,zt.derive, tps,task.egouttage,suffix);   
 				
 				
@@ -317,6 +338,39 @@ public class JobType {
 	}
 
 
+	private int gestionVitesseManutention(int tps) {
+		switch(mBarre.vitesseDescente){
+		   
+		   case CST.VITESSE_LENTE: 
+		       tps+=4;
+		       break;		
+		   case CST.VITESSE_NORMALE: 
+		      break;	   
+		   case CST.VITESSE_RAPIDE:
+		       tps-=4;
+		       break;
+		   default:
+		       System.out.println("ERREUR");
+		       break;
+		}
+		switch(mBarre.vitesseMontee){
+		   
+		   case CST.VITESSE_LENTE: 		     
+		       tps+=7;
+		       break;  
+		   case CST.VITESSE_NORMALE: 
+		       break;	
+		   case CST.VITESSE_RAPIDE:		    
+		       tps-=7;
+		       break;
+		   default:
+		       System.out.println("ERREUR");
+		       break;
+		}
+		return tps;
+	}
+
+
 
 	void buildTaskList(List<GammeType> inzones) {
 		
@@ -328,13 +382,12 @@ public class JobType {
 
 		for (int i = 0; i < zones.size(); i++) {
 			GammeType gt = zones.get(i);
+			
 			tasksJob.add(new Task(gt.time, gt.numzone,gt.egouttage,gt.derive));
 			if(CST.PrintGroupementZones) 
-				System.out.println("debZone: "+gt.codezone+", gt.time="+gt.time);
+				System.out.println("debZone: "+gt.codezone+", gt.time="+gt.time);			
 			
-			
-			
-			if (gt.numzone == CST.ANODISATION_NUMZONE) {
+			if (gt.numzone == TecalOrdo.mNUMZONE_ANODISATION) {
 				indexAnod=i;
 			
 			}

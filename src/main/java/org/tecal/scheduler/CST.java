@@ -23,21 +23,15 @@ public class CST {
 		return null;
 	}
 	
-	public final static String[] mListeOf26janvier={"00079260","00079261","00079262","00079263","00079264","00079265","00079266"};
-	
-		
+	public final static String[] mListeOf26janvier={"00079260","00079261","00079262","00079263","00079264","00079265","00079266"};		
 	public final static String gammesTest_PB_pont2[] ={"000022","000022","000467","000210","000246"};
-	public final static String gammesTest1[] ={"000022","000554","000552","000553","000552","000553"};
+
 
 	public final static String test26janvier[] ={"000020","000021","000164","000601","000467","000347","000169"};
-	public final static String test8mars[] ={"000094","000169","000174","000776","000671"};
-	public final static String test8mars2[] ={"000094","000003"};
+
 	// pb chevauchage colmatage
-	public final static String test2[] ={"000601","000347","000347","000347"};
-	//gamme de merde: 022
-	public final static String test13fevrier[] ={"000024","000022","000639","000601","000812","000776","000159","000818","000776","000601"};
-	public final static String test1mars[] ={"000686","000212","000818","000818","000812","000811","000022","000601","000109","000818"};
-	public final static String test25mars[] ={"000054","000601","000485","000024","000601","000818","000812","000717","000002","000169"};
+	public final static String test2[] ={"000601","000347","000601"};
+
 	public final static String testBig[] ={"000054","000601","000485","000024","000601","000818","000812","000717","000002","000169",
 			"000020","000021","000164","000601","000467","000347","000169",
 			"000686","000212","000818","000818","000812","000811","000022","000601","000109","000818"};
@@ -105,11 +99,17 @@ public class CST {
 	
 	
 	//------------------------------------------------------------
-	public final static int NUMZONE_DEBUT_PONT_2 	=15;
+	public final static int CAPACITE_ANODISATION 	=3;
 	public final static int ANODISATION_NUMZONE 	=15;
 	public final static int COLMATAGE_NUMZONE 		=32;
 	public final static int DECHARGEMENT_NUMZONE 	=35;
 	public final static int CHARGEMENT_NUMZONE 		=1;
 	public final static int NB_PONTS 				=2;
+	
+	public final static int VITESSE_LENTE			=0;
+	public final static int VITESSE_NORMALE			=1;
+	public final static int VITESSE_RAPIDE			=2;
+	
+	
 	
 }

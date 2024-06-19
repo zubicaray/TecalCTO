@@ -63,13 +63,13 @@ public class CPO_IHM extends JFrame {
 
 
 
-	private LinkedHashMap<Integer,Barre> mBarresFutures;
+	private LinkedHashMap<Integer,Barre> mBarresSettingsFutures;
 
 	public LinkedHashMap<Integer,Barre> getBarres() {
-		return mBarresFutures;
+		return mBarresSettingsFutures;
 	}
-	public void setBarres(LinkedHashMap<Integer,Barre> mBarresFutures) {
-		this.mBarresFutures = mBarresFutures;
+	public void setBarres(LinkedHashMap<Integer,Barre> mBarresSettingsFutures) {
+		this.mBarresSettingsFutures = mBarresSettingsFutures;
 	}
 	public TecalOrdo getTecalOrdo() {
 		return mTecalOrdo;
@@ -110,8 +110,8 @@ public class CPO_IHM extends JFrame {
 
 	public void runTest () {
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-		mBarresFutures=mTecalOrdo.runTest();
-		mCPO_PANEL.setModelBarres(mBarresFutures);
+		mBarresSettingsFutures=mTecalOrdo.runTest();
+		mCPO_PANEL.setModelBarres(mBarresSettingsFutures);
 		execute();
 		setCursor(Cursor.getDefaultCursor());
 	}
@@ -119,13 +119,13 @@ public class CPO_IHM extends JFrame {
 	public void run (LinkedHashMap<Integer,Barre> barres) {
 
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-		mBarresFutures=barres;
+		mBarresSettingsFutures=barres;
 
 		// on garde les jobs en cours des générations précédentes
 		manageOngoingJobs();
-		mCPO_PANEL.setModelBarres(mBarresFutures);
-		if(mBarresFutures.size()>0) {
-			mTecalOrdo.run(mBarresFutures,(long)mGanttTecalOR.getTimeBar().getValue());
+		mCPO_PANEL.setModelBarres(mBarresSettingsFutures);
+		if(mBarresSettingsFutures.size()>0) {
+			mTecalOrdo.run(mBarresSettingsFutures,(long)mGanttTecalOR.getTimeBar().getValue());
 		}
 		else {
 			mTecalOrdo.setHasSolution(true);
@@ -200,7 +200,7 @@ public class CPO_IHM extends JFrame {
 		mTecalOrdo.setBarresEnCours(barresCommencantes);
 
 		for(Integer barreId:barresCommencantes) {
-			mBarresFutures.remove(barreId);
+			mBarresSettingsFutures.remove(barreId);
 		}
 	}
 
@@ -260,9 +260,13 @@ public class CPO_IHM extends JFrame {
 				CST.TEMPS_ZONE_OVERLAP_MIN,
 				CST.TEMPS_MVT_PONT_MIN_JOB,
 				CST.GAP_ZONE_NOOVERLAP,
-			CST.TEMPS_MVT_PONT,CST.TEMPS_ANO_ENTRE_P1_P2,
-			15//CST.TEMPS_MAX_SOLVEUR
+				CST.TEMPS_MVT_PONT,
+				CST.TEMPS_ANO_ENTRE_P1_P2,
+				CST.TEMPS_MAX_SOLVEUR,
+				CST.ANODISATION_NUMZONE,
+				CST.CAPACITE_ANODISATION
 		};
+
 
 		mTecalOrdo.setParams(params);
 		init();
@@ -273,26 +277,16 @@ public class CPO_IHM extends JFrame {
 	 */
 	public CPO_IHM(int[] params) {
 
-
-
-
-
 		mTecalOrdo=new TecalOrdo(CST.SQLSERVER);
 		mTecalOrdo.setParams(params);
-
 		init();
 
-
-
 	}
+	
 	private void init() {
-
 
 		TecalGUI.cosmeticGUI();
 		mGanttTecalOR = new GanttChart("Diagramme Gantt de la production");
-
-
-
 
 		mCPO_PANEL= new CPO_Panel(this);
 		setIconImages(TecalGUI.loadIcons(this));
@@ -307,8 +301,6 @@ public class CPO_IHM extends JFrame {
 		tabbedPane = new JTabbedPane(SwingConstants.TOP);
 
 		tabbedPane.addTab("Gammes", null, mCPO_PANEL, null);
-
-
 
 		panelGantt = new JPanel();
 
@@ -362,7 +354,6 @@ public class CPO_IHM extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				startTime();
 				btnStartButton.setEnabled(false);
-
 			}
 		});
 
@@ -398,12 +389,8 @@ public class CPO_IHM extends JFrame {
 		});
 
 
-
-
-
 		JPanel panelDerives = new JPanel();
 		tabbedPane.addTab("Dérives", null, panelDerives, null);
-
 
 
 	    modelDerives=new DefaultTableModel(
@@ -446,7 +433,6 @@ public class CPO_IHM extends JFrame {
 				try {
 					mCPO_PANEL.setRessource(rs);
 				} catch (SQLException e1) {
-
 					e1.printStackTrace();
 				}
 			}
@@ -456,8 +442,7 @@ public class CPO_IHM extends JFrame {
 
 
 
-	public   DefaultTableModel getDerives()
-	{
+	public   DefaultTableModel getDerives()	{
 		return modelDerives;
 	}
 
