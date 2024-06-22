@@ -702,7 +702,13 @@ public class TecalOrdo {
 				List<IntervalVar> listCumul = multiZoneIntervals.get(numzone);
 				ZoneType zt = zonesBDD.get(numzone);
 				// zone autorisant le "chevauchement" => zone contenant plus de 1 postes
-				IntVar capacity = model.newIntVar(0, zt.cumul, "capacity_of_" + numzone);
+				IntVar capacity ;
+				
+				if(numzone== TecalOrdo.mNUMZONE_ANODISATION && TecalOrdo.mCAPACITE_ANODISATION >0) {
+		        	//TODO changer: code lu qu au lancement
+					capacity=model.newIntVar(0, TecalOrdo.mCAPACITE_ANODISATION, "capacity_of_" + numzone);
+				}else capacity = model.newIntVar(0, zt.cumul, "capacity_of_" + numzone);
+					
 
 				CumulativeConstraint cumul = model.addCumulative(capacity);
 
