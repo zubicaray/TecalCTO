@@ -40,7 +40,7 @@ public class CST {
 	
 	public final static String gammesTest[] =test26janvier;
 	
-	public final static int TEMPS_MAX_SOLVEUR=40;
+
 	
 	
 	//------------------------------------------------------------
@@ -85,6 +85,8 @@ public class CST {
 	// temps de sécurité entre deux gammes différentes sur un même poste d'ano
 	public final static int TEMPS_ANO_ENTRE_P1_P2 = 30;	
 	
+	public final static int TEMPS_MINIMAL_AVANT_DEMARRAGE = 240;	
+	
 	
 	
 	
@@ -99,6 +101,7 @@ public class CST {
 	
 	
 	//------------------------------------------------------------
+	public final static int TEMPS_MAX_SOLVEUR		=40;
 	public final static int CAPACITE_ANODISATION 	=3;
 	public final static int ANODISATION_NUMZONE 	=15;
 	public final static int COLMATAGE_NUMZONE 		=32;
@@ -109,6 +112,7 @@ public class CST {
 	public final static int VITESSE_LENTE			=0;
 	public final static int VITESSE_NORMALE			=1;
 	public final static int VITESSE_RAPIDE			=2;
+	public final static String[] VITESSES			= {"lente","normale","rapide"};
 	
 	
 	

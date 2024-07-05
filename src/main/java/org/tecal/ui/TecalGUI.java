@@ -67,7 +67,6 @@ import org.jdatepicker.impl.UtilDateModel;
 import org.jfree.ui.RefineryUtilities;
 import org.tecal.scheduler.CST;
 import org.tecal.scheduler.GanttChart;
-import org.tecal.scheduler.TecalOrdo;
 import org.tecal.scheduler.data.SQL_DATA;
 import org.tecal.scheduler.types.Barre;
 
@@ -375,8 +374,8 @@ public class TecalGUI {
 					 Barre b=new Barre( 
 							 i+1,
 							 tableOF.getModel().getValueAt(sel[i], 1).toString(),
-							 0,
-							 0,
+							 CST.VITESSE_NORMALE,
+							 CST.VITESSE_NORMALE,
 							 false);
 					 
 					 barres.put(b.idbarre,b);

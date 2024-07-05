@@ -45,6 +45,7 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
+import org.tecal.scheduler.CST;
 import org.tecal.scheduler.data.SQL_DATA;
 import org.tecal.scheduler.types.Barre;
 
@@ -346,7 +347,7 @@ public class CPO_Panel extends JPanel {
 
         	Barre b=  entry.getValue();
 
-            Object[] rowO = { b.idbarre,b.gamme,"normale","normale",b.prioritaire };
+            Object[] rowO = { b.idbarre,b.gamme,CST.VITESSES[b.vitesseMontee],CST.VITESSES[b.vitesseDescente],b.prioritaire };
 			if(b.idbarre>mNumBarre) {
 				mNumBarre=b.idbarre;
 			}
@@ -507,7 +508,7 @@ public class CPO_Panel extends JPanel {
     	        if (mouseEvent.getClickCount() == 2 && table.getSelectedRow() != -1) {
     	        	String gamme=table.getModel().getValueAt(row, 0).toString();
 
-    	        	Object[] rowO = {++mNumBarre, gamme,"normale","normale",false };
+    	        	Object[] rowO = {++mNumBarre, gamme,CST.VITESSES[CST.VITESSE_NORMALE],CST.VITESSES[CST.VITESSE_NORMALE],false };
     	        	mModelBarres.addRow(rowO);
 
     	        }

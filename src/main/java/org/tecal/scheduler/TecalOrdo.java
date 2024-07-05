@@ -292,7 +292,7 @@ public class TecalOrdo {
 		int i = 0;
 		for (String gamme : CST.gammesTest) {
 			i++;
-			Barre b=new Barre(i,gamme,0,0,false);
+			Barre b=new Barre(i,gamme,CST.VITESSE_NORMALE,CST.VITESSE_NORMALE,false);
 			mBarreFutures.put(i, mGammes.get(b.gamme));
 			mBarresAll.put(i, mGammes.get(b.gamme));
 			mBarreLabels.put(i, gamme);
@@ -354,7 +354,7 @@ public class TecalOrdo {
 
 		mBarresSettings = setBarresTest();
 		int[] params = { CST.TEMPS_ZONE_OVERLAP_MIN, CST.TEMPS_MVT_PONT_MIN_JOB, CST.GAP_ZONE_NOOVERLAP,
-				CST.TEMPS_MVT_PONT, CST.TEMPS_ANO_ENTRE_P1_P2,  CST.TEMPS_MAX_SOLVEUR,CST.ANODISATION_NUMZONE
+				CST.TEMPS_MVT_PONT, CST.TEMPS_ANO_ENTRE_P1_P2,  CST.TEMPS_MAX_SOLVEUR,CST.ANODISATION_NUMZONE,CST.CAPACITE_ANODISATION
 		};
 
 		setParams(params);
@@ -424,7 +424,9 @@ public class TecalOrdo {
 		// les nouvelles barres doivent commencer après celles déjà présentes
 		if(mCurrentTime>CST.CPT_GANTT_OFFSET)
 			for(IntVar iv:starts ) {
-				model.addLessThan(LinearExpr.constant(mCurrentTime),iv);
+				//TODO
+				// a tester 
+				model.addLessThan(LinearExpr.constant(mCurrentTime+CST.TEMPS_MINIMAL_AVANT_DEMARRAGE),iv);
 			}
 		
 
@@ -526,14 +528,12 @@ public class TecalOrdo {
 		Iterator<Integer> it = mBarresPrioritaires.iterator(); 
 		 
 	    //s'il y a lusieurs barres prioritaires il faut respecter l'ordre du LinkedHashSet 
-        while (it.hasNext()) { 
-  
+        while (it.hasNext()) {   
             // Print HashSet values 
            int barre=it.next(); 
            if(it.hasNext()) {
         	   int next=it.next(); 
-               model.addLessThan(endByBarreIdPrio.get(barre),endByBarreIdPrio.get(next));
-               
+               model.addLessThan(endByBarreIdPrio.get(barre),endByBarreIdPrio.get(next));               
            }
           
           // System.out.print(b+" -> "+next); 
@@ -676,7 +676,7 @@ public class TecalOrdo {
 		}
 		if(arrayAllJobs.size()<3) 
 			 horizon*=2;
-		else  horizon/=2;
+		//else  horizon/=2;
 		
 		horizon=Math.min(horizon,24*3600);
 

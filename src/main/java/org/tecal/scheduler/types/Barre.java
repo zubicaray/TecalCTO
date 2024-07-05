@@ -7,7 +7,7 @@ package org.tecal.scheduler.types;
 		public int vitesseMontee;
 		public boolean prioritaire;
 
-		public Barre(int idbarre,String gamme, int vitesseDescente, int vitesseMontee,boolean prio) {
+		public Barre(int idbarre,String gamme, int vitesseMontee, int vitesseDescente,boolean prio) {
 			this.idbarre = idbarre;
 			this.gamme = gamme;
 			this.vitesseDescente = vitesseDescente;

@@ -68,9 +68,11 @@ public class CPO_IHM extends JFrame {
 	public LinkedHashMap<Integer,Barre> getBarres() {
 		return mBarresSettingsFutures;
 	}
-	public void setBarres(LinkedHashMap<Integer,Barre> mBarresSettingsFutures) {
-		this.mBarresSettingsFutures = mBarresSettingsFutures;
+	/*
+	public void setBarres(LinkedHashMap<Integer,Barre> inBarresSettingsFutures) {
+		this.mBarresSettingsFutures = inBarresSettingsFutures;
 	}
+	*/
 	public TecalOrdo getTecalOrdo() {
 		return mTecalOrdo;
 	}
