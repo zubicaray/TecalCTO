@@ -676,9 +676,9 @@ public class TecalOrdo {
 		}
 		if(arrayAllJobs.size()<3) 
 			 horizon*=2;
-		//else  horizon/=2;
+		else  horizon/=2;
 		
-		horizon=Math.min(horizon,24*3600);
+		horizon=Math.min(horizon,CST.TEMPS_MAX_JOURNEE);
 
 	}
 

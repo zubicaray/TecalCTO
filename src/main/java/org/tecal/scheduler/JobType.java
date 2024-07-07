@@ -342,29 +342,29 @@ public class JobType {
 		switch(mBarre.vitesseDescente){
 		   
 		   case CST.VITESSE_LENTE: 
-		       tps+=4;
+		       tps+=CST.VITESSE_LENTE_DESCENTE;
 		       break;		
 		   case CST.VITESSE_NORMALE: 
 		      break;	   
 		   case CST.VITESSE_RAPIDE:
-		       tps-=4;
+		       tps-=CST.VITESSE_RAPIDE_DESCENTE;
 		       break;
 		   default:
-		       System.out.println("ERREUR");
+		       System.out.println("ERREUR gestionVitesseManutention descente");
 		       break;
 		}
 		switch(mBarre.vitesseMontee){
 		   
 		   case CST.VITESSE_LENTE: 		     
-		       tps+=7;
+		       tps+=CST.VITESSE_LENTE_MONTEE;
 		       break;  
 		   case CST.VITESSE_NORMALE: 
 		       break;	
 		   case CST.VITESSE_RAPIDE:		    
-		       tps-=7;
+		       tps-=CST.VITESSE_RAPIDE_MONTEE;
 		       break;
 		   default:
-		       System.out.println("ERREUR");
+		       System.out.println("ERREUR gestionVitesseManutention montée");
 		       break;
 		}
 		return tps;

@@ -83,8 +83,7 @@ public class CST {
 	// temps autour d'un début de grosse zone
 	public final static int TEMPS_MVT_PONT =40;		
 	// temps de sécurité entre deux gammes différentes sur un même poste d'ano
-	public final static int TEMPS_ANO_ENTRE_P1_P2 = 30;	
-	
+	public final static int TEMPS_ANO_ENTRE_P1_P2 = 30;		
 	public final static int TEMPS_MINIMAL_AVANT_DEMARRAGE = 240;	
 	
 	
@@ -102,17 +101,24 @@ public class CST {
 	
 	//------------------------------------------------------------
 	public final static int TEMPS_MAX_SOLVEUR		=40;
+	public final static int TEMPS_MAX_JOURNEE		=86400;
 	public final static int CAPACITE_ANODISATION 	=3;
 	public final static int ANODISATION_NUMZONE 	=15;
 	public final static int COLMATAGE_NUMZONE 		=32;
 	public final static int DECHARGEMENT_NUMZONE 	=35;
 	public final static int CHARGEMENT_NUMZONE 		=1;
 	public final static int NB_PONTS 				=2;
-	
+	//--------------------------------------------------------------
+	//------------ VITESSES PONT ---------------------------------------
+	//--------------------------------------------------------------
 	public final static int VITESSE_LENTE			=0;
 	public final static int VITESSE_NORMALE			=1;
 	public final static int VITESSE_RAPIDE			=2;
-	public final static String[] VITESSES			= {"lente","normale","rapide"};
+	public final static String[] VITESSES			={"lente","normale","rapide"};
+	public final static int VITESSE_LENTE_DESCENTE	=17;
+	public final static int VITESSE_RAPIDE_DESCENTE	=4;
+	public final static int VITESSE_LENTE_MONTEE	=17;
+	public final static int VITESSE_RAPIDE_MONTEE	=7;
 	
 	
 	
