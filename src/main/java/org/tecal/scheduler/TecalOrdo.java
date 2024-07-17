@@ -504,6 +504,15 @@ public class TecalOrdo {
 		} else {
 			outputMsg.append("Pas de solution trouvée.");
 			outputMsg.append(System.getProperty("line.separator"));
+			
+			//TODO: garder les job en cours !!!
+			
+		
+			//
+			arrayAllJobs.clear();
+			arrayAllJobs.addAll(mJobsEnCours.values());
+			createAssignedTasks();
+			
 			return;
 		}
 
@@ -674,10 +683,12 @@ public class TecalOrdo {
 				horizon += task.duration+CST.TEMPS_MVT_PONT+task.derive;
 			}
 		}
-		if(arrayAllJobs.size()<3) 
-			 horizon*=2;
-		else  horizon/=2;
-		
+		if(arrayAllJobs.size()>10) 	horizon/=2; 	
+		/*
+		if(arrayAllJobs.size()<3) 	
+		  horizon*=2;
+		else  horizon/=2; 	
+		*/
 		horizon=Math.min(horizon,CST.TEMPS_MAX_JOURNEE);
 
 	}
