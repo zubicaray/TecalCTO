@@ -97,7 +97,11 @@ public class CPO_IHM extends JFrame {
 			@Override
 			public void run() {
 				try {
+					
+				
+					 
 					CPO_IHM frame = new CPO_IHM();
+					
 					frame.setTitle("Tecal Ordonnanceur");
 					if(System.getenv("TEST_CPO") != null && System.getenv("TEST_CPO").equals("1")) {
 						frame.runTest();
@@ -223,7 +227,7 @@ public class CPO_IHM extends JFrame {
 
 			if(mTimer == null) {
 				this.mTimer=new timerGantt();
-				new Timer().schedule(mTimer, 0, 1000);
+				new Timer().scheduleAtFixedRate(mTimer, 0, 1000);
 
 			}
 		}
@@ -292,7 +296,7 @@ public class CPO_IHM extends JFrame {
 
 		mCPO_PANEL= new CPO_Panel(this);
 		setIconImages(TecalGUI.loadIcons(this));
-		//setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 985, 650);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));

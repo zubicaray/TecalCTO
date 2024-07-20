@@ -559,6 +559,7 @@ public class TecalOrdo {
 
 				long debut = allTasks.get(key).getStartValue();
 				long finBDD =  allTasks.get(key).getEndBDDValue();
+				
 
 				long derive;
 				// on ne sait pas à quel moment entre le min et le max de dérive
@@ -575,6 +576,14 @@ public class TecalOrdo {
 				}
 				
 				
+				//System.out.println("------------"); 
+				//System.out.println("debut -> "+debut); 
+				//System.out.println("finBDD -> "+finBDD); 
+				//System.out.println("egouttage -> "+allTasks.get(key).egouttage);
+				//System.out.println("tempsDeplacement-> "+allTasks.get(key).tempsDeplacement);
+				//System.out.println("derive -> "+derive);
+				//System.out.println("debut next:-> "+(allTasks.get(key).tempsDeplacement+finBDD+allTasks.get(key).egouttage));
+
 
 				AssignedTask assignedTask = new AssignedTask(barre, taskID, task.numzone, debut, (int) (finBDD - debut),(int) derive);
 				assignedTasksByNumzone.computeIfAbsent(task.numzone, (Integer k) -> new ArrayList<>());

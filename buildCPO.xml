@@ -7,13 +7,17 @@
   <errTitle></errTitle>
   <cmdLine></cmdLine>
   <chdir>.</chdir>
-  <priority>normal</priority>
+  <priority>high</priority>
   <downloadUrl></downloadUrl>
   <supportUrl></supportUrl>
   <stayAlive>false</stayAlive>
   <restartOnCrash>false</restartOnCrash>
   <manifest></manifest>
   <icon>D:\DEV\GIT\TecalCTO\src\main\resources\gantt-chart-32.ico</icon>
+  <singleInstance>
+    <mutexName>CPO_IHM</mutexName>
+    <windowTitle>TECAL CPO</windowTitle>
+  </singleInstance>
   <classPath>
     <mainClass>org.tecal.ui.CPO_IHM</mainClass>
     <cp>org.tecal.ui.CPO_IHM</cp>

@@ -346,7 +346,7 @@ public class TecalGUI {
 				 ganttTecal.setSize(new java.awt.Dimension(1500, 870));
 			     RefineryUtilities.centerFrameOnScreen(ganttTecal);
 			     ganttTecal.setVisible(true);
-			     ganttTecal.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+			     ganttTecal.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 			     frmTecalOrdonnanceur.setCursor(Cursor.getDefaultCursor());
 
 

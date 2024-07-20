@@ -38,7 +38,7 @@ public class CST {
 	public final static String testPbNoSolu[] ={"000794","000794","000794"};
 	
 	
-	public final static String gammesTest[] ={"000020"};
+	public final static String gammesTest[] ={"000697"};
 	
 
 	

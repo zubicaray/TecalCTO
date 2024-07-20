@@ -320,7 +320,6 @@ public class CPO_Panel extends JPanel {
 
 
 
-
 		} catch (SQLException e) {
 			JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
