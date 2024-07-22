@@ -12,6 +12,7 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -84,6 +85,7 @@ public class CPO_IHM extends JFrame {
 	private JButton btnForeButton;
 	private JButton btnBackButton;
 	private JButton btnStartButton;
+	
 	public CPO_Panel getCpoPanel() {
 		return mCPO_PANEL;
 	}
@@ -227,6 +229,7 @@ public class CPO_IHM extends JFrame {
 
 			if(mTimer == null) {
 				this.mTimer=new timerGantt();
+				mGanttTecalOR.setStartTime();
 				new Timer().scheduleAtFixedRate(mTimer, 0, 1000);
 
 			}
@@ -472,4 +475,5 @@ public class CPO_IHM extends JFrame {
 	public void setTimer(timerGantt mTimer) {
 		this.mTimer = mTimer;
 	}
+	
 }

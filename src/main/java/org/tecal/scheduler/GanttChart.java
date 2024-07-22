@@ -1,6 +1,8 @@
 package org.tecal.scheduler;
 
 import java.awt.Color;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -44,8 +46,8 @@ public class GanttChart extends JFrame {
 	 *
 	 */
 	private static final long serialVersionUID = 1L;
-
-
+	@SuppressWarnings("unused")
+	private  LocalTime mStartTime;
 
 	@SuppressWarnings("unused")
 	private String[] mZonesAllGamme;
@@ -144,9 +146,27 @@ public class GanttChart extends JFrame {
 	}
 	public String tmpsAvantSortie(int fin) {
 
-		if(timeBar != null) {
+		if(timeBar != null && mStartTime !=null) {
 			int seconds =(int) (fin -timeBar.getValue());
-			return toMinutes(seconds);
+			String minutes="";
+			
+			String hour="";
+			String res;
+			
+			if(seconds >0) {
+				minutes=toMinutes(seconds);				
+				hour= mStartTime.plusSeconds(fin-CST.CPT_GANTT_OFFSET).toString().substring(0,8);
+				res=" sortie dans "+ minutes+" minutes à "+hour;	
+			}
+			else {
+							
+				hour= mStartTime.plusSeconds(fin-CST.CPT_GANTT_OFFSET).toString().substring(0,8);
+				res="sortie à "+hour;
+			}
+			
+			return res;
+					
+			
 		}
 
 		return "";
@@ -372,6 +392,9 @@ public class GanttChart extends JFrame {
 		 }
 		 );
 	}
+	public void setStartTime() {
+		mStartTime= LocalTime.now();
+	}
 
 	private void buildPlot() {
 		 XYBarRenderer renderer = new XYBarRenderer();
@@ -395,10 +418,10 @@ public class GanttChart extends JFrame {
 		 private static final long serialVersionUID = 1L;
 
 		 @Override
-		public String generateToolTip(XYDataset dataset, int series, int item) {
+		 public String generateToolTip(XYDataset dataset, int series, int item) {
 			 int barre=indexToBarreIndex.get(series);
 			 	//System.out.println("series:"+series+" "+" item:"+item+" val="+labelsModel[series][item]);
-			 	return  labelsModel.get(series)[item]+ " temps avant sortie :"+ tmpsAvantSortie(mTabAssignedJobsSorted.get(barre).get(item).derive);
+			 	return  labelsModel.get(series)[item]+  tmpsAvantSortie(mTabAssignedJobsSorted.get(barre).get(item).derive);
 		    }
 		 };
 	     renderer.setSeriesToolTipGenerator(0, ttgen);
