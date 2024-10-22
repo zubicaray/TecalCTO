@@ -1,7 +1,6 @@
 package org.tecal.scheduler;
 
 import java.awt.Color;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -149,24 +148,24 @@ public class GanttChart extends JFrame {
 		if(timeBar != null && mStartTime !=null) {
 			int seconds =(int) (fin -timeBar.getValue());
 			String minutes="";
-			
+
 			String hour="";
 			String res;
-			
+
 			if(seconds >0) {
-				minutes=toMinutes(seconds);				
+				minutes=toMinutes(seconds);
 				hour= mStartTime.plusSeconds(fin-CST.CPT_GANTT_OFFSET).toString().substring(0,8);
-				res=" sortie dans "+ minutes+" minutes à "+hour;	
+				res=" sortie dans "+ minutes+" minutes à "+hour;
 			}
 			else {
-							
+
 				hour= mStartTime.plusSeconds(fin-CST.CPT_GANTT_OFFSET).toString().substring(0,8);
 				res="sortie à "+hour;
 			}
-			
+
 			return res;
-					
-			
+
+
 		}
 
 		return "";
@@ -184,8 +183,8 @@ public class GanttChart extends JFrame {
 		mLowerBound=0;
 
 		LinkedHashMap<Integer, ArrayList<GammeType> > ficheToZones	= inTecalOrdo.getBarreZonesAll();
-		LinkedHashMap<Integer,String> ficheToGamme				= inTecalOrdo.getBarreLabels();
-		Map<Integer, List<AssignedTask>> assignedTasksByNumzone	= inTecalOrdo.getAssignedJobs();
+		LinkedHashMap<Integer,String> ficheToGamme					= inTecalOrdo.getBarreLabels();
+		Map<Integer, List<AssignedTask>> assignedTasksByNumzone		= inTecalOrdo.getAssignedJobs();
 
 		indexToBarreIndex.clear();
 		barreToIndex.clear();
@@ -239,8 +238,6 @@ public class GanttChart extends JFrame {
 
 
 		 labelsModel = new HashMap<>();
-		 //tasksTab = new ArrayList<AssignedTask[]>(nbJob);
-
 
 
 		 //!!!!!!!!!!!!!!!!!!!!
@@ -297,8 +294,6 @@ public class GanttChart extends JFrame {
 			    //System.out.println("at.duration="+at.duration );
 
 			    double incrementY=0.3;
-
-
 
 
 			    if(zonesCumul.containsKey(at.numzone)) {
@@ -482,7 +477,7 @@ public class GanttChart extends JFrame {
 		 //gamme par fiche production (on peut avoir une  même gamme pour deux fichesProd
 		 HashMap<String, String> ficheGamme=  SQL_DATA.getInstance().getFicheGamme(listeOF);
 
-		 String[] ficheToZones=ficheGamme.values().toArray(new String[0]);
+		 String[] ficheToZones=listeOF;//ficheGamme.values().toArray(new String[0]);
 
 		 int totalFicheProdCount =ficheToZones.length;
 
@@ -543,7 +538,7 @@ public class GanttChart extends JFrame {
 
 				  PosteProd posteProd=set.getValue();
 
-				  labels.get(currentFiche)[cptt]="start:"+(posteProd.start-offset)+", durée:"+(posteProd.stop-posteProd.start)+"end:"+(posteProd.stop-offset) ;
+				  labels.get(currentFiche)[cptt]=fiche+ ", start:"+(posteProd.start-offset)+", durée:"+(posteProd.stop-posteProd.start)+"end:"+(posteProd.stop-offset) ;
 				  cptt++;
 
 				  //System.out.println( "------------------------------------------------");

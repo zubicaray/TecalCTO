@@ -12,7 +12,6 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -33,6 +32,7 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SortOrder;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
+import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
@@ -85,7 +85,7 @@ public class CPO_IHM extends JFrame {
 	private JButton btnForeButton;
 	private JButton btnBackButton;
 	private JButton btnStartButton;
-	
+
 	public CPO_Panel getCpoPanel() {
 		return mCPO_PANEL;
 	}
@@ -99,11 +99,11 @@ public class CPO_IHM extends JFrame {
 			@Override
 			public void run() {
 				try {
-					
-				
-					 
+
+
+
 					CPO_IHM frame = new CPO_IHM();
-					
+
 					frame.setTitle("Tecal Ordonnanceur");
 					if(System.getenv("TEST_CPO") != null && System.getenv("TEST_CPO").equals("1")) {
 						frame.runTest();
@@ -150,7 +150,7 @@ public class CPO_IHM extends JFrame {
 		setCursor(Cursor.getDefaultCursor());
 
 	}
-	
+
 
 	public class timerGantt extends TimerTask {
 	    @Override
@@ -158,7 +158,7 @@ public class CPO_IHM extends JFrame {
 	        //System.out.println("Email sent at: "	          + LocalDateTime.ofInstant(Instant.ofEpochMilli(scheduledExecutionTime()), ZoneId.systemDefault()));
 
 	    	mGanttTecalOR.getTimeBar().setValue(mGanttTecalOR.getTimeBar().getValue()+1);
-	    	
+
 	    	//TODO
 	    	// mutualiser avec fct manageOngoingJobs
 	    	double current_time=mGanttTecalOR.getTimeBar().getValue();
@@ -176,8 +176,8 @@ public class CPO_IHM extends JFrame {
 
 	    }
 	}
-	
-	
+
+
 	private void manageOngoingJobs() {
 
 
@@ -291,7 +291,7 @@ public class CPO_IHM extends JFrame {
 		init();
 
 	}
-	
+
 	private void init() {
 
 		TecalGUI.cosmeticGUI();
@@ -299,7 +299,7 @@ public class CPO_IHM extends JFrame {
 
 		mCPO_PANEL= new CPO_Panel(this);
 		setIconImages(TecalGUI.loadIcons(this));
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		setBounds(100, 100, 985, 650);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -475,5 +475,5 @@ public class CPO_IHM extends JFrame {
 	public void setTimer(timerGantt mTimer) {
 		this.mTimer = mTimer;
 	}
-	
+
 }

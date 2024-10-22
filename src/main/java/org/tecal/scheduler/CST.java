@@ -116,9 +116,9 @@ public class CST {
 	public final static int VITESSE_RAPIDE			=2;
 	public final static String[] VITESSES			={"lente","normale","rapide"};
 	public final static int VITESSE_LENTE_DESCENTE	=17;
-	public final static int VITESSE_RAPIDE_DESCENTE	=4;
+	public final static int VITESSE_RAPIDE_DESCENTE	=3;
 	public final static int VITESSE_LENTE_MONTEE	=17;
-	public final static int VITESSE_RAPIDE_MONTEE	=7;
+	public final static int VITESSE_RAPIDE_MONTEE	=6;
 	
 	
 	

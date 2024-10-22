@@ -696,13 +696,13 @@ public HashMap<String, String>  getFicheGamme(String[] listeOF) {
 		ResultSet resultSet = null;
 		HashMap<String, String> res = new HashMap<>();
         // Create and execute a SELECT SQL statement.
-        String selectSql = "select distinct DF.numficheproduction,NumGammeAnodisation "
+        String selectSql = "select distinct DF.numficheproduction,NumGammeAnodisation ,DateEntreePoste "
         		+ "from  [DetailsChargesProduction] DC"
         		+ " INNER JOIN   [DetailsFichesProduction] DF "
         		+ "on   "
         		+ "	DC.numficheproduction=DF.numficheproduction   COLLATE FRENCH_CI_AS "
 
-        		+" and DF.numficheproduction in ("+toClause(listeOF)+")  " ;
+        		+" and DF.numficheproduction in ("+toClause(listeOF)+")  order by DateEntreePoste " ;
         try {
 			resultSet = mStatement.executeQuery(selectSql);
 			// Print results from select statement
