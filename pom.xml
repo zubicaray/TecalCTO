@@ -6,7 +6,7 @@
 <modelVersion>4.0.0</modelVersion>
 
 <groupId>zdev.tecal</groupId>
-<artifactId>TecalCTO</artifactId>
+<artifactId>TecalCPO</artifactId>
 <version>1.0.0</version>
 <packaging>jar</packaging>
 
@@ -166,6 +166,71 @@
       </executions>
     </plugin>
    -->
+   
+   <plugin>
+          <groupId>com.akathist.maven.plugins.launch4j</groupId>
+          <artifactId>launch4j-maven-plugin</artifactId>
+          <executions>
+            <execution>
+              <id>CPO_IHM</id>
+              <phase>package</phase>
+              <goals><goal>launch4j</goal></goals>
+              <configuration>
+                <headerType>console</headerType>
+                <outfile>TecalCPO-1.0.0.exe</outfile>
+                <jar>target/TecalCPO-1.0.0-jar-with-dependencies.jar</jar>
+                <icon>src/main/resources/gantt-chart-32.ico</icon>
+                <errTitle>ERR TecalCPO</errTitle>
+                <classPath>
+                  <mainClass>org.tecal.ui.CPO_IHM</mainClass>
+                  <addDependencies>true</addDependencies>
+                  <preCp>anything</preCp>
+                </classPath>
+              
+                <versionInfo>
+                  <fileVersion>1.0.0.0</fileVersion>
+                  <txtFileVersion>txt file version?</txtFileVersion>
+                  <fileDescription>a description</fileDescription>
+                  <copyright>my copyright</copyright>
+                  <productVersion>4.3.2.1</productVersion>
+                  <txtProductVersion>txt product version</txtProductVersion>
+                  <productName>TecalCPO</productName>
+                  <internalName>TecalCPO</internalName>
+                  <originalFilename>TecalCPO.exe</originalFilename>
+                </versionInfo>
+              </configuration>
+            </execution>
+            <execution>
+              <id>TecalGUI</id>
+              <phase>package</phase>
+              <goals><goal>launch4j</goal></goals>
+              <configuration>
+                <headerType>console</headerType>
+                <outfile>TecalGUI-1.0.0.exe</outfile>
+                <jar>target/TecalCPO-1.0.0-jar-with-dependencies.jar</jar>
+                <icon>src/main/resources/gantt-chart-32.ico</icon>
+                <errTitle>ERR TecalGUI</errTitle>
+                <classPath>
+                  <mainClass>org.tecal.ui.TecalGUI</mainClass>
+                  <addDependencies>true</addDependencies>
+                  <preCp>anything</preCp>
+                </classPath>
+                
+                <versionInfo>
+                  <fileVersion>1.0.0.0</fileVersion>
+                  <txtFileVersion>txt file version?</txtFileVersion>
+                  <fileDescription>a description</fileDescription>
+                  <copyright>my copyright</copyright>
+                  <productVersion>4.3.2.1</productVersion>
+                  <txtProductVersion>txt product version</txtProductVersion>
+                  <productName>TecalGUI</productName>
+                  <internalName>TecalGUI</internalName>
+                  <originalFilename>TecalGUI.exe</originalFilename>
+                </versionInfo>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
   </plugins>
 </build>
 </project>

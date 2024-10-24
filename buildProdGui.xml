@@ -2,8 +2,8 @@
 <launch4jConfig>
   <dontWrapJar>false</dontWrapJar>
   <headerType>gui</headerType>
-  <jar>D:\DEV\GIT\TecalCTO\target\TecalCTO-1.0.0-jar-with-dependencies.jar</jar>
-  <outfile>D:\DEV\GIT\TecalCTO\TecalProdVisu_1.0.exe</outfile>
+  <jar>D:\DEV\GIT\TecalCPO\target\TecalCPO-1.0.0-jar-with-dependencies.jar</jar>
+  <outfile>D:\DEV\GIT\TecalCPO\TecalProdVisu_1.0.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>
   <chdir>.</chdir>
@@ -13,7 +13,7 @@
   <stayAlive>false</stayAlive>
   <restartOnCrash>false</restartOnCrash>
   <manifest></manifest>
-  <icon>D:\DEV\GIT\TecalCTO\src\main\resources\gantt-chart-32.ico</icon>
+  <icon>D:\DEV\GIT\TecalCPO\src\main\resources\gantt-chart-32.ico</icon>
   <classPath>
     <mainClass>org.tecal.ui.TecalGUI</mainClass>
   </classPath>

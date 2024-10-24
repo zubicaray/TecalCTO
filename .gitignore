@@ -6,3 +6,7 @@ launch4j.log
 .vs/
 Launch4j.lnk
 TecalProdVisu_1.0.exe
+.classpath
+.project
+TecalCPO-1.0.0.exe
+TecalGUI-1.0.0.exe
