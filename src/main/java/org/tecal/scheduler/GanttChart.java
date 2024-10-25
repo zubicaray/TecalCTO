@@ -251,7 +251,7 @@ public class GanttChart extends JFrame {
 
 		 /**
 		  * on trie les zones de chaque job par date
-		  * pour que jfreechart les ajoute dans l'ordre pour qu'on puisse rtrouver les bons tooltip
+		  * pour que jfreechart les ajoute dans l'ordre pour qu'on puisse trouver les bons tooltip
 		  */
 
 		 mTabAssignedJobsSorted.values().forEach( value -> {
@@ -311,7 +311,7 @@ public class GanttChart extends JFrame {
 
 			    }
 
-			    labelsModel.get(index)[cpt1]="start:"+at.start+", durée:"+toMinutes(at.duration)+", fin:"+(at.derive)
+			    labelsModel.get(index)[cpt1]="barre:"+barre+", start:"+at.start+", durée:"+toMinutes(at.duration)+", fin:"+(at.derive)
 			    		+ " dérive: " +(at.derive-dr[1])+", égouttage:"+df.get(at.taskID).egouttage+ ", " +df.get(at.taskID).codezone;
 
 
@@ -477,17 +477,7 @@ public class GanttChart extends JFrame {
 		 //gamme par fiche production (on peut avoir une  même gamme pour deux fichesProd
 		 HashMap<String, String> ficheGamme=  SQL_DATA.getInstance().getFicheGamme(listeOF);
 
-		 String[] ficheToZones=listeOF;//ficheGamme.values().toArray(new String[0]);
-
-		 int totalFicheProdCount =ficheToZones.length;
-
-
-		 //Create series. Start and end times are used as y intervals, and the room is represented by the x value
-		 XYIntervalSeries[] series = new XYIntervalSeries[totalFicheProdCount];
-		 for(int i = 0; i < totalFicheProdCount; i++){
-		      series[i] = new XYIntervalSeries(ficheToZones[i]);
-		      dataset.addSeries(series[i]);
-		 }
+		 
 
 		 //temps aux postes par fiches production
 		 HashMap<String, LinkedHashMap<Integer,PosteProd> > tempsAuPostes=SQL_DATA.getInstance().getTempsAuPostes(listeOF,date) ;
@@ -507,6 +497,20 @@ public class GanttChart extends JFrame {
 			 firstPostes.put(actualValue.getValue().start,actualValue.getValue());
 
 		 });
+		 
+		 
+		 
+		 String[] ficheToZones=tempsAuPostes.keySet().toArray(new String[0]);;//ficheGamme.values().toArray(new String[0]);
+
+		 int totalFicheProdCount =ficheToZones.length;
+
+
+		 //Create series. Start and end times are used as y intervals, and the room is represented by the x value
+		 XYIntervalSeries[] series = new XYIntervalSeries[totalFicheProdCount];
+		 for(int i = 0; i < totalFicheProdCount; i++){
+		      series[i] = new XYIntervalSeries(ficheToZones[i]);
+		      dataset.addSeries(series[i]);
+		 }
 
 		 for(PosteProd pp: firstPostes.values()) {
 			 if(offset==0) {
@@ -518,12 +522,8 @@ public class GanttChart extends JFrame {
 			 }
 		 }
 
-		 labels = new ArrayList<>(totalFicheProdCount);
-		 for(int i=0; i < totalFicheProdCount; i++) {
-			 //labels.add(new ArrayList<String>());
-			}
-
-
+		labels = new ArrayList<>(totalFicheProdCount);
+		
 
 		for(int currentFiche = 0; currentFiche < totalFicheProdCount; currentFiche++){
 			String fiche=fichesProd[currentFiche];

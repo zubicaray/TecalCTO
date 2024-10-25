@@ -78,7 +78,6 @@ public class CPO_Panel extends JPanel {
 	}
 	public CPO_Panel( ) {
 
-
 		mNumBarre=0;
 		createPanelCPO();
 

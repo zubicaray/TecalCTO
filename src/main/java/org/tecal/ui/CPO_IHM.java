@@ -62,8 +62,6 @@ public class CPO_IHM extends JFrame {
 	private TecalOrdo mTecalOrdo;
 
 
-
-
 	private LinkedHashMap<Integer,Barre> mBarresSettingsFutures;
 
 	public LinkedHashMap<Integer,Barre> getBarres() {
@@ -155,7 +153,7 @@ public class CPO_IHM extends JFrame {
 	public class timerGantt extends TimerTask {
 	    @Override
 	    public void run() {
-	        //System.out.println("Email sent at: "	          + LocalDateTime.ofInstant(Instant.ofEpochMilli(scheduledExecutionTime()), ZoneId.systemDefault()));
+	        //System.out.println("Email sent at: " + LocalDateTime.ofInstant(Instant.ofEpochMilli(scheduledExecutionTime()), ZoneId.systemDefault()));
 
 	    	mGanttTecalOR.getTimeBar().setValue(mGanttTecalOR.getTimeBar().getValue()+1);
 
@@ -170,6 +168,10 @@ public class CPO_IHM extends JFrame {
 				if( first.start<current_time) {
 					// on ne garde pas les taches du job car il n'a pas encore commencé
 					mCPO_PANEL.removeBarre(barreid);
+				}
+				if( first.end == current_time+60   ) 	 {
+					CountdownWindow countdownModal = new CountdownWindow(barreid);
+				     countdownModal.startCountdown();
 				}
 
 			}
