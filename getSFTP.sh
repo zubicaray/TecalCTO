@@ -3,7 +3,7 @@
 # Configuration des paramètres
 sftpHost='80.11.56.1'
 sftpUsername="sftpuser"
-sftpPassword="sz67*&àj_0650017490-hacbfhGD"
+sftpPassword=$SFTP_PWD
 remotePath="/uploads"
 localPath="/home/zubi/DEV/"
 
