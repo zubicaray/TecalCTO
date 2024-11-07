@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -116,6 +117,7 @@ public class SQL_DATA {
 		try {
 			mConnection = DriverManager.getConnection(connectionUrl);
 			mStatement= mConnection.createStatement();
+			
 		} catch (SQLException e) {
 			JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
@@ -221,6 +223,13 @@ public Statement getStatement() throws SQLException {
 	return mConnection.createStatement();
 
 }
+
+public PreparedStatement getPreparedStatement(String query) throws SQLException {
+
+	return mConnection.prepareStatement(query);
+
+}
+
 //TODO
 //appeler deux fois pour le diag de prod
 public HashMap<Integer,PosteBDD> getPostes(String[] listeOF) {

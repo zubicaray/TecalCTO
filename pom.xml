@@ -54,9 +54,13 @@
 	</properties>
 
 	<repositories>
-
-
+		<repository>
+			<id>jitpack.io</id>
+			<url>https://jitpack.io</url>
+		</repository>
 	</repositories>
+
+
 
 	<dependencies>
 
@@ -70,9 +74,14 @@
 		<dependency>
 			<groupId>com.github.s7connector</groupId>
 			<artifactId>s7connector</artifactId>
-			<version>2.1</version>
+			<version>2.0</version>
 		</dependency>
-
+		<dependency>
+		    <groupId>com.github.xingshuangs</groupId>
+		    <artifactId>iot-communication</artifactId>
+		    <version>1.5.3</version>
+		</dependency>
+		
 		<dependency>
 			<groupId>org.fluttercode.datafactory</groupId>
 			<artifactId>datafactory</artifactId>
@@ -122,27 +131,21 @@
 		<plugins>
 
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>single</goal>
-						</goals>
-						<configuration>
-							<archive>
-								<manifest>
-									<mainClass>org.tecal.ui.TecalGUI</mainClass>
-								</manifest>
-							</archive>
-							<descriptorRefs>
-								<descriptorRef>jar-with-dependencies</descriptorRef>
-							</descriptorRefs>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.2.1</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <finalName>TecalCPO</finalName> <!-- Nom du JAR généré -->
+                </configuration>
+            </plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
@@ -199,10 +202,10 @@
 								<minVersion></minVersion>
 								<maxVersion></maxVersion>
 							</jre>
-							<dontWrapJar>true</dontWrapJar>
+							<dontWrapJar>false</dontWrapJar>
 							<headerType>gui</headerType>
 							<outfile>TecalCPO-1.0.0.exe</outfile>
-							<jar>target/TecalCPO-1.0.0-jar-with-dependencies.jar</jar>
+							<jar>target/TecalCPO.jar</jar>
 							<icon>src/main/resources/gantt-chart-32.ico</icon>
 							<errTitle>ERR TecalCPO</errTitle>
 							<classPath>
@@ -238,14 +241,53 @@
 								<minVersion></minVersion>
 								<maxVersion></maxVersion>
 							</jre>
-							<dontWrapJar>true</dontWrapJar>
+							<dontWrapJar>false</dontWrapJar>
 							<headerType>gui</headerType>
 							<outfile>TecalGUI-1.0.0.exe</outfile>
-							<jar>target/TecalCPO-1.0.0-jar-with-dependencies.jar</jar>
+							<jar>target/TecalCPO.jar</jar>
 							<icon>src/main/resources/gantt-chart-32.ico</icon>
 							<errTitle>ERR TecalGUI</errTitle>
 							<classPath>
 								<mainClass>org.tecal.ui.TecalGUI</mainClass>
+								<addDependencies>true</addDependencies>
+								<preCp>anything</preCp>
+							</classPath>
+
+							<versionInfo>
+								<fileVersion>1.0.0.0</fileVersion>
+								<txtFileVersion>txt file version?</txtFileVersion>
+								<fileDescription>a description</fileDescription>
+								<copyright>my copyright</copyright>
+								<productVersion>4.3.2.1</productVersion>
+								<txtProductVersion>txt product version</txtProductVersion>
+								<productName>TecalGUI</productName>
+								<internalName>TecalGUI</internalName>
+								<originalFilename>TecalGUI.exe</originalFilename>
+							</versionInfo>
+						</configuration>
+					</execution>
+					<execution>
+						<id>S7Example</id>
+						<phase>package</phase>
+						<goals>
+							<goal>launch4j</goal>
+						</goals>
+						<configuration>
+							<jre>
+								<path>%JAVA_HOME%;%PATH%</path>
+								<requiresJdk>false</requiresJdk>
+								<requires64Bit>false</requires64Bit>
+								<minVersion></minVersion>
+								<maxVersion></maxVersion>
+							</jre>
+							<dontWrapJar>false</dontWrapJar>
+							<headerType>console</headerType>
+							<outfile>S7Example.exe</outfile>
+							<jar>target/TecalCPO.jar</jar>
+							<icon>src/main/resources/gantt-chart-32.ico</icon>
+							<errTitle>ERR TecalGUI</errTitle>
+							<classPath>
+								<mainClass>org.tecal.S7Connector.S7Example</mainClass>
 								<addDependencies>true</addDependencies>
 								<preCp>anything</preCp>
 							</classPath>
