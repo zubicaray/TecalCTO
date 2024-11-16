@@ -1,0 +1,3 @@
+1.1.0
++amélioration graphiques
++gestion du nom de la barre à afficher

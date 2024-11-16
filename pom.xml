@@ -7,7 +7,7 @@
 
 	<groupId>zdev.tecal</groupId>
 	<artifactId>TecalCPO</artifactId>
-	<version>1.0.0</version>
+	<version>1.1.0</version>
 	<packaging>jar</packaging>
 
 	<name>${project.groupId}:${project.artifactId}</name>
@@ -204,7 +204,7 @@
 							</jre>
 							<dontWrapJar>false</dontWrapJar>
 							<headerType>gui</headerType>
-							<outfile>TecalCPO-1.0.0.exe</outfile>
+							<outfile>TecalCPO-${version}.exe</outfile>
 							<jar>target/TecalCPO.jar</jar>
 							<icon>src/main/resources/gantt-chart-32.ico</icon>
 							<errTitle>ERR TecalCPO</errTitle>
@@ -215,11 +215,11 @@
 							</classPath>
 
 							<versionInfo>
-								<fileVersion>1.0.0.0</fileVersion>
+								<fileVersion>1.${version}</fileVersion>
 								<txtFileVersion>txt file version?</txtFileVersion>
 								<fileDescription>a description</fileDescription>
 								<copyright>my copyright</copyright>
-								<productVersion>4.3.2.1</productVersion>
+								<productVersion>1.${version}</productVersion>
 								<txtProductVersion>txt product version</txtProductVersion>
 								<productName>TecalCPO</productName>
 								<internalName>TecalCPO</internalName>
@@ -243,7 +243,7 @@
 							</jre>
 							<dontWrapJar>false</dontWrapJar>
 							<headerType>gui</headerType>
-							<outfile>TecalGUI-1.0.0.exe</outfile>
+							<outfile>TecalGUI-${version}.exe</outfile>
 							<jar>target/TecalCPO.jar</jar>
 							<icon>src/main/resources/gantt-chart-32.ico</icon>
 							<errTitle>ERR TecalGUI</errTitle>
@@ -254,11 +254,11 @@
 							</classPath>
 
 							<versionInfo>
-								<fileVersion>1.0.0.0</fileVersion>
+								<fileVersion>1.${version}</fileVersion>
 								<txtFileVersion>txt file version?</txtFileVersion>
 								<fileDescription>a description</fileDescription>
 								<copyright>my copyright</copyright>
-								<productVersion>4.3.2.1</productVersion>
+								<productVersion>1.${version}</productVersion>
 								<txtProductVersion>txt product version</txtProductVersion>
 								<productName>TecalGUI</productName>
 								<internalName>TecalGUI</internalName>
