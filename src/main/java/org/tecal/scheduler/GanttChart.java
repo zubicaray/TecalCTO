@@ -161,9 +161,9 @@ public class GanttChart extends JFrame {
 				res=" sortie dans "+ minutes+" minutes à "+hour;
 			}
 			else {
-
+				minutes=toMinutes(-1*seconds);
 				hour= mStartTime.plusSeconds(fin-CST.CPT_GANTT_OFFSET).toString().substring(0,8);
-				res="<br>à "+hour;
+				res=" sortie il y a  "+ minutes+" minutes à "+hour;
 			}
 
 			return res;
@@ -186,7 +186,7 @@ public class GanttChart extends JFrame {
 		mLowerBound=0;
 
 		LinkedHashMap<Integer, ArrayList<GammeType> > ficheToZones	= inTecalOrdo.getBarreZonesAll();
-		LinkedHashMap<Integer,String> ficheToGamme					= inTecalOrdo.getBarreLabels();
+		LinkedHashMap<Integer,String> barreLabels					= inTecalOrdo.getBarreLabels();
 		Map<Integer, List<AssignedTask>> assignedTasksByNumzone		= inTecalOrdo.getAssignedJobs();
 
 		indexToBarreIndex.clear();
@@ -229,7 +229,7 @@ public class GanttChart extends JFrame {
 		 for (Map.Entry<Integer, ArrayList<GammeType> > entry : ficheToZones.entrySet()) {
 			//String lgamme =entry.getKey()+"-"+ ficheToGamme.get(entry.getKey());
 			int barre=entry.getKey();
-			String lgamme=inTecalOrdo.getBarreLabels().get(barre);
+			String lgamme=barreLabels.get(barre);
 
 			int index=barreToIndex.get(barre);
 			series[index] = new XYIntervalSeries(lgamme);
@@ -315,8 +315,8 @@ public class GanttChart extends JFrame {
 
 			    }
 
-			    labelsModel.get(index)[cpt1]="barre:"+barre+"<br>start:"+at.start+", durée:"+toMinutes(at.duration)+", fin:"+(at.derive)
-			    		+ "<br>dérive: " +(at.derive-dr[1])+", égouttage:"+df.get(at.taskID).egouttage+ "<br>" +df.get(at.taskID).codezone;
+			    labelsModel.get(index)[cpt1]="barre "+barreLabels.get(barre)+" en "+df.get(at.taskID).codezone+"<br>start:"+at.start+", durée:"+toMinutes(at.duration)+", fin:"+(at.derive)
+			    		+ "<br>dérive: " +(at.derive-dr[1])+", égouttage:"+df.get(at.taskID).egouttage ;
 
 
 
@@ -537,7 +537,10 @@ public class GanttChart extends JFrame {
 
 				  PosteProd posteProd=set.getValue();
 
-				  labels.get(currentFiche)[cptt]=fiche+ ", start:"+(posteProd.start-offset)+", durée:"+(posteProd.stop-posteProd.start)+"end:"+(posteProd.stop-offset) ;
+				  labels.get(currentFiche)[cptt]="<html>"+fiche+
+						  "<br>start:"+(posteProd.start-offset)
+						  +"<br>durée:"+(posteProd.stop-posteProd.start)
+						  +"<br>end:"+(posteProd.stop-offset) +"</html>";
 				  cptt++;
 
 				  //System.out.println( "------------------------------------------------");

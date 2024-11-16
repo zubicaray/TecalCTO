@@ -304,7 +304,7 @@ public class CPO_IHM extends JFrame {
 		mCPO_PANEL= new CPO_Panel(this);
 		setIconImages(TecalGUI.loadIcons(this));
 		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-		setBounds(100, 100, 985, 650);
+		setBounds(100, 100, 1085, 650);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 

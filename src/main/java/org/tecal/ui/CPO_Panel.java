@@ -266,7 +266,7 @@ public class CPO_Panel extends JPanel {
 			    @Override
 			    public boolean isCellEditable(int row, int column) {
 			        // Rendre éditables les colonnes nécessaires
-			        return column == 1 || column == 2 || column == 3 || column == 4;
+			        return column == 1 || column == 5 || column == 3 || column == 4;
 			    }
 			};
 
