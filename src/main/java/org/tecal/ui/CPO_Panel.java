@@ -163,11 +163,10 @@ public class CPO_Panel extends JPanel {
 		GroupLayout gl_panelCPO = new GroupLayout(this);
 		gl_panelCPO.setHorizontalGroup(
 			gl_panelCPO.createParallelGroup(Alignment.LEADING)
-				.addGap(0, 708, Short.MAX_VALUE)
 				.addGroup(gl_panelCPO.createSequentialGroup()
 					.addContainerGap()
 					.addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING)
-						.addComponent(scrollPaneMsg, GroupLayout.DEFAULT_SIZE, 688, Short.MAX_VALUE)
+						.addComponent(scrollPaneMsg, GroupLayout.DEFAULT_SIZE, 760, Short.MAX_VALUE)
 						.addGroup(gl_panelCPO.createSequentialGroup()
 							.addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING)
 								.addGroup(gl_panelCPO.createSequentialGroup()
@@ -175,41 +174,38 @@ public class CPO_Panel extends JPanel {
 									.addGap(111)
 									.addComponent(textFiltre, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 									.addGap(70)
-									.addComponent(btnReload, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-										)
-
-								.addComponent(scrollPane_gamme, GroupLayout.DEFAULT_SIZE, 304, Short.MAX_VALUE))
-							.addGap(18)
-							.addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING, false)
-								.addComponent(lblBarreLabel, Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 204, GroupLayout.PREFERRED_SIZE)
-								.addComponent(scrollPaneBarres, Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 247, GroupLayout.PREFERRED_SIZE))
+									.addComponent(btnReload)
+									.addGap(61)
+									.addComponent(lblBarreLabel, GroupLayout.PREFERRED_SIZE, 204, GroupLayout.PREFERRED_SIZE))
+								.addGroup(Alignment.TRAILING, gl_panelCPO.createSequentialGroup()
+									.addComponent(scrollPane_gamme, GroupLayout.PREFERRED_SIZE, 616, GroupLayout.PREFERRED_SIZE)
+									.addPreferredGap(ComponentPlacement.UNRELATED)
+									.addComponent(scrollPaneBarres, GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE)))
 							.addGap(18)
 							.addGroup(gl_panelCPO.createParallelGroup(Alignment.TRAILING)
 								.addComponent(btnRun, GroupLayout.PREFERRED_SIZE, 81, GroupLayout.PREFERRED_SIZE)
-
 								.addGroup(gl_panelCPO.createSequentialGroup()
 									.addGroup(gl_panelCPO.createParallelGroup(Alignment.TRAILING)
 										.addComponent(btnDownButton, GroupLayout.PREFERRED_SIZE, 31, GroupLayout.PREFERRED_SIZE)
 										.addComponent(btnUpButton, GroupLayout.PREFERRED_SIZE, 30, GroupLayout.PREFERRED_SIZE)
 										.addComponent(btnDelButton, GroupLayout.PREFERRED_SIZE, 30, GroupLayout.PREFERRED_SIZE))
 									.addGap(50)))))
-					.addContainerGap())
+					.addGap(0))
 		);
 		gl_panelCPO.setVerticalGroup(
 			gl_panelCPO.createParallelGroup(Alignment.LEADING)
-				.addGap(0, 594, Short.MAX_VALUE)
 				.addGroup(gl_panelCPO.createSequentialGroup()
 					.addGap(50)
 					.addGroup(gl_panelCPO.createParallelGroup(Alignment.BASELINE)
 						.addComponent(lblGammes, GroupLayout.PREFERRED_SIZE, 20, GroupLayout.PREFERRED_SIZE)
 						.addComponent(textFiltre, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-						.addComponent(btnReload, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+						.addComponent(btnReload)
 						.addComponent(lblBarreLabel))
 					.addPreferredGap(ComponentPlacement.UNRELATED)
 					.addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING)
 						.addGroup(gl_panelCPO.createParallelGroup(Alignment.BASELINE)
-							.addComponent(scrollPane_gamme, GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
-							.addComponent(scrollPaneBarres, GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE))
+							.addComponent(scrollPane_gamme, GroupLayout.DEFAULT_SIZE, 122, Short.MAX_VALUE)
+							.addComponent(scrollPaneBarres, GroupLayout.DEFAULT_SIZE, 122, Short.MAX_VALUE))
 						.addGroup(gl_panelCPO.createSequentialGroup()
 							.addGap(35)
 							.addComponent(btnUpButton)
@@ -217,9 +213,7 @@ public class CPO_Panel extends JPanel {
 							.addComponent(btnDownButton)
 							.addPreferredGap(ComponentPlacement.UNRELATED)
 							.addComponent(btnDelButton)
-							.addPreferredGap(ComponentPlacement.UNRELATED)
-
-							.addPreferredGap(ComponentPlacement.RELATED, 158, Short.MAX_VALUE)
+							.addPreferredGap(ComponentPlacement.UNRELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
 							.addComponent(btnRun)))
 					.addGap(47)
 					.addComponent(scrollPaneMsg, GroupLayout.PREFERRED_SIZE, 149, GroupLayout.PREFERRED_SIZE)
@@ -288,7 +282,7 @@ public class CPO_Panel extends JPanel {
 			e.printStackTrace();
 		}
 		mTableBarres.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		mTableBarres.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+		mTableBarres.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 		scrollPaneBarres.setViewportView(mTableBarres);
 
 
@@ -456,14 +450,9 @@ public class CPO_Panel extends JPanel {
 
         mTableBarres.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     	TableColumnModel columnModel = mTableBarres.getColumnModel();
-        columnModel.getColumn(0).setPreferredWidth(50);
-        columnModel.getColumn(0).setMaxWidth(50);
+        columnModel.getColumn(0).setPreferredWidth(100);
+        //columnModel.getColumn(0).setMaxWidth(50);
         mTableBarres.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
-
-       
-
-        
-
 
 
 	}

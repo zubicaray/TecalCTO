@@ -637,7 +637,7 @@ public class TecalOrdo {
 		for (Map.Entry<Integer, ArrayList<GammeType>> entry : mBarreFutures.entrySet()) {
 
 			int numBarre = entry.getKey();
-			String name = numBarre + "-" + mBarreLabels.get(numBarre);
+			String name = mBarreLabels.get(numBarre);
 
 			JobType job = new JobType(numBarre,mBarresSettings.get(numBarre), name);
 

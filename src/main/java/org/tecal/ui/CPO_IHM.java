@@ -172,7 +172,7 @@ public class CPO_IHM extends JFrame {
 					mCPO_PANEL.removeBarre(barreid);
 				}
 				if( first.end == current_time+60   ) 	 {
-					CountdownWindow countdownModal = new CountdownWindow(barreid);
+					CountdownWindow countdownModal = new CountdownWindow(mTecalOrdo.getBarreLabels().get(barreid));
 				     countdownModal.startCountdown();
 				}
 
@@ -418,6 +418,7 @@ public class CPO_IHM extends JFrame {
 
 		tableDerives = new JTable(modelDerives);
 		tableDerives.setSize(new Dimension(32000, 50000));
+		
 
 
 		TableRowSorter<TableModel> sorter = new TableRowSorter<>(tableDerives.getModel());
@@ -427,11 +428,12 @@ public class CPO_IHM extends JFrame {
 		sortKeys.add(new DefaultRowSorter.SortKey(0, SortOrder.ASCENDING));
 		sortKeys.add(new DefaultRowSorter.SortKey(1, SortOrder.ASCENDING));
 		sorter.setSortKeys(sortKeys);
-		panelDerives.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-
+		//panelDerives.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+		// Définir un BorderLayout pour permettre une extension complète
+		panelDerives.setLayout(new BorderLayout());
 
 		scrollPane.setViewportView(tableDerives);
-		panelDerives.add(scrollPane);
+		panelDerives.add(scrollPane, BorderLayout.CENTER);
 
 		contentPane.add(tabbedPane);
 

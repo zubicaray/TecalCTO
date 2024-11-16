@@ -7,10 +7,10 @@ import java.awt.event.ActionListener;
 public class CountdownWindow extends JFrame {
     private static final long serialVersionUID = 1L;
 	private JLabel countdownLabel;
-    private int countdown = 60; // Durée en secondes (1 minute)
+    private int countdown = 60-3; // Durée en secondes (1 minute)
     private Timer timer;
 
-    public CountdownWindow(int barre) {
+    public CountdownWindow(String barre) {
         setTitle("Décompte de la barre: "+barre);
         countdownLabel = new JLabel("Temps restant : " + countdown + " secondes", SwingConstants.CENTER);
         countdownLabel.setFont(new Font("Arial", Font.BOLD, 18));
@@ -29,7 +29,7 @@ public class CountdownWindow extends JFrame {
             }
         });
 
-        setSize(350, 120);
+        setSize(500, 120);
         setLocationRelativeTo(null); // Centrer la fenêtre sur l'écran
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
     }
@@ -41,12 +41,12 @@ public class CountdownWindow extends JFrame {
 
     public static void main(String[] args) {
         // Lancer la fenêtre de décompte sans bloquer la fenêtre appelante
-        CountdownWindow countdownWindow = new CountdownWindow(1);
+        CountdownWindow countdownWindow = new CountdownWindow("1 - 000543");
         countdownWindow.startCountdown();
         
         // Exemple de fenêtre appelante indépendante
         JFrame mainFrame = new JFrame("Fenêtre principale");
-        mainFrame.setSize(400, 200);
+        mainFrame.setSize(300, 200);
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         mainFrame.setLocationRelativeTo(null);
         mainFrame.setVisible(true);
