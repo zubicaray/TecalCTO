@@ -155,6 +155,11 @@ public class CPO_Panel extends JPanel {
 
 		JButton btnUpButton = new JButton();
 		btnUpButton.setHorizontalAlignment(SwingConstants.CENTER);
+		
+		JButton btnDelButton = new JButton();
+	
+		setIconButton(this,btnDelButton,"icons8-delete-16.png");
+		
 		GroupLayout gl_panelCPO = new GroupLayout(this);
 		gl_panelCPO.setHorizontalGroup(
 			gl_panelCPO.createParallelGroup(Alignment.LEADING)
@@ -185,7 +190,8 @@ public class CPO_Panel extends JPanel {
 								.addGroup(gl_panelCPO.createSequentialGroup()
 									.addGroup(gl_panelCPO.createParallelGroup(Alignment.TRAILING)
 										.addComponent(btnDownButton, GroupLayout.PREFERRED_SIZE, 31, GroupLayout.PREFERRED_SIZE)
-										.addComponent(btnUpButton, GroupLayout.PREFERRED_SIZE, 30, GroupLayout.PREFERRED_SIZE))
+										.addComponent(btnUpButton, GroupLayout.PREFERRED_SIZE, 30, GroupLayout.PREFERRED_SIZE)
+										.addComponent(btnDelButton, GroupLayout.PREFERRED_SIZE, 30, GroupLayout.PREFERRED_SIZE))
 									.addGap(50)))))
 					.addContainerGap())
 		);
@@ -210,6 +216,8 @@ public class CPO_Panel extends JPanel {
 							.addPreferredGap(ComponentPlacement.RELATED)
 							.addComponent(btnDownButton)
 							.addPreferredGap(ComponentPlacement.UNRELATED)
+							.addComponent(btnDelButton)
+							.addPreferredGap(ComponentPlacement.UNRELATED)
 
 							.addPreferredGap(ComponentPlacement.RELATED, 158, Short.MAX_VALUE)
 							.addComponent(btnRun)))
@@ -224,7 +232,20 @@ public class CPO_Panel extends JPanel {
 		setIconButton(this,btnDownButton,"icons8-down-16.png");
 		setIconButton(this,btnRun,"icons8-play-16.png");
 
-
+		btnDelButton.setHorizontalAlignment(SwingConstants.CENTER);
+		btnDelButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				
+    	        int row = mTableBarres.getSelectedRow();
+    	        if (row!= -1) {
+    	        	
+    	        	mModelBarres.removeRow(row);
+    	        	mTableGammes.repaint();
+    	        }
+			}
+		});
+		
 		btnUpButton.setHorizontalAlignment(SwingConstants.CENTER);
 		btnUpButton.addActionListener(new ActionListener() {
 			@Override
@@ -245,19 +266,17 @@ public class CPO_Panel extends JPanel {
 		scrollPaneMsg.setViewportView(textArea);
 
 		try {
-			mModelBarres= new DefaultTableModel() ;
+			mModelBarres= new DefaultTableModel() {
+			    private static final long serialVersionUID = 1L;
 
-			mTableBarres = new JTable() {
+			    @Override
+			    public boolean isCellEditable(int row, int column) {
+			        // Rendre éditables les colonnes nécessaires
+			        return column == 1 || column == 2 || column == 3 || column == 4;
+			    }
+			};
 
-	            private static final long serialVersionUID = 1L;
-
-	            @Override
-	            public boolean isCellEditable(int row, int column) {
-	              return column == 2 || column == 3|| column == 4;
-	            }
-
-
-	        };
+			mTableBarres = new JTable() ;
 
 			buildTableModelBarre();
 
@@ -278,14 +297,7 @@ public class CPO_Panel extends JPanel {
 
 	    	 mModelGammes = new DefaultTableModel() {
 
-
-	 			private static final long serialVersionUID = 1L;
-
-	 			@Override
-	     	    public boolean isCellEditable(int row, int column) {
-	     	       //all cells false
-	     	       return false;
-	     	    }
+				private static final long serialVersionUID = 1L;
 	     	};
 
 	     	mTableGammes = new JTable(mModelGammes) {
@@ -310,24 +322,16 @@ public class CPO_Panel extends JPanel {
 
 	       	};
 
-
-
 			buildTableModelGamme();
 
 	     	mTableGammes.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
-
-
 
 
 		} catch (SQLException e) {
 			JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 		}
-
-
-
-
-
+	    
 	    setActionListener();
 	    mTableGammes.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		scrollPane_gamme.setViewportView(mTableGammes);
@@ -345,7 +349,7 @@ public class CPO_Panel extends JPanel {
 
         	Barre b=  entry.getValue();
 
-            Object[] rowO = { b.idbarre,b.gamme,CST.VITESSES[b.vitesseMontee],CST.VITESSES[b.vitesseDescente],b.prioritaire };
+            Object[] rowO = { b.idbarre,b.barreNom,b.gamme,CST.VITESSES[b.vitesseMontee],CST.VITESSES[b.vitesseDescente],b.prioritaire };
 			if(b.idbarre>mNumBarre) {
 				mNumBarre=b.idbarre;
 			}
@@ -376,8 +380,10 @@ public class CPO_Panel extends JPanel {
 						// utiliser un objet de classe Barre ave vitesse et prio
 						gammes.clear();
 						for (int count = 0; count < mTableBarres.getRowCount(); count++){
-							int idbarre=(int) mTableBarres.getValueAt(count, 0);
+							//int idbarre=(int) mTableBarres.getValueAt(count, 0);
+							int idbarre=(int) mModelBarres.getValueAt(count, 0);
 							String gamme=mTableBarres.getValueAt(count, 1).toString();
+							String nomBarre=mTableBarres.getValueAt(count, 0).toString();
 
 							vitesseCombo.setSelectedItem( mTableBarres.getValueAt(count, 2) );
 							int indexMontee= vitesseCombo.getSelectedIndex();
@@ -388,7 +394,7 @@ public class CPO_Panel extends JPanel {
 
 							boolean prio=(Boolean) mTableBarres.getValueAt(count, 4);
 							gammes.put(idbarre,gamme);
-							barres.put(idbarre,new Barre(idbarre,gamme,indexMontee,indexDesc,prio));
+							barres.put(idbarre,new Barre(idbarre,nomBarre,gamme,indexMontee,indexDesc,prio));
 						}
 
 
@@ -416,6 +422,7 @@ public class CPO_Panel extends JPanel {
 	    Vector<String> columnNames = new Vector<>();
 
 	    columnNames.add("barre");
+	    columnNames.add("id");
 	    columnNames.add("gamme");
 	    columnNames.add("montée");
 	    columnNames.add("desc.");
@@ -425,9 +432,15 @@ public class CPO_Panel extends JPanel {
 
 
         mTableBarres.setModel(mModelBarres);
+        TableColumnModel tcm = mTableBarres.getColumnModel();
+        tcm.removeColumn( tcm.getColumn(0 ));
+
+
+        TableColumn colBarre = mTableBarres.getColumnModel().getColumn(0);
+        colBarre.setCellEditor(new DefaultCellEditor(new JTextField()));
+        
 
         TableColumn colMontee =mTableBarres.getColumnModel().getColumn(2);
-
 
         //définir l'éditeur par défaut
         colMontee.setCellEditor(new DefaultCellEditor(vitesseCombo));
@@ -447,24 +460,9 @@ public class CPO_Panel extends JPanel {
         columnModel.getColumn(0).setMaxWidth(50);
         mTableBarres.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
 
-        mTableBarres.addMouseListener(new MouseAdapter() {
-    	    @Override
-			public void mousePressed(MouseEvent mouseEvent) {
-    	        JTable table =(JTable) mouseEvent.getSource();
-    	        DefaultTableModel model=(DefaultTableModel) table.getModel();
-    	        Point point = mouseEvent.getPoint();
-    	        int row = table.rowAtPoint(point);
-    	        if (mouseEvent.getClickCount() == 2 && table.getSelectedRow() != -1) {
-    	        	if(model.getDataVector().get(row).get(0)==mNumBarre) {
-						//mNumBarre--;
-					}
-    	        	model.removeRow(row);
+       
 
-    	        }
-    	    }
-    	});
-
-
+        
 
 
 
@@ -475,7 +473,7 @@ public class CPO_Panel extends JPanel {
 		boolean found = false;
 		 for (; i < mTableBarres.getRowCount(); i++) {  // Loop through the rows
 		       
-	        if(barre== (int)mTableBarres.getValueAt(i, 0)) {
+	        if(barre== (int)mModelBarres.getValueAt(i, 0)) {
 	        	found=true;
 	        	break;
 	        }
@@ -506,7 +504,7 @@ public class CPO_Panel extends JPanel {
     	        if (mouseEvent.getClickCount() == 2 && table.getSelectedRow() != -1) {
     	        	String gamme=table.getModel().getValueAt(row, 0).toString();
 
-    	        	Object[] rowO = {++mNumBarre, gamme,CST.VITESSES[CST.VITESSE_NORMALE],CST.VITESSES[CST.VITESSE_NORMALE],false };
+    	        	Object[] rowO = {++mNumBarre,mNumBarre+"", gamme,CST.VITESSES[CST.VITESSE_NORMALE],CST.VITESSES[CST.VITESSE_NORMALE],false };
     	        	mModelBarres.addRow(rowO);
 
     	        }

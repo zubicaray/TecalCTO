@@ -1,6 +1,7 @@
 package org.tecal.scheduler;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,6 +14,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.swing.JFrame;
+import javax.swing.ToolTipManager;
+import javax.swing.UIManager;
 
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -160,7 +163,7 @@ public class GanttChart extends JFrame {
 			else {
 
 				hour= mStartTime.plusSeconds(fin-CST.CPT_GANTT_OFFSET).toString().substring(0,8);
-				res="sortie à "+hour;
+				res="<br>à "+hour;
 			}
 
 			return res;
@@ -222,11 +225,12 @@ public class GanttChart extends JFrame {
 		 //Create series. Start and end times are used as y intervals, and the room is represented by the x value
 		 XYIntervalSeries[]  series = new XYIntervalSeries[totalZoneCount];
 
-		 //Integer[] barreJobs= new Integer[ficheToZones.keySet().size()];
 
 		 for (Map.Entry<Integer, ArrayList<GammeType> > entry : ficheToZones.entrySet()) {
-			String lgamme =entry.getKey()+"-"+ ficheToGamme.get(entry.getKey());
+			//String lgamme =entry.getKey()+"-"+ ficheToGamme.get(entry.getKey());
 			int barre=entry.getKey();
+			String lgamme=inTecalOrdo.getBarreLabels().get(barre);
+
 			int index=barreToIndex.get(barre);
 			series[index] = new XYIntervalSeries(lgamme);
 
@@ -241,7 +245,7 @@ public class GanttChart extends JFrame {
 
 
 		 //!!!!!!!!!!!!!!!!!!!!
-		 // si pas linkedmap les job id ont dans le désordre chrono
+		 // si pas linkedmap les job id sont dans le désordre chrono
 		 // et du coup les zones cumul s'affiche mal
 		 mTabAssignedJobsSorted=new HashMap<>();
 
@@ -311,11 +315,10 @@ public class GanttChart extends JFrame {
 
 			    }
 
-			    labelsModel.get(index)[cpt1]="barre:"+barre+", start:"+at.start+", durée:"+toMinutes(at.duration)+", fin:"+(at.derive)
-			    		+ " dérive: " +(at.derive-dr[1])+", égouttage:"+df.get(at.taskID).egouttage+ ", " +df.get(at.taskID).codezone;
+			    labelsModel.get(index)[cpt1]="barre:"+barre+"<br>start:"+at.start+", durée:"+toMinutes(at.duration)+", fin:"+(at.derive)
+			    		+ "<br>dérive: " +(at.derive-dr[1])+", égouttage:"+df.get(at.taskID).egouttage+ "<br>" +df.get(at.taskID).codezone;
 
 
-			    //tasksTab.get(barre-1)[cpt1]=at;
 
 			    cpt1++;
 
@@ -323,10 +326,6 @@ public class GanttChart extends JFrame {
 
 			 }
 		 }
-
-
-
-
 
 
 		 buildPlot();
@@ -406,7 +405,7 @@ public class GanttChart extends JFrame {
 		 renderer.setBaseItemLabelsVisible(false);
 		 renderer.setBarPainter(new StandardXYBarPainter());
 
-
+		
 		 StandardXYToolTipGenerator ttgen = new StandardXYToolTipGenerator() {
 
 
@@ -414,40 +413,40 @@ public class GanttChart extends JFrame {
 
 		 @Override
 		 public String generateToolTip(XYDataset dataset, int series, int item) {
-			 int barre=indexToBarreIndex.get(series);
+			 	int barre=indexToBarreIndex.get(series);
 			 	//System.out.println("series:"+series+" "+" item:"+item+" val="+labelsModel[series][item]);
-			 	return  labelsModel.get(series)[item]+  tmpsAvantSortie(mTabAssignedJobsSorted.get(barre).get(item).derive);
+			 	
+			 	return "<html>" +
+			 	labelsModel.get(series)[item]+ "<br>" +
+			 	tmpsAvantSortie(mTabAssignedJobsSorted.get(barre).get(item).derive) + "<br>" +
+	               "</html>";
 		    }
 		 };
-	     renderer.setSeriesToolTipGenerator(0, ttgen);
 
+	
+
+	     renderer.setSeriesToolTipGenerator(0, ttgen);
 	     renderer.setBaseToolTipGenerator(ttgen);
+
 
 		 mPlot = new XYPlot(mDataset, new SymbolAxis("zones", mZonesAllGamme), new NumberAxis(), renderer);
 
 		 mPlot.setOrientation(PlotOrientation.HORIZONTAL);
 
-
-	     //marker.setLabel("here"); // see JavaDoc for labels, colors, strokes
-
-
 	     mPlot.addRangeMarker(timeBar);
 
 	     JFreeChart j= new JFreeChart(mPlot);
-	     //NumberAxis xAxis = (NumberAxis) mPlot.getDomainAxis();
 
-	     //xAxis.setLowerBound(mLowerBound+0.0);
 	     ((NumberAxis)mPlot.getRangeAxis()).setAutoRangeIncludesZero(false);
-
-	     //LegendTitle sl = j.getLegend();	     sl.setItemPaint(Color.white);
 
 	     mPlot.getRangeAxis().setTickLabelPaint(Color.WHITE);
 	     mPlot.getDomainAxis().setTickLabelPaint(Color.WHITE);
 	     mPlot.getDomainAxis().setLabelPaint(Color.WHITE);
 
 
+	     ToolTipManager.sharedInstance().setInitialDelay(0);
+	     UIManager.put("ToolTip.font", new Font("SansSerif", Font.BOLD, 20)); // Exemple de police
 
-	     //mChartPanel=  new ChartPanel(j);
 	     mChartPanel.setChart(j);
 
 	}
@@ -477,7 +476,7 @@ public class GanttChart extends JFrame {
 		 //gamme par fiche production (on peut avoir une  même gamme pour deux fichesProd
 		 HashMap<String, String> ficheGamme=  SQL_DATA.getInstance().getFicheGamme(listeOF);
 
-		 
+
 
 		 //temps aux postes par fiches production
 		 HashMap<String, LinkedHashMap<Integer,PosteProd> > tempsAuPostes=SQL_DATA.getInstance().getTempsAuPostes(listeOF,date) ;
@@ -497,10 +496,10 @@ public class GanttChart extends JFrame {
 			 firstPostes.put(actualValue.getValue().start,actualValue.getValue());
 
 		 });
-		 
-		 
-		 
-		 String[] ficheToZones=tempsAuPostes.keySet().toArray(new String[0]);;//ficheGamme.values().toArray(new String[0]);
+
+
+
+		 String[] ficheToZones=tempsAuPostes.keySet().toArray(new String[0]);//ficheGamme.values().toArray(new String[0]);
 
 		 int totalFicheProdCount =ficheToZones.length;
 
@@ -523,7 +522,7 @@ public class GanttChart extends JFrame {
 		 }
 
 		labels = new ArrayList<>(totalFicheProdCount);
-		
+
 
 		for(int currentFiche = 0; currentFiche < totalFicheProdCount; currentFiche++){
 			String fiche=fichesProd[currentFiche];
@@ -595,8 +594,16 @@ public class GanttChart extends JFrame {
 	     plot.getDomainAxis().setTickLabelPaint(Color.WHITE);
 	     plot.getDomainAxis().setLabelPaint(Color.WHITE);
 
+	     ToolTipManager.sharedInstance().setInitialDelay(0);
+	     UIManager.put("ToolTip.font", new Font("SansSerif", Font.BOLD, 20)); // Exemple de police
+
 	     JFreeChart chart = new JFreeChart(plot);
-	     getContentPane().add(new ChartPanel(chart));
+	     ChartPanel cp=new ChartPanel(chart);
+		 cp.setDismissDelay(Integer.MAX_VALUE); // Garder les tooltips affichés indéfiniment
+		 cp.setInitialDelay(0); // Affichage immédiat
+		 cp.setReshowDelay(0); // Pas de délai entre deux affichages
+		 
+	     getContentPane().add(cp);
 	}
 
 

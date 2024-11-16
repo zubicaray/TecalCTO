@@ -292,7 +292,7 @@ public class TecalOrdo {
 		int i = 0;
 		for (String gamme : CST.gammesTest) {
 			i++;
-			Barre b=new Barre(i,gamme,CST.VITESSE_NORMALE,CST.VITESSE_NORMALE,false);
+			Barre b=new Barre(i,i+"",gamme,CST.VITESSE_NORMALE,CST.VITESSE_NORMALE,false);
 			mBarreFutures.put(i, mGammes.get(b.gamme));
 			mBarresAll.put(i, mGammes.get(b.gamme));
 			mBarreLabels.put(i, gamme);
@@ -327,8 +327,11 @@ public class TecalOrdo {
 			
 			
 			if(!mBarreLabels.containsKey(numbarre)) {
-				mBarreLabels.put(numbarre, barre.gamme);
+				mBarreLabels.put(numbarre, barre.barreNom+"-"+barre.gamme);
 				mBarresAll.put(numbarre, mGammes.get(barre.gamme));
+			}
+			else {
+				mBarreLabels.put(numbarre, barre.barreNom+"-"+barre.gamme);
 			}
 		
 

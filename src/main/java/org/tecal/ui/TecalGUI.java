@@ -338,7 +338,8 @@ public class TecalGUI {
 
 				LinkedHashMap<Integer, Barre> barres = new LinkedHashMap<>();
 				for (int i = 0; i < sel.length; i++) {
-					Barre b = new Barre(i + 1, tableOF.getModel().getValueAt(sel[i], 1).toString(), CST.VITESSE_NORMALE,
+					int j =i+1;
+					Barre b = new Barre(j,j+"", tableOF.getModel().getValueAt(sel[i], 1).toString(), CST.VITESSE_NORMALE,
 							CST.VITESSE_NORMALE, false);
 
 					barres.put(b.idbarre, b);

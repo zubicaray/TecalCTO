@@ -31,6 +31,7 @@ import javax.swing.JTable;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SortOrder;
 import javax.swing.SwingConstants;
+import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
@@ -101,6 +102,7 @@ public class CPO_IHM extends JFrame {
 
 
 					CPO_IHM frame = new CPO_IHM();
+			
 
 					frame.setTitle("Tecal Ordonnanceur");
 					if(System.getenv("TEST_CPO") != null && System.getenv("TEST_CPO").equals("1")) {
