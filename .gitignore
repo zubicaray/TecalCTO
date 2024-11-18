@@ -5,12 +5,12 @@ CPO_1.0.exe
 launch4j.log
 .vs/
 Launch4j.lnk
-TecalProdVisu_1.0.exe
 .classpath
 .project
-TecalCPO-1.0.0.exe
-TecalGUI-1.0.0.exe
+TecalCPO*.exe
+TecalGUI*.exe
 SQL
 S7Example.exe
 histoSFTP
 mdp
+deploy.sh

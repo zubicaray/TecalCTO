@@ -323,6 +323,62 @@ private void  setLignesGammes() {
 
 
 	}
+
+public  ResultSet getStatsAnodisation(String[] listeOF) {
+	ResultSet resultSet = null;
+	String paramsOF=toClause(listeOF);
+	
+	String requeteSQL = String.format("""
+            DECLARE @DateDebut DATETIME;
+            DECLARE @DateFin DATETIME;
+
+            SELECT 
+                @DateDebut = MIN(DateEntreePoste),
+                @DateFin = MAX(DateSortiePoste)
+            FROM DetailsFichesProduction
+            WHERE NumPoste IN (18, 19, 20) 
+              AND NumFicheProduction IN (%s);
+
+            WITH CTE_Durees AS (
+                SELECT
+                    NumPoste,
+                    DATEDIFF(SECOND, 
+                        CASE 
+                            WHEN DateEntreePoste < @DateDebut THEN @DateDebut 
+                            ELSE DateEntreePoste 
+                        END,
+                        CASE 
+                            WHEN DateSortiePoste > @DateFin THEN @DateFin 
+                            ELSE DateSortiePoste 
+                        END
+                    ) AS DureeOccupation
+                FROM DetailsFichesProduction
+                WHERE NumPoste IN (18, 19, 20)
+                  AND DateSortiePoste > @DateDebut
+                  AND DateEntreePoste < @DateFin
+                  AND NumFicheProduction IN (%s)
+            )
+            SELECT
+                P.NomPoste,
+                SUM(DureeOccupation) AS 'duree totale',
+                --DATEDIFF(SECOND, @DateDebut, @DateFin) AS DureeTotalePeriode,
+                CAST(SUM(DureeOccupation) * 100.0 / NULLIF(DATEDIFF(SECOND, @DateDebut, @DateFin), 0) AS DECIMAL(10, 2)) AS 'taux occupation'
+            FROM CTE_Durees,Postes P
+            WHERE P.NumPoste=CTE_Durees.NumPoste
+            GROUP BY P.NomPoste
+            ORDER BY P.NomPoste;
+            """,paramsOF,paramsOF);
+	try {
+		resultSet = mStatement.executeQuery(requeteSQL);
+		
+	} catch (SQLException e) {
+		JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
+		e.printStackTrace();
+	}
+	
+	return resultSet;
+}
+
 public  ResultSet getEnteteGammes() {
 	ResultSet resultSet = null;
 

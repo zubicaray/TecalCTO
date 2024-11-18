@@ -61,7 +61,6 @@
 	</repositories>
 
 
-
 	<dependencies>
 
 		<dependency>
@@ -77,11 +76,11 @@
 			<version>2.0</version>
 		</dependency>
 		<dependency>
-		    <groupId>com.github.xingshuangs</groupId>
-		    <artifactId>iot-communication</artifactId>
-		    <version>1.5.3</version>
+			<groupId>com.github.xingshuangs</groupId>
+			<artifactId>iot-communication</artifactId>
+			<version>1.5.3</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.fluttercode.datafactory</groupId>
 			<artifactId>datafactory</artifactId>
@@ -130,22 +129,55 @@
 	<build>
 		<plugins>
 
+
 			<plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>3.2.1</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <finalName>TecalCPO</finalName> <!-- Nom du JAR généré -->
-                </configuration>
-            </plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>3.6.0</version>
+				<executions>
+					<execution>
+						<id>make-assembly</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<descriptorRefs>
+								<descriptorRef>jar-with-dependencies</descriptorRef>
+							</descriptorRefs>
+							<archive>
+								<manifest>
+									<mainClass>org.tecal.ui.TecalGUI</mainClass> 
+									Classe principale 
+								</manifest>
+								<manifestEntries>
+									
+									<Permissions>all-permissions</Permissions>
+								</manifestEntries>
+							</archive>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			 
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>3.5.0</version> <!-- Vérifiez la dernière version -->
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+						 <!-- <finalName>TecalCPO</finalName> Nom du JAR généré -->
+						</configuration>
+					
+					</execution>
+				</executions>
+
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
@@ -165,22 +197,7 @@
 					</execution>
 				</executions>
 			</plugin>
-			<!-- 
-		    <plugin>
-		      <groupId>org.apache.maven.plugins</groupId>
-		      <artifactId>maven-gpg-plugin</artifactId>
-		      <version>1.6</version>
-		      <executions>
-		        <execution>
-		          <id>sign-artifacts</id>
-		          <phase>verify</phase>
-		          <goals>
-		            <goal>sign</goal>
-		          </goals>
-		        </execution>
-		      </executions>
-		    </plugin>
-		   -->
+
 
 			<plugin>
 				<groupId>com.akathist.maven.plugins.launch4j</groupId>
@@ -204,8 +221,8 @@
 							</jre>
 							<dontWrapJar>false</dontWrapJar>
 							<headerType>gui</headerType>
-							<outfile>TecalCPO-${version}.exe</outfile>
-							<jar>target/TecalCPO.jar</jar>
+							<outfile>TecalCPO-${project.version}.exe</outfile>
+							<jar>target/TecalCPO-${project.version}-jar-with-dependencies.jar</jar>
 							<icon>src/main/resources/gantt-chart-32.ico</icon>
 							<errTitle>ERR TecalCPO</errTitle>
 							<classPath>
@@ -215,11 +232,11 @@
 							</classPath>
 
 							<versionInfo>
-								<fileVersion>1.${version}</fileVersion>
+								<fileVersion>1.${project.version}</fileVersion>
 								<txtFileVersion>txt file version?</txtFileVersion>
 								<fileDescription>a description</fileDescription>
 								<copyright>my copyright</copyright>
-								<productVersion>1.${version}</productVersion>
+								<productVersion>1.${project.version}</productVersion>
 								<txtProductVersion>txt product version</txtProductVersion>
 								<productName>TecalCPO</productName>
 								<internalName>TecalCPO</internalName>
@@ -243,8 +260,8 @@
 							</jre>
 							<dontWrapJar>false</dontWrapJar>
 							<headerType>gui</headerType>
-							<outfile>TecalGUI-${version}.exe</outfile>
-							<jar>target/TecalCPO.jar</jar>
+							<outfile>TecalGUI-${project.version}.exe</outfile>
+							<jar>target/TecalCPO-${project.version}-jar-with-dependencies.jar</jar>
 							<icon>src/main/resources/gantt-chart-32.ico</icon>
 							<errTitle>ERR TecalGUI</errTitle>
 							<classPath>
@@ -254,11 +271,11 @@
 							</classPath>
 
 							<versionInfo>
-								<fileVersion>1.${version}</fileVersion>
+								<fileVersion>1.${project.version}</fileVersion>
 								<txtFileVersion>txt file version?</txtFileVersion>
 								<fileDescription>a description</fileDescription>
 								<copyright>my copyright</copyright>
-								<productVersion>1.${version}</productVersion>
+								<productVersion>1.${project.version}</productVersion>
 								<txtProductVersion>txt product version</txtProductVersion>
 								<productName>TecalGUI</productName>
 								<internalName>TecalGUI</internalName>
@@ -283,7 +300,7 @@
 							<dontWrapJar>false</dontWrapJar>
 							<headerType>console</headerType>
 							<outfile>S7Example.exe</outfile>
-							<jar>target/TecalCPO.jar</jar>
+							<jar>target/TecalCPO-${project.version}.jar</jar>
 							<icon>src/main/resources/gantt-chart-32.ico</icon>
 							<errTitle>ERR TecalGUI</errTitle>
 							<classPath>
@@ -305,10 +322,10 @@
 							</versionInfo>
 						</configuration>
 					</execution>
-					
+
 				</executions>
 			</plugin>
-			
+
 		</plugins>
 	</build>
 </project>

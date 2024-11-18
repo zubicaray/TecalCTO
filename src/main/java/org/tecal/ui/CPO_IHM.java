@@ -31,7 +31,6 @@ import javax.swing.JTable;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SortOrder;
 import javax.swing.SwingConstants;
-import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
@@ -50,15 +49,17 @@ import org.tecal.scheduler.types.Barre;
 public class CPO_IHM extends JFrame {
 
 	private static final long serialVersionUID = 1L;
-	private JPanel contentPane;
-	private JTabbedPane tabbedPaneGantt;
-	private JTabbedPane tabbedPane ;
-	private JPanel panel_chart;
-	private JPanel panelGantt ;
-	private DefaultTableModel modelDerives;
-	private JTable tableDerives;
-	private JPanel panel;
+	private JPanel mMainPane;
+
+	private JTabbedPane mTabbedPane ;
+	
+	private JPanel mPanelGantt ;
 	private GanttChart mGanttTecalOR;
+	
+	private JPanel mPanelDerives;
+	private DefaultTableModel mModelDerives;
+	private JTable mTableDerives;
+	
 	private timerGantt mTimer;
 	private TecalOrdo mTecalOrdo;
 
@@ -143,14 +144,13 @@ public class CPO_IHM extends JFrame {
 		execute();
 
 		if(mTecalOrdo.hasSolution()) {
-			tabbedPane.setSelectedIndex(1);
+			mTabbedPane.setSelectedIndex(1);
 			//mCPO_PANEL.getModelBarres().setRowCount(0);
 		}
 
 		setCursor(Cursor.getDefaultCursor());
 
 	}
-
 
 	public class timerGantt extends TimerTask {
 	    @Override
@@ -180,7 +180,6 @@ public class CPO_IHM extends JFrame {
 
 	    }
 	}
-
 
 	private void manageOngoingJobs() {
 
@@ -216,8 +215,6 @@ public class CPO_IHM extends JFrame {
 		}
 	}
 
-
-
 	private void execute() {
 
 		mGanttTecalOR.model_diag(mTecalOrdo);
@@ -243,9 +240,9 @@ public class CPO_IHM extends JFrame {
 
 
 	private void setDerives() {
-		DefaultTableModel modelDerives =getDerives();
+		DefaultTableModel mModelDerives =getDerives();
 
-		modelDerives.setRowCount(0);
+		mModelDerives.setRowCount(0);
 
 		for(List<AssignedTask> lat : mTecalOrdo.getAssignedJobs().values()) {
 			for(AssignedTask at :lat) {
@@ -257,7 +254,7 @@ public class CPO_IHM extends JFrame {
 								mTecalOrdo.getAllJobs().get(at.barreID).getName(),
 								SQL_DATA.getInstance().getZones().get(at.numzone).codezone,
 								minutes };
-						modelDerives.addRow(rowO);
+						mModelDerives.addRow(rowO);
 					}
 
 				}
@@ -305,28 +302,28 @@ public class CPO_IHM extends JFrame {
 		setIconImages(TecalGUI.loadIcons(this));
 		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		setBounds(100, 100, 1085, 650);
-		contentPane = new JPanel();
-		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+		mMainPane = new JPanel();
+		mMainPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 
-		setContentPane(contentPane);
-		contentPane.setLayout(new BorderLayout(0, 0));
+		setContentPane(mMainPane);
+		mMainPane.setLayout(new BorderLayout(0, 0));
 
-		tabbedPane = new JTabbedPane(SwingConstants.TOP);
+		mTabbedPane = new JTabbedPane(SwingConstants.TOP);
 
-		tabbedPane.addTab("Gammes", null, mCPO_PANEL, null);
+		mTabbedPane.addTab("Gammes", null, mCPO_PANEL, null);
 
-		panelGantt = new JPanel();
+		mPanelGantt = new JPanel();
 
-		tabbedPane.addTab("Gantt", null, panelGantt, null);
+		mTabbedPane.addTab("Gantt", null, mPanelGantt, null);
 
-		panel = new JPanel();
+		JPanel panel = new JPanel();
 
 		panel.setLayout(new BorderLayout());
 		panel.add(mGanttTecalOR.getChartPanel(),BorderLayout.CENTER);
 
 		JPanel panelButtons = new JPanel();
 
-		GroupLayout gl_panelGantt = new GroupLayout(panelGantt);
+		GroupLayout gl_panelGantt = new GroupLayout(mPanelGantt);
 		gl_panelGantt.setHorizontalGroup(
 			gl_panelGantt.createParallelGroup(Alignment.TRAILING)
 				.addComponent(panel, GroupLayout.DEFAULT_SIZE, 954, Short.MAX_VALUE)
@@ -358,7 +355,7 @@ public class CPO_IHM extends JFrame {
 		JButton bigFore = new JButton();
 		panelButtons.add(bigFore);
 
-		panelGantt.setLayout(gl_panelGantt);
+		mPanelGantt.setLayout(gl_panelGantt);
 		CPO_Panel.setIconButton(this,btnForeButton,"icons8-fore-16.png");
 
 
@@ -402,11 +399,11 @@ public class CPO_IHM extends JFrame {
 		});
 
 
-		JPanel panelDerives = new JPanel();
-		tabbedPane.addTab("Dérives", null, panelDerives, null);
+		mPanelDerives = new JPanel();
+		mTabbedPane.addTab("Dérives", null, mPanelDerives, null);
 
 
-	    modelDerives=new DefaultTableModel(
+	    mModelDerives=new DefaultTableModel(
 				new Object[][] {
 				},
 				new String[] {
@@ -416,26 +413,26 @@ public class CPO_IHM extends JFrame {
 
 		JScrollPane scrollPane = new JScrollPane();
 
-		tableDerives = new JTable(modelDerives);
-		tableDerives.setSize(new Dimension(32000, 50000));
+		mTableDerives = new JTable(mModelDerives);
+		mTableDerives.setSize(new Dimension(32000, 50000));
 		
 
 
-		TableRowSorter<TableModel> sorter = new TableRowSorter<>(tableDerives.getModel());
-		tableDerives.setRowSorter(sorter);
+		TableRowSorter<TableModel> sorter = new TableRowSorter<>(mTableDerives.getModel());
+		mTableDerives.setRowSorter(sorter);
 
 		List<DefaultRowSorter.SortKey> sortKeys = new ArrayList<>(2);
 		sortKeys.add(new DefaultRowSorter.SortKey(0, SortOrder.ASCENDING));
 		sortKeys.add(new DefaultRowSorter.SortKey(1, SortOrder.ASCENDING));
 		sorter.setSortKeys(sortKeys);
-		//panelDerives.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+		//mPanelDerives.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 		// Définir un BorderLayout pour permettre une extension complète
-		panelDerives.setLayout(new BorderLayout());
+		mPanelDerives.setLayout(new BorderLayout());
 
-		scrollPane.setViewportView(tableDerives);
-		panelDerives.add(scrollPane, BorderLayout.CENTER);
+		scrollPane.setViewportView(mTableDerives);
+		mPanelDerives.add(scrollPane, BorderLayout.CENTER);
 
-		contentPane.add(tabbedPane);
+		mMainPane.add(mTabbedPane);
 
 		//createPanelCPO(panelCPO);
 		UIManager.put( "Panel.foreground", new Color(255,255,255) );
@@ -454,30 +451,10 @@ public class CPO_IHM extends JFrame {
 		});
 	}
 
-
-
-
 	public   DefaultTableModel getDerives()	{
-		return modelDerives;
+		return mModelDerives;
 	}
 
-
-
-	public JTabbedPane getTabbedPaneGantt() {
-		return tabbedPaneGantt;
-	}
-
-	public void setTabbedPaneGantt(JTabbedPane tabbedPaneGantt) {
-		this.tabbedPaneGantt = tabbedPaneGantt;
-	}
-
-	public JPanel getPanel_chart() {
-		return panel_chart;
-	}
-
-	public void setPanel_chart(JPanel panel_chart) {
-		this.panel_chart = panel_chart;
-	}
 	public void setTimer(timerGantt mTimer) {
 		this.mTimer = mTimer;
 	}

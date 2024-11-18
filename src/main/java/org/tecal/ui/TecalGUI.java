@@ -316,8 +316,12 @@ public class TecalGUI {
 				ganttTecal.setSize(new java.awt.Dimension(1500, 870));
 				RefineryUtilities.centerFrameOnScreen(ganttTecal);
 				ganttTecal.setVisible(true);
-				ganttTecal.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+				ganttTecal.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 				frmTecalOrdonnanceur.setCursor(Cursor.getDefaultCursor());
+				
+				StatsWindow fenetre = new StatsWindow( lOF);
+				fenetre.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); 
+	            fenetre.setVisible(true);
 
 			}
 		});
@@ -362,6 +366,7 @@ public class TecalGUI {
 				mCPO_IHM.run(barres);
 				frmTecalOrdonnanceur.setCursor(Cursor.getDefaultCursor());
 				mCPO_IHM.setVisible(true);
+				mCPO_IHM.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); 
 
 			}
 		});

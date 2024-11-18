@@ -59,9 +59,9 @@ public class CPO_Panel extends JPanel {
 	private JTable mTableGammes;
 	private JTable mTableBarres;
 	private DefaultTableModel mModelBarres;
-	private JButton btnRun;
-	private JTextArea textArea;
-	JComboBox<String> vitesseCombo ;
+	private JButton mBtnRun;
+	private JTextArea mTextArea;
+	private JComboBox<String> mVitesseCombo ;
 	private DefaultTableModel mModelGammes;
 	private Integer mNumBarre;
 
@@ -82,20 +82,14 @@ public class CPO_Panel extends JPanel {
 		createPanelCPO();
 
 	}
-
-
-
-
-
-
 	private void createPanelCPO() {
 		JScrollPane scrollPaneMsg = new JScrollPane();
 
 		// créer un ComboBox
-        vitesseCombo = new JComboBox<>();
-        vitesseCombo.addItem("lente");
-        vitesseCombo.addItem("normale");
-        vitesseCombo.addItem("rapide");
+        mVitesseCombo = new JComboBox<>();
+        mVitesseCombo.addItem("lente");
+        mVitesseCombo.addItem("normale");
+        mVitesseCombo.addItem("rapide");
 
 		JLabel lblGammes = new JLabel("gammes:");
 		lblGammes.setFont(new Font("Tahoma", Font.PLAIN, 13));
@@ -142,13 +136,10 @@ public class CPO_Panel extends JPanel {
 
 		JScrollPane scrollPane_gamme = new JScrollPane();
 
-		JLabel lblBarreLabel = new JLabel("barres:                     vitesses:");
-		lblBarreLabel.setFont(new Font("Tahoma", Font.PLAIN, 13));
-
 		JScrollPane scrollPaneBarres = new JScrollPane();
 
-		btnRun = new JButton("GO");
-		btnRun.setHorizontalAlignment(SwingConstants.LEFT);
+		mBtnRun = new JButton("GO");
+		mBtnRun.setHorizontalAlignment(SwingConstants.LEFT);
 
 		JButton btnDownButton = new JButton();
 		btnDownButton.setHorizontalAlignment(SwingConstants.CENTER);
@@ -160,71 +151,14 @@ public class CPO_Panel extends JPanel {
 	
 		setIconButton(this,btnDelButton,"icons8-delete-16.png");
 		
-		GroupLayout gl_panelCPO = new GroupLayout(this);
-		gl_panelCPO.setHorizontalGroup(
-			gl_panelCPO.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_panelCPO.createSequentialGroup()
-					.addContainerGap()
-					.addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING)
-						.addComponent(scrollPaneMsg, GroupLayout.DEFAULT_SIZE, 760, Short.MAX_VALUE)
-						.addGroup(gl_panelCPO.createSequentialGroup()
-							.addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING)
-								.addGroup(gl_panelCPO.createSequentialGroup()
-									.addComponent(lblGammes, GroupLayout.PREFERRED_SIZE, 67, GroupLayout.PREFERRED_SIZE)
-									.addGap(111)
-									.addComponent(textFiltre, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-									.addGap(70)
-									.addComponent(btnReload)
-									.addGap(61)
-									.addComponent(lblBarreLabel, GroupLayout.PREFERRED_SIZE, 204, GroupLayout.PREFERRED_SIZE))
-								.addGroup(Alignment.TRAILING, gl_panelCPO.createSequentialGroup()
-									.addComponent(scrollPane_gamme, GroupLayout.PREFERRED_SIZE, 616, GroupLayout.PREFERRED_SIZE)
-									.addPreferredGap(ComponentPlacement.UNRELATED)
-									.addComponent(scrollPaneBarres, GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE)))
-							.addGap(18)
-							.addGroup(gl_panelCPO.createParallelGroup(Alignment.TRAILING)
-								.addComponent(btnRun, GroupLayout.PREFERRED_SIZE, 81, GroupLayout.PREFERRED_SIZE)
-								.addGroup(gl_panelCPO.createSequentialGroup()
-									.addGroup(gl_panelCPO.createParallelGroup(Alignment.TRAILING)
-										.addComponent(btnDownButton, GroupLayout.PREFERRED_SIZE, 31, GroupLayout.PREFERRED_SIZE)
-										.addComponent(btnUpButton, GroupLayout.PREFERRED_SIZE, 30, GroupLayout.PREFERRED_SIZE)
-										.addComponent(btnDelButton, GroupLayout.PREFERRED_SIZE, 30, GroupLayout.PREFERRED_SIZE))
-									.addGap(50)))))
-					.addGap(0))
-		);
-		gl_panelCPO.setVerticalGroup(
-			gl_panelCPO.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_panelCPO.createSequentialGroup()
-					.addGap(50)
-					.addGroup(gl_panelCPO.createParallelGroup(Alignment.BASELINE)
-						.addComponent(lblGammes, GroupLayout.PREFERRED_SIZE, 20, GroupLayout.PREFERRED_SIZE)
-						.addComponent(textFiltre, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-						.addComponent(btnReload)
-						.addComponent(lblBarreLabel))
-					.addPreferredGap(ComponentPlacement.UNRELATED)
-					.addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING)
-						.addGroup(gl_panelCPO.createParallelGroup(Alignment.BASELINE)
-							.addComponent(scrollPane_gamme, GroupLayout.DEFAULT_SIZE, 122, Short.MAX_VALUE)
-							.addComponent(scrollPaneBarres, GroupLayout.DEFAULT_SIZE, 122, Short.MAX_VALUE))
-						.addGroup(gl_panelCPO.createSequentialGroup()
-							.addGap(35)
-							.addComponent(btnUpButton)
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(btnDownButton)
-							.addPreferredGap(ComponentPlacement.UNRELATED)
-							.addComponent(btnDelButton)
-							.addPreferredGap(ComponentPlacement.UNRELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-							.addComponent(btnRun)))
-					.addGap(47)
-					.addComponent(scrollPaneMsg, GroupLayout.PREFERRED_SIZE, 149, GroupLayout.PREFERRED_SIZE)
-					.addGap(24))
-		);
+		GroupLayout gl_panelCPO = buildGrouping(scrollPaneMsg, lblGammes, textFiltre, btnReload, scrollPane_gamme,
+				scrollPaneBarres, btnDownButton, btnUpButton, btnDelButton);
 
 
 
 		setIconButton(this,btnUpButton,"icons8-up-16.png");
 		setIconButton(this,btnDownButton,"icons8-down-16.png");
-		setIconButton(this,btnRun,"icons8-play-16.png");
+		setIconButton(this,mBtnRun,"icons8-play-16.png");
 
 		btnDelButton.setHorizontalAlignment(SwingConstants.CENTER);
 		btnDelButton.addActionListener(new ActionListener() {
@@ -256,9 +190,79 @@ public class CPO_Panel extends JPanel {
 			}
 		});
 
-		textArea = new JTextArea();
-		scrollPaneMsg.setViewportView(textArea);
+		mTextArea = new JTextArea();
+		scrollPaneMsg.setViewportView(mTextArea);
 
+		buildTables(scrollPaneBarres);
+	    
+	    setActionListener();
+	    mTableGammes.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		scrollPane_gamme.setViewportView(mTableGammes);
+		setLayout(gl_panelCPO);
+	}
+	private GroupLayout buildGrouping(JScrollPane scrollPaneMsg, JLabel lblGammes, JTextField textFiltre,
+			JButton btnReload, JScrollPane scrollPane_gamme, JScrollPane scrollPaneBarres, JButton btnDownButton,
+			JButton btnUpButton, JButton btnDelButton) {
+		GroupLayout gl_panelCPO = new GroupLayout(this);
+		gl_panelCPO.setHorizontalGroup(
+			gl_panelCPO.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_panelCPO.createSequentialGroup()
+					.addContainerGap()
+					.addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING)
+						.addComponent(scrollPaneMsg, GroupLayout.DEFAULT_SIZE, 760, Short.MAX_VALUE)
+						.addGroup(gl_panelCPO.createSequentialGroup()
+							.addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING)
+								.addGroup(gl_panelCPO.createSequentialGroup()
+									.addComponent(scrollPane_gamme, GroupLayout.PREFERRED_SIZE, 616, GroupLayout.PREFERRED_SIZE)
+									.addPreferredGap(ComponentPlacement.UNRELATED))
+								.addGroup(Alignment.TRAILING, gl_panelCPO.createSequentialGroup()
+									.addComponent(lblGammes, GroupLayout.PREFERRED_SIZE, 67, GroupLayout.PREFERRED_SIZE)
+									.addGap(111)
+									.addComponent(textFiltre, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+									.addGap(70)
+									.addComponent(btnReload)
+									.addGap(232)))
+							.addComponent(scrollPaneBarres, GroupLayout.DEFAULT_SIZE, 33, Short.MAX_VALUE)
+							.addGap(18)
+							.addGroup(gl_panelCPO.createParallelGroup(Alignment.TRAILING)
+								.addComponent(mBtnRun, GroupLayout.PREFERRED_SIZE, 81, GroupLayout.PREFERRED_SIZE)
+								.addGroup(gl_panelCPO.createSequentialGroup()
+									.addGroup(gl_panelCPO.createParallelGroup(Alignment.TRAILING)
+										.addComponent(btnDownButton, GroupLayout.PREFERRED_SIZE, 31, GroupLayout.PREFERRED_SIZE)
+										.addComponent(btnUpButton, GroupLayout.PREFERRED_SIZE, 30, GroupLayout.PREFERRED_SIZE)
+										.addComponent(btnDelButton, GroupLayout.PREFERRED_SIZE, 30, GroupLayout.PREFERRED_SIZE))
+									.addGap(50)))))
+					.addContainerGap())
+		);
+		gl_panelCPO.setVerticalGroup(
+			gl_panelCPO.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_panelCPO.createSequentialGroup()
+					.addGap(50)
+					.addGroup(gl_panelCPO.createParallelGroup(Alignment.BASELINE)
+						.addComponent(lblGammes, GroupLayout.PREFERRED_SIZE, 20, GroupLayout.PREFERRED_SIZE)
+						.addComponent(textFiltre, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+						.addComponent(btnReload))
+					.addPreferredGap(ComponentPlacement.UNRELATED)
+					.addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING)
+						.addGroup(gl_panelCPO.createParallelGroup(Alignment.BASELINE)
+							.addComponent(scrollPane_gamme, GroupLayout.DEFAULT_SIZE, 122, Short.MAX_VALUE)
+							.addComponent(scrollPaneBarres, GroupLayout.DEFAULT_SIZE, 122, Short.MAX_VALUE))
+						.addGroup(gl_panelCPO.createSequentialGroup()
+							.addGap(35)
+							.addComponent(btnUpButton)
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addComponent(btnDownButton)
+							.addPreferredGap(ComponentPlacement.UNRELATED)
+							.addComponent(btnDelButton)
+							.addPreferredGap(ComponentPlacement.UNRELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+							.addComponent(mBtnRun)))
+					.addGap(47)
+					.addComponent(scrollPaneMsg, GroupLayout.PREFERRED_SIZE, 149, GroupLayout.PREFERRED_SIZE)
+					.addGap(24))
+		);
+		return gl_panelCPO;
+	}
+	private void buildTables(JScrollPane scrollPaneBarres) {
 		try {
 			mModelBarres= new DefaultTableModel() {
 			    private static final long serialVersionUID = 1L;
@@ -271,7 +275,6 @@ public class CPO_Panel extends JPanel {
 			};
 
 			mTableBarres = new JTable() ;
-
 			buildTableModelBarre();
 
 
@@ -325,11 +328,6 @@ public class CPO_Panel extends JPanel {
 			JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 		}
-	    
-	    setActionListener();
-	    mTableGammes.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		scrollPane_gamme.setViewportView(mTableGammes);
-		setLayout(gl_panelCPO);
 	}
 
 
@@ -356,11 +354,11 @@ public class CPO_Panel extends JPanel {
 	}
 
 	public void setText(String s) {
-		textArea.setText(textArea.getText()+s);
+		mTextArea.setText(mTextArea.getText()+s);
 	}
 
 	private void  setActionListener() {
-		  btnRun.addActionListener(new ActionListener() {
+		  mBtnRun.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 
@@ -379,12 +377,12 @@ public class CPO_Panel extends JPanel {
 							String gamme=mTableBarres.getValueAt(count, 1).toString();
 							String nomBarre=mTableBarres.getValueAt(count, 0).toString();
 
-							vitesseCombo.setSelectedItem( mTableBarres.getValueAt(count, 2) );
-							int indexMontee= vitesseCombo.getSelectedIndex();
+							mVitesseCombo.setSelectedItem( mTableBarres.getValueAt(count, 2) );
+							int indexMontee= mVitesseCombo.getSelectedIndex();
 
 
-							vitesseCombo.setSelectedItem( mTableBarres.getValueAt(count, 3) );
-							int indexDesc = vitesseCombo.getSelectedIndex();
+							mVitesseCombo.setSelectedItem( mTableBarres.getValueAt(count, 3) );
+							int indexDesc = mVitesseCombo.getSelectedIndex();
 
 							boolean prio=(Boolean) mTableBarres.getValueAt(count, 4);
 							gammes.put(idbarre,gamme);
@@ -406,8 +404,7 @@ public class CPO_Panel extends JPanel {
 
 	}
 
-
-	public   void buildTableModelBarre()
+	public  void buildTableModelBarre()
 	        throws SQLException {
 
 
@@ -437,11 +434,11 @@ public class CPO_Panel extends JPanel {
         TableColumn colMontee =mTableBarres.getColumnModel().getColumn(2);
 
         //définir l'éditeur par défaut
-        colMontee.setCellEditor(new DefaultCellEditor(vitesseCombo));
+        colMontee.setCellEditor(new DefaultCellEditor(mVitesseCombo));
 
         TableColumn colDescente =mTableBarres.getColumnModel().getColumn(3);
         //définir l'éditeur par défaut
-        colDescente.setCellEditor(new DefaultCellEditor(vitesseCombo));
+        colDescente.setCellEditor(new DefaultCellEditor(mVitesseCombo));
 
 
         TableColumn colPrio =mTableBarres.getColumnModel().getColumn(4);
@@ -473,7 +470,7 @@ public class CPO_Panel extends JPanel {
 			 }
 	}
 	
-	public  void buildTableModelGamme()
+	public void buildTableModelGamme()
 	        throws SQLException {
 
 
