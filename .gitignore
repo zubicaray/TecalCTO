@@ -14,3 +14,4 @@ S7Example.exe
 histoSFTP
 mdp
 deploy.sh
+dependency-reduced-pom.xml
