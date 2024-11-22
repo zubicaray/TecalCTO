@@ -9,9 +9,6 @@ Launch4j.lnk
 .project
 TecalCPO*.exe
 TecalGUI*.exe
-SQL
-S7Example.exe
 histoSFTP
-mdp
 deploy.sh
 dependency-reduced-pom.xml

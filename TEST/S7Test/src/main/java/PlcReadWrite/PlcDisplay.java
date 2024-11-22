@@ -51,7 +51,7 @@ public class PlcDisplay extends JFrame {
                 .withRack(0) // optionnel
                 .withSlot(2) // optionnel
                 .build();
-        } catch (Exception e) {
+        } catch (S7Exception e) {
             JOptionPane.showMessageDialog(this, "Erreur de connexion : " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
             //return;
         }
