@@ -86,6 +86,11 @@
 			<artifactId>datafactory</artifactId>
 			<version>0.8</version>
 		</dependency>
+		<dependency>
+		    <groupId>com.toedter</groupId>
+		    <artifactId>jcalendar</artifactId>
+		    <version>1.4</version> <!-- Dernière version stable -->
+		</dependency>
 
 		<dependency>
 			<groupId>com.opencsv</groupId>

@@ -218,6 +218,10 @@ public class TecalGUI {
 		buildMvtPonts();
 		buildCalibrageTab();
 		buildParamsTab(tabbedPaneMain);
+		
+		TauxAnodisationPanel  taux= new TauxAnodisationPanel();
+		
+		tabbedPaneMain.addTab("Taux ano.", null, taux, null);
 
 		frmTecalOrdonnanceur.getContentPane().setLayout(groupLayout);
 	}

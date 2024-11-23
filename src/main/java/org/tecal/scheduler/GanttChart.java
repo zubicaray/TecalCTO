@@ -185,7 +185,7 @@ public class GanttChart extends JFrame {
 
 		mLowerBound=0;
 
-		LinkedHashMap<Integer, ArrayList<GammeType> > ficheToZones	= inTecalOrdo.getBarreZonesAll();
+		LinkedHashMap<Integer, ArrayList<GammeType> > barreZones	= inTecalOrdo.getBarreZonesAll();
 		LinkedHashMap<Integer,String> barreLabels					= inTecalOrdo.getBarreLabels();
 		Map<Integer, List<AssignedTask>> assignedTasksByNumzone		= inTecalOrdo.getAssignedJobs();
 
@@ -195,7 +195,7 @@ public class GanttChart extends JFrame {
 		// on doit mettre les barres sous forme d'index comme demandée
 		// par l'objet XYIntervalSeries qui est un tableau
 		int cptBarre=0;
-		for (Map.Entry<Integer, ArrayList<GammeType> > entry : ficheToZones.entrySet()) {
+		for (Map.Entry<Integer, ArrayList<GammeType> > entry : barreZones.entrySet()) {
 			barreToIndex.put(entry.getKey(),cptBarre);
 			indexToBarreIndex.put(cptBarre,entry.getKey());
 			cptBarre++;
@@ -220,22 +220,20 @@ public class GanttChart extends JFrame {
 			 cpt++;
 		 }
 
-		 int totalZoneCount =ficheToZones.size();
+		 int totalZoneCount =barreZones.size();
 
 		 //Create series. Start and end times are used as y intervals, and the room is represented by the x value
 		 XYIntervalSeries[]  series = new XYIntervalSeries[totalZoneCount];
 
 
-		 for (Map.Entry<Integer, ArrayList<GammeType> > entry : ficheToZones.entrySet()) {
+		 for (Map.Entry<Integer, ArrayList<GammeType> > entry : barreZones.entrySet()) {
 			//String lgamme =entry.getKey()+"-"+ ficheToGamme.get(entry.getKey());
 			int barre=entry.getKey();
 			String lgamme=barreLabels.get(barre);
 
 			int index=barreToIndex.get(barre);
 			series[index] = new XYIntervalSeries(lgamme);
-
 			mDataset.addSeries(series[index]);
-
 
 		 }
 
@@ -283,7 +281,7 @@ public class GanttChart extends JFrame {
 		    for(AssignedTask at :listeTache) {
 
 
-		    	ArrayList<GammeType> df=ficheToZones.get(barre);
+		    	ArrayList<GammeType> df=barreZones.get(barre);
 		    	//on retrouve le idtask de la table ZONES SQLSERVER ( numéroté sans trou à partir de 0 <> numzone donc)
 		    	// car quant à lui,le taskid de google, est propre à l'ordres des zones d'une gamme
 		    	int posteEncours=df.get(at.taskID).idzonebdd;
@@ -499,15 +497,15 @@ public class GanttChart extends JFrame {
 
 
 
-		 String[] ficheToZones=tempsAuPostes.keySet().toArray(new String[0]);//ficheGamme.values().toArray(new String[0]);
+		 String[] ficheZones=tempsAuPostes.keySet().toArray(new String[0]);//ficheGamme.values().toArray(new String[0]);
 
-		 int totalFicheProdCount =ficheToZones.length;
+		 int totalNbBarres =ficheZones.length;
 
 
 		 //Create series. Start and end times are used as y intervals, and the room is represented by the x value
-		 XYIntervalSeries[] series = new XYIntervalSeries[totalFicheProdCount];
-		 for(int i = 0; i < totalFicheProdCount; i++){
-		      series[i] = new XYIntervalSeries(ficheToZones[i]);
+		 XYIntervalSeries[] series = new XYIntervalSeries[totalNbBarres];
+		 for(int i = 0; i < totalNbBarres; i++){
+		      series[i] = new XYIntervalSeries(ficheZones[i]);
 		      dataset.addSeries(series[i]);
 		 }
 
@@ -521,10 +519,10 @@ public class GanttChart extends JFrame {
 			 }
 		 }
 
-		labels = new ArrayList<>(totalFicheProdCount);
+		labels = new ArrayList<>(totalNbBarres);
 
 
-		for(int currentFiche = 0; currentFiche < totalFicheProdCount; currentFiche++){
+		for(int currentFiche = 0; currentFiche < totalNbBarres; currentFiche++){
 			String fiche=fichesProd[currentFiche];
 			int cptt=0;
 

@@ -366,10 +366,56 @@ public  ResultSet getStatsAnodisation(String[] listeOF) {
             FROM CTE_Durees,Postes P
             WHERE P.NumPoste=CTE_Durees.NumPoste
             GROUP BY P.NomPoste
-            ORDER BY P.NomPoste;
+            ORDER BY P.NomPoste
             """,paramsOF,paramsOF);
 	try {
 		resultSet = mStatement.executeQuery(requeteSQL);
+		
+	} catch (SQLException e) {
+		JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
+		e.printStackTrace();
+		
+	}
+	
+	return resultSet;
+}
+
+
+public  ResultSet getTauxAnodisationJours( Date dateDebut , Date dateFin ) {
+	ResultSet resultSet = null;
+	
+	String query = """
+          
+            
+		SELECT
+		    J as Jour,DureeOccupation,DureeOccupation*100/DureeMaxPossible as TauxOccupationPourcentage
+		FROM (
+		    SELECT
+		        CAST(DateEntreePoste AS DATE ) as J,
+		        DATEDIFF(SECOND, Min(DateEntreePoste) ,max(DateSortiePoste))*3 AS DureeMaxPossible,
+		        SUM(DATEDIFF(SECOND, DateEntreePoste ,DateSortiePoste         )) AS DureeOccupation
+		
+		    FROM DetailsFichesProduction
+		    WHERE NumPoste IN (18, 19, 20) -- Postes concernés
+		        AND DateEntreePoste >= ? -- Exclure les enregistrements terminés avant la période
+		        AND DateSortiePoste < ?   -- Exclure les enregistrements commençant après la période
+		    GROUP BY 
+		        CAST(DateEntreePoste AS DATE)
+		    HAVING 
+		        COUNT(*) > 0 -- Elimine les jours sans occupation
+		) T
+		    ORDER BY Jour;
+            """;
+	try {
+		
+		 PreparedStatement statement = mConnection.prepareStatement(query);
+
+		    // Définir les paramètres (assurez-vous que `dateDebut` et `dateFin` sont bien définis)
+		    statement.setDate(1, new java.sql.Date(dateDebut.getTime())); // 1er paramètre
+		    statement.setDate(2, new java.sql.Date(dateFin.getTime()));   // 2e paramètre
+
+		    // Exécuter la requête
+		     resultSet = statement.executeQuery();
 		
 	} catch (SQLException e) {
 		JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
