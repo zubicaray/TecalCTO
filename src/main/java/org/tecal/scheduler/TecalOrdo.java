@@ -730,7 +730,9 @@ public class TecalOrdo {
 				if(numzone== TecalOrdo.mNUMZONE_ANODISATION && TecalOrdo.mCAPACITE_ANODISATION >0) {
 		        	//TODO changer: code lu qu au lancement
 					capacity=model.newIntVar(0, TecalOrdo.mCAPACITE_ANODISATION, "capacity_of_" + numzone);
-				}else capacity = model.newIntVar(0, zt.cumul, "capacity_of_" + numzone);
+				}
+				else 
+					capacity = model.newIntVar(0, zt.cumul, "capacity_of_" + numzone);
 					
 
 				CumulativeConstraint cumul = model.addCumulative(capacity);
@@ -825,8 +827,6 @@ public class TecalOrdo {
 		}
 
 	}
-
-
 
 	private void brigesSecurity() {
 

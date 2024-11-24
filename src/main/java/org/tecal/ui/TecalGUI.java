@@ -207,10 +207,14 @@ public class TecalGUI {
 
 		tabbedPaneMain = new JTabbedPane(SwingConstants.TOP);
 		GroupLayout groupLayout = new GroupLayout(frmTecalOrdonnanceur.getContentPane());
-		groupLayout.setHorizontalGroup(groupLayout.createParallelGroup(Alignment.LEADING).addComponent(tabbedPaneMain,
-				GroupLayout.DEFAULT_SIZE, 686, Short.MAX_VALUE));
-		groupLayout.setVerticalGroup(groupLayout.createParallelGroup(Alignment.LEADING).addComponent(tabbedPaneMain,
-				GroupLayout.DEFAULT_SIZE, 542, Short.MAX_VALUE));
+		groupLayout.setHorizontalGroup(
+			groupLayout.createParallelGroup(Alignment.LEADING)
+				.addComponent(tabbedPaneMain)
+		);
+		groupLayout.setVerticalGroup(
+			groupLayout.createParallelGroup(Alignment.TRAILING)
+				.addComponent(tabbedPaneMain, GroupLayout.DEFAULT_SIZE, 674, Short.MAX_VALUE)
+		);
 
 		// scrollPane_gamme.setViewportView(tableGammes);
 		// panelCPO.setLayout(gl_panel);
@@ -575,8 +579,13 @@ public class TecalGUI {
 
 	private void buildParamsTab(JTabbedPane tabbedPane) {
 
+		JTabbedPane j=new  JTabbedPane();
 		JPanel panel_param = new JPanel();
-		tabbedPane.addTab("Paramètres", null, panel_param, null);
+		ZonesPanel panelZones = new ZonesPanel();		
+		j.addTab("Zones", null, panelZones, null);
+		j.addTab("Constantes CPO", null, panel_param, null);
+		tabbedPane.add("Paramètres",j);
+		
 
 		JLabel lblTailleZone = new JLabel("TEMPS_ZONE_OVERLAP_MIN");
 
@@ -636,82 +645,72 @@ public class TecalGUI {
 		textNbAno.setText(Integer.toString(CST.CAPACITE_ANODISATION));
 
 		GroupLayout gl_panel_param = new GroupLayout(panel_param);
-		gl_panel_param
-				.setHorizontalGroup(gl_panel_param.createParallelGroup(Alignment.LEADING).addGroup(gl_panel_param
-						.createSequentialGroup().addContainerGap().addGroup(gl_panel_param
-								.createParallelGroup(Alignment.LEADING).addGroup(gl_panel_param.createSequentialGroup()
-										.addGroup(gl_panel_param.createParallelGroup(Alignment.LEADING)
-												.addGroup(gl_panel_param.createParallelGroup(Alignment.LEADING, false)
-														.addComponent(lblTailleZone, GroupLayout.DEFAULT_SIZE,
-																GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-														.addComponent(lblScuritEntreZones, GroupLayout.DEFAULT_SIZE,
-																GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-												.addComponent(lblNewLabel)
-												.addComponent(lblcartGroupes, GroupLayout.PREFERRED_SIZE, 175,
-														GroupLayout.PREFERRED_SIZE)
-												.addComponent(lblNewLabel_1).addComponent(lblNewLabel_2)
-												.addComponent(lblNewLabel_2_1, GroupLayout.PREFERRED_SIZE, 132,
-														GroupLayout.PREFERRED_SIZE))
-										.addGap(31)
-										.addGroup(gl_panel_param.createParallelGroup(Alignment.LEADING)
-												.addComponent(textTEMPS_MAX_SOLVEUR, GroupLayout.PREFERRED_SIZE, 45,
-														GroupLayout.PREFERRED_SIZE)
-												.addGroup(gl_panel_param.createParallelGroup(Alignment.LEADING, false)
-														.addComponent(textANODISATION_NUMZONE, 0, 0, Short.MAX_VALUE)
-														.addComponent(textTEMPS_ANO_ENTRE_P1_P2, 0, 0, Short.MAX_VALUE)
-														.addComponent(textTEMPS_MVT_PONT_MIN_JOB, 0, 0, Short.MAX_VALUE)
-														.addComponent(textTEMPS_MVT_PONT, Alignment.TRAILING,
-																GroupLayout.DEFAULT_SIZE, 45, Short.MAX_VALUE)
-														.addComponent(textGAP_ZONE_NOOVERLAP, Alignment.TRAILING, 0, 0,
-																Short.MAX_VALUE)
-														.addComponent(textTEMPS_ZONE_OVERLAP_MIN, Alignment.TRAILING, 0,
-																0, Short.MAX_VALUE))))
-								.addGroup(gl_panel_param.createSequentialGroup()
-										.addComponent(lblPostesANo, GroupLayout.PREFERRED_SIZE, 132,
-												GroupLayout.PREFERRED_SIZE)
-										.addGap(74).addComponent(textNbAno, GroupLayout.PREFERRED_SIZE, 45,
-												GroupLayout.PREFERRED_SIZE)))
-						.addContainerGap(447, Short.MAX_VALUE)));
-		gl_panel_param.setVerticalGroup(gl_panel_param.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_panel_param.createSequentialGroup().addGap(25)
-						.addGroup(gl_panel_param.createParallelGroup(Alignment.BASELINE).addComponent(lblTailleZone)
-								.addComponent(textTEMPS_ZONE_OVERLAP_MIN, GroupLayout.PREFERRED_SIZE,
-										GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-						.addGap(18)
-						.addGroup(
-								gl_panel_param.createParallelGroup(Alignment.BASELINE).addComponent(lblScuritEntreZones)
-										.addComponent(textGAP_ZONE_NOOVERLAP, GroupLayout.PREFERRED_SIZE,
-												GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-						.addGap(18)
-						.addGroup(gl_panel_param.createParallelGroup(Alignment.BASELINE).addComponent(lblcartGroupes)
-								.addComponent(textTEMPS_MVT_PONT_MIN_JOB, GroupLayout.PREFERRED_SIZE,
-										GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-						.addGap(18)
-						.addGroup(gl_panel_param.createParallelGroup(Alignment.BASELINE).addComponent(lblNewLabel)
-								.addComponent(textTEMPS_MVT_PONT, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-										GroupLayout.PREFERRED_SIZE))
-						.addGap(18)
-						.addGroup(gl_panel_param.createParallelGroup(Alignment.BASELINE).addComponent(lblNewLabel_1)
-								.addComponent(textTEMPS_ANO_ENTRE_P1_P2, GroupLayout.PREFERRED_SIZE,
-										GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-						.addGap(18)
-						.addGroup(gl_panel_param.createParallelGroup(Alignment.BASELINE).addComponent(lblNewLabel_2)
-								.addComponent(textANODISATION_NUMZONE, GroupLayout.PREFERRED_SIZE,
-										GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-						.addPreferredGap(ComponentPlacement.UNRELATED)
-						.addGroup(gl_panel_param.createParallelGroup(Alignment.BASELINE).addComponent(lblNewLabel_2_1)
-								.addComponent(textTEMPS_MAX_SOLVEUR, GroupLayout.PREFERRED_SIZE,
-										GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-						.addGap(18)
-						.addGroup(gl_panel_param.createParallelGroup(Alignment.LEADING)
-								.addGroup(gl_panel_param.createSequentialGroup().addGap(3).addComponent(lblPostesANo))
-								.addComponent(textNbAno, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-										GroupLayout.PREFERRED_SIZE))
-						.addContainerGap(303, Short.MAX_VALUE)));
-		gl_panel_param.linkSize(SwingConstants.VERTICAL,
-				new Component[] { lblTailleZone, lblScuritEntreZones, lblcartGroupes, lblNewLabel, lblNewLabel_1 });
-		gl_panel_param.linkSize(SwingConstants.HORIZONTAL,
-				new Component[] { lblTailleZone, lblScuritEntreZones, lblcartGroupes, lblNewLabel, lblNewLabel_1 });
+		gl_panel_param.setHorizontalGroup(
+			gl_panel_param.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_panel_param.createSequentialGroup()
+					.addContainerGap()
+					.addGroup(gl_panel_param.createParallelGroup(Alignment.LEADING)
+						.addGroup(gl_panel_param.createParallelGroup(Alignment.LEADING, false)
+							.addComponent(lblTailleZone, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+							.addComponent(lblScuritEntreZones, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+						.addComponent(lblNewLabel)
+						.addComponent(lblcartGroupes, GroupLayout.PREFERRED_SIZE, 175, GroupLayout.PREFERRED_SIZE)
+						.addComponent(lblNewLabel_1)
+						.addComponent(lblNewLabel_2)
+						.addComponent(lblNewLabel_2_1, GroupLayout.PREFERRED_SIZE, 132, GroupLayout.PREFERRED_SIZE)
+						.addComponent(lblPostesANo, GroupLayout.PREFERRED_SIZE, 132, GroupLayout.PREFERRED_SIZE))
+					.addGap(31)
+					.addGroup(gl_panel_param.createParallelGroup(Alignment.LEADING)
+						.addComponent(textNbAno, GroupLayout.PREFERRED_SIZE, 45, GroupLayout.PREFERRED_SIZE)
+						.addComponent(textTEMPS_MAX_SOLVEUR, GroupLayout.PREFERRED_SIZE, 45, GroupLayout.PREFERRED_SIZE)
+						.addGroup(gl_panel_param.createParallelGroup(Alignment.LEADING, false)
+							.addComponent(textANODISATION_NUMZONE, 0, 0, Short.MAX_VALUE)
+							.addComponent(textTEMPS_ANO_ENTRE_P1_P2, 0, 0, Short.MAX_VALUE)
+							.addComponent(textTEMPS_MVT_PONT_MIN_JOB, 0, 0, Short.MAX_VALUE)
+							.addComponent(textTEMPS_MVT_PONT, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 45, Short.MAX_VALUE)
+							.addComponent(textGAP_ZONE_NOOVERLAP, Alignment.TRAILING, 0, 0, Short.MAX_VALUE)
+							.addComponent(textTEMPS_ZONE_OVERLAP_MIN, Alignment.TRAILING, 0, 0, Short.MAX_VALUE)))
+					.addContainerGap(461, Short.MAX_VALUE))
+		);
+		gl_panel_param.setVerticalGroup(
+			gl_panel_param.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_panel_param.createSequentialGroup()
+					.addGap(25)
+					.addGroup(gl_panel_param.createParallelGroup(Alignment.BASELINE)
+						.addComponent(lblTailleZone)
+						.addComponent(textTEMPS_ZONE_OVERLAP_MIN, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+					.addGap(18)
+					.addGroup(gl_panel_param.createParallelGroup(Alignment.BASELINE)
+						.addComponent(lblScuritEntreZones)
+						.addComponent(textGAP_ZONE_NOOVERLAP, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+					.addGap(18)
+					.addGroup(gl_panel_param.createParallelGroup(Alignment.BASELINE)
+						.addComponent(lblcartGroupes)
+						.addComponent(textTEMPS_MVT_PONT_MIN_JOB, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+					.addGap(18)
+					.addGroup(gl_panel_param.createParallelGroup(Alignment.BASELINE)
+						.addComponent(lblNewLabel)
+						.addComponent(textTEMPS_MVT_PONT, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+					.addGap(18)
+					.addGroup(gl_panel_param.createParallelGroup(Alignment.BASELINE)
+						.addComponent(lblNewLabel_1)
+						.addComponent(textTEMPS_ANO_ENTRE_P1_P2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+					.addGap(18)
+					.addGroup(gl_panel_param.createParallelGroup(Alignment.BASELINE)
+						.addComponent(lblNewLabel_2)
+						.addComponent(textANODISATION_NUMZONE, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+					.addPreferredGap(ComponentPlacement.UNRELATED)
+					.addGroup(gl_panel_param.createParallelGroup(Alignment.BASELINE)
+						.addComponent(lblNewLabel_2_1)
+						.addComponent(textTEMPS_MAX_SOLVEUR, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+					.addGap(21)
+					.addGroup(gl_panel_param.createParallelGroup(Alignment.BASELINE)
+						.addComponent(lblPostesANo)
+						.addComponent(textNbAno, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+					.addContainerGap(333, Short.MAX_VALUE))
+		);
+		gl_panel_param.linkSize(SwingConstants.VERTICAL, new Component[] {lblTailleZone, lblScuritEntreZones, lblcartGroupes, lblNewLabel, lblNewLabel_1});
+		gl_panel_param.linkSize(SwingConstants.HORIZONTAL, new Component[] {lblTailleZone, lblScuritEntreZones, lblcartGroupes, lblNewLabel, lblNewLabel_1});
 		panel_param.setLayout(gl_panel_param);
 	}
 

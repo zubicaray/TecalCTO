@@ -1,9 +1,12 @@
 package org.tecal.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.FlowLayout;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import javax.swing.JButton;
@@ -21,8 +24,7 @@ import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYBarRenderer;
-import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
-import org.jfree.chart.renderer.xy.XYSplineRenderer;
+import org.jfree.chart.renderer.xy.XYStepRenderer;
 import org.jfree.data.time.Day;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
@@ -78,6 +80,10 @@ public class TauxAnodisationPanel extends JPanel {
     private void afficherGraphique() {
         Date dateDebut = dateDebutChooser.getDate();
         Date dateFin = dateFinChooser.getDate();
+        
+        // Formatteurs pour l'affichage des tooltips
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        DecimalFormat decimalFormat = new DecimalFormat("#.00");
 
         if (dateDebut == null || dateFin == null) {
             JOptionPane.showMessageDialog(this, "Veuillez sélectionner des dates valides.", "Erreur", JOptionPane.ERROR_MESSAGE);
@@ -131,9 +137,18 @@ public class TauxAnodisationPanel extends JPanel {
       
         
         // Rendu pour la courbe (série principale - Durée d'Occupation)
-        XYLineAndShapeRenderer lineRenderer = new XYLineAndShapeRenderer(true, false); // Activer uniquement les lignes
+        XYStepRenderer lineRenderer = new XYStepRenderer(); // Activer uniquement les lignes
         plot.setRenderer(0, lineRenderer); // Série 0 : Durée d'Occupation
 
+        lineRenderer.setSeriesToolTipGenerator(0, (dataset, series, item) -> {
+            Number value = dataset.getY(series, item);
+            double hours = value.doubleValue();
+            int fullHours = (int) hours;
+            int minutes = (int) ((hours - fullHours) * 60);
+            String formattedDate = dateFormat.format(dataset.getX(series, item));
+            return String.format("Jour : %s, Durée : %d h %02d min", formattedDate, fullHours, minutes);
+        });
+        
         // Ajouter la deuxième série (histogramme) avec un deuxième axe Y
         NumberAxis axisY2 = new NumberAxis("Taux d'Occupation (%)");
         plot.setRangeAxis(1, axisY2); // Ajouter l'axe Y2
@@ -145,6 +160,13 @@ public class TauxAnodisationPanel extends JPanel {
         barRenderer.setShadowXOffset(0); // Désactiver l'ombre
         barRenderer.setShadowYOffset(0);
         plot.setRenderer(1, barRenderer);
+        
+        barRenderer.setSeriesToolTipGenerator(0, (dataset, series, item) -> {
+            Number value = dataset.getY(series, item);
+            String formattedTaux = decimalFormat.format(value.doubleValue());
+            String formattedDate = dateFormat.format(dataset.getX(series, item));
+            return String.format("Jour : %s, Taux : %s %%", formattedDate, formattedTaux);
+        });
 
         // Configurer l'axe des dates
         DateAxis dateAxis = new DateAxis("Jour");
@@ -152,6 +174,11 @@ public class TauxAnodisationPanel extends JPanel {
         dateAxis.setRange(datasetCurve.getDomainBounds(true));
         plot.setDomainAxis(dateAxis);
 
+        NumberAxis valueAxis = (NumberAxis) plot.getRangeAxis();
+      
+        valueAxis.setLabelPaint(Color.RED); // Changer la couleur du label de l'axe Y
+       
+        
         // Mettre à jour le panel du graphique
         chartPanel.removeAll();
         chartPanel.add(new ChartPanel(chart), BorderLayout.CENTER);

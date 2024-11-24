@@ -1,9 +1,9 @@
 use ANODISATION;
-DECLARE @DateDebut DATE = '2024-11-13'; -- Remplacez par votre date de début
+DECLARE @DateDebut DATE = '2024-11-01'; -- Remplacez par votre date de début
 DECLARE @DateFin DATE = '2024-12-14';   -- Remplacez par votre date de fin
 
 SELECT
-    J,DureeOccupation*100/DureeMaxPossible
+    J,DureeOccupation,DureeOccupation*100/DureeMaxPossible
 FROM (
     SELECT
         CAST(DateEntreePoste AS DATE ) as J,
@@ -18,7 +18,8 @@ FROM (
         CAST(DateEntreePoste AS DATE)
     HAVING 
         COUNT(*) > 0 -- Elimine les jours sans occupation
-)
+) T
+
 SELECT
          CAST(DateEntreePoste AS DATE),
         -- Calcul de la durée réelle d'occupation pour chaque enregistrement

@@ -32,24 +32,31 @@ class TempsDeplacement 		extends HashMap<List<Integer>,Integer[]>	{	private stat
 
 public class SQL_DATA {
 	private Connection mConnection ;
+	public Connection getmConnection() {
+		return mConnection;
+	}
+	public void setmConnection(Connection mConnection) {
+		this.mConnection = mConnection;
+	}
 	private Statement mStatement;
 
-	private  HashMap<Integer,ZoneType>  zones;
+	private  HashMap<Integer,ZoneType>  mZones;
 
 	public HashMap<Integer, ZoneType> getZones() {
-		return zones;
+		return mZones;
 	}
-	public void setZones(HashMap<Integer, ZoneType> zones) {
-		this.zones = zones;
+
+	private  ArrayList<Integer>   mZonesSecu;
+	private  HashMap<Integer,Integer>  mRelatedZones;
+	public HashMap<Integer, Integer> getRelatedZones() {
+		return mRelatedZones;
 	}
-	public  ArrayList<Integer>   zonesSecu;
-	public  HashMap<Integer,Integer>  relatedZones;
+	
 	private HashMap<String, ArrayList<GammeType> > gammes;
 	private HashSet<String> mMissingTimeMovesGammes;
 	static TempsDeplacement  mTempsDeplacement;
 	private   final SimpleDateFormat FMT =
 	            new SimpleDateFormat( "yyyyMMdd" );
-
 
 	public static String quote(String s) {
 	    return new StringBuilder()
@@ -141,9 +148,9 @@ public class SQL_DATA {
  */
 private void setRelatedZones() {
 
-	relatedZones = new HashMap<>();
-	for(ZoneType  z1: zones.values()) {
-		for(ZoneType  z2: zones.values()) {
+	mRelatedZones = new HashMap<>();
+	for(ZoneType  z1: mZones.values()) {
+		for(ZoneType  z2: mZones.values()) {
 			if(z1.numzone == z2.numzone) {
 				continue;
 			}
@@ -151,7 +158,7 @@ private void setRelatedZones() {
 			if( z2.idPosteFin>z2.idPosteDeb &&  // z2 est une multi zone
 				z2.idPosteDeb <= z1.idPosteDeb && z2.idPosteFin >= z1.idPosteFin // z1 est comprise dedans
 			) {
-				relatedZones.put(z1.numzone,z2.numzone);
+				mRelatedZones.put(z1.numzone,z2.numzone);
 			}
 
 		}
@@ -160,14 +167,16 @@ private void setRelatedZones() {
 }
 
 
-private  void setZonesSecu() {
+public  void setZonesSecu() {
 
 	ResultSet resultSet = null;
-	zonesSecu = new ArrayList<>();
+	if(mZonesSecu ==null)
+		mZonesSecu= new ArrayList<>();
+	else mZonesSecu.clear();
 
     // Create and execute a SELECT SQL statement.
     String selectSql = "select Z.numzone "
-    		+ " from  ZONES Z  where SecuritePonts=1 "
+    		+ " from Zones Z  where SecuritePonts=1 "
     		+ "order by numzone";
 
     try {
@@ -176,7 +185,7 @@ private  void setZonesSecu() {
 		// Print results from select statement
         while (resultSet.next()) {
 
-            zonesSecu.add(resultSet.getInt(1));
+            mZonesSecu.add(resultSet.getInt(1));
 
         }
 	} catch (SQLException e) {
@@ -188,16 +197,19 @@ private  void setZonesSecu() {
 }
 
 
-private  void setZones() {
+public  void setZones() {
 
 	ResultSet resultSet = null;
-	zones = new HashMap<>();
+	if(mZones == null)
+		mZones = new HashMap<>();
+	else mZones.clear();
+	
     // Create and execute a SELECT SQL statement.
     String selectSql = "select Z.numzone,Z.CodeZone, NbrPostes as cumul"
     		+ ",derive ,"
     		+ "NumPremierPoste,NumDernierPoste"
     		+ " from   "
-    		+ "ZONES Z order by numzone";
+    		+ "Zones Z order by numzone";
 
     try {
 		resultSet = mStatement.executeQuery(selectSql);
@@ -207,7 +219,7 @@ private  void setZones() {
             //System.out.println( resultSet.getString(1));
             ZoneType z=new ZoneType(resultSet.getInt(1),resultSet.getString(2),resultSet.getInt(3),
             		resultSet.getInt(4),idzone,resultSet.getInt(5),resultSet.getInt(6));
-            zones.put(z.numzone,z);
+            mZones.put(z.numzone,z);
             idzone++;
         }
 	} catch (SQLException e) {
@@ -287,7 +299,7 @@ private void  setLignesGammes() {
         		+ " Z.derive,Z.NumDernierPoste-Z.NumPremierPoste+1 as cumul ,TempsEgouttageSecondes "
         		+ "from   "
         		+ "	[DetailsGammesAnodisation]  DG "
-        		+ "	INNER JOIN ZONES Z "
+        		+ "	INNER JOIN Zones Z "
         		+ "	on Z.numzone=DG.numzone "
         		+ "order by NumGamme,numligne "
         		;
@@ -304,7 +316,7 @@ private void  setLignesGammes() {
 		            resultSet.getInt(3),
 		            numzone,
 		            resultSet.getInt(5),
-		            zones.get(numzone).idzonebdd,
+		            mZones.get(numzone).idzonebdd,
 		            resultSet.getInt(6),
 
 		            resultSet.getInt(8));
@@ -323,6 +335,26 @@ private void  setLignesGammes() {
 
 
 	}
+public  ResultSet getBDDZones() {
+	
+	ResultSet rs=null;
+	String query = "SELECT * FROM Zones";
+
+    try {
+    	Statement stmt = mConnection.createStatement();
+    
+        rs = stmt.executeQuery(query);
+
+        
+
+    } catch (SQLException e) {
+       
+        JOptionPane.showMessageDialog(null, e, "Erreur lors du chargement des données : " + e.getMessage(), JOptionPane.ERROR_MESSAGE);
+		e.printStackTrace();
+    }
+	
+	return rs;
+}
 
 public  ResultSet getStatsAnodisation(String[] listeOF) {
 	ResultSet resultSet = null;
@@ -384,6 +416,12 @@ public  ResultSet getStatsAnodisation(String[] listeOF) {
 public  ResultSet getTauxAnodisationJours( Date dateDebut , Date dateFin ) {
 	ResultSet resultSet = null;
 	
+	java.util.Date dt = dateFin;
+	Calendar c = Calendar.getInstance();
+	c.setTime(dt);
+	c.add(Calendar.DATE, 1);
+	dt = c.getTime();
+	
 	String query = """
           
             
@@ -412,7 +450,7 @@ public  ResultSet getTauxAnodisationJours( Date dateDebut , Date dateFin ) {
 
 		    // Définir les paramètres (assurez-vous que `dateDebut` et `dateFin` sont bien définis)
 		    statement.setDate(1, new java.sql.Date(dateDebut.getTime())); // 1er paramètre
-		    statement.setDate(2, new java.sql.Date(dateFin.getTime()));   // 2e paramètre
+		    statement.setDate(2, new java.sql.Date(dt.getTime()));   // 2e paramètre
 
 		    // Exécuter la requête
 		     resultSet = statement.executeQuery();
@@ -620,9 +658,9 @@ public boolean updateTpsMvts(String of,boolean updateNoNull) {
 			+ "				ON F1.NumFicheProduction =DP1.NumFicheProduction and F1.NumLigne =DP1.NumLigne\r\n"
 			+ "			INNER JOIN DetailsGammesProduction DP2\r\n"
 			+ "				ON F2.NumFicheProduction =DP2.NumFicheProduction and F2.NumLigne =DP2.NumLigne			\r\n"
-			+ "			INNER JOIN ZONES Z1\r\n"
+			+ "			INNER JOIN Zones Z1\r\n"
 			+ "				on Z1.NumZone=DP1.NumZone\r\n"
-			+ "			INNER JOIN ZONES Z2\r\n"
+			+ "			INNER JOIN Zones Z2\r\n"
 			+ "				on Z2.NumZone=DP2.NumZone\r\n"
 			+ "			\r\n"
 			+ "	\r\n"
@@ -693,9 +731,9 @@ public boolean resetAllTpsMvts() {
 			+ "				ON F1.NumFicheProduction COLLATE FRENCH_CI_AS  =DP1.NumFicheProduction  COLLATE FRENCH_CI_AS and F1.NumLigne =DP1.NumLigne\r\n"
 			+ "			INNER JOIN DetailsGammesProduction DP2\r\n"
 			+ "				ON F2.NumFicheProduction COLLATE FRENCH_CI_AS =DP2.NumFicheProduction COLLATE FRENCH_CI_AS and F2.NumLigne =DP2.NumLigne			\r\n"
-			+ "			INNER JOIN ZONES Z1\r\n"
+			+ "			INNER JOIN Zones Z1\r\n"
 			+ "				on Z1.NumZone=DP1.NumZone\r\n"
-			+ "			INNER JOIN ZONES Z2\r\n"
+			+ "			INNER JOIN Zones Z2\r\n"
 			+ "				on Z2.NumZone=DP2.NumZone\r\n"
 			+ "			\r\n"
 			+ "	\r\n"
@@ -949,5 +987,9 @@ public void setTempsDeplacements() {
 	}
 	public  HashSet<String> getMissingTimeMovesGammes() {
 		return mMissingTimeMovesGammes;
+	}
+	public ArrayList<Integer> getZonesSecu() {
+		
+		return mZonesSecu;
 	}
 }

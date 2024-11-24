@@ -262,8 +262,8 @@ public class JobType {
 				//zoneToIntervals.get(task.numzone).add(mTaskOrdoList.get(taskID).intervalReel);
 				zoneToIntervals.get(task.numzone).add(inter);
 				
-				if(SQL_DATA.getInstance().relatedZones.containsKey(task.numzone)) {
-					int zoneToAdd=SQL_DATA.getInstance().relatedZones.get(task.numzone);
+				if(SQL_DATA.getInstance().getRelatedZones().containsKey(task.numzone)) {
+					int zoneToAdd=SQL_DATA.getInstance().getRelatedZones().get(task.numzone);
 					//cumulDemands.add
 					if(!cumulDemands.containsKey(zoneToAdd)) {
 						cumulDemands.put(zoneToAdd,new ArrayList<IntervalVar>());
@@ -321,7 +321,7 @@ public class JobType {
 			
 			mTaskOrdoList.add(taskOrdo);
 			
-			if(SQL_DATA.getInstance().zonesSecu.contains(task.numzone)) {
+			if(SQL_DATA.getInstance().getZonesSecu().contains(task.numzone)) {
 				taskOrdo.zoneSecu=true;
 			}
 		}
