@@ -43,7 +43,7 @@ import java.awt.*;
 
 	        // Add buttons for actions
 	        JPanel buttonPanel = new JPanel();
-	        JButton loadButton = new JButton("Charger les données");
+	        JButton loadButton = new JButton("Recharger");
 	        JButton saveButton = new JButton("Enregistrer les modifications");
 	        buttonPanel.add(loadButton);
 	        buttonPanel.add(saveButton);
@@ -52,6 +52,7 @@ import java.awt.*;
 	        // Add action listeners
 	        loadButton.addActionListener(e -> loadData());
 	        saveButton.addActionListener(e -> saveData());
+	        loadData();
 
 	       
 	    }

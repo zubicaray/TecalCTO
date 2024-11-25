@@ -16,6 +16,13 @@ if [[ ! -f "$INPUT_FILE" ]]; then
     exit 1
 fi
 
+if [[  $1 = 'PURGE' ]]; then
+    echo "PURGE DES TABLES AVANT INSERTS"
+    sqlcmd -S "$SQL_SERVER" -d "$DATABASE" -U "$USERNAME" -P "$PASSWORD" -i ../TRUNCATE_DETAILS.sql -C
+    exit 1
+fi
+
+
 # Création ou nettoyage du répertoire de sortie
 if [[ -d "$OUTPUT_DIR" ]]; then
     rm -rf "$OUTPUT_DIR"/*

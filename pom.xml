@@ -7,12 +7,15 @@
 
 	<groupId>zdev.tecal</groupId>
 	<artifactId>TecalCPO</artifactId>
-	<version>1.1.0</version>
+	<version>1.2.0</version>
 	<packaging>jar</packaging>
+	
 
 	<name>${project.groupId}:${project.artifactId}</name>
 	<description>Ordonnancement de la prod Tecal</description>
 	<url>https://github.com/or-tools/maven_or-tools</url>
+	<organization><name>ZDEV</name></organization>
+	<inceptionYear>2024</inceptionYear>
 
 
 	<licenses>
@@ -70,11 +73,7 @@
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
-		<dependency>
-			<groupId>com.github.s7connector</groupId>
-			<artifactId>s7connector</artifactId>
-			<version>2.0</version>
-		</dependency>
+		
 		<dependency>
 			<groupId>com.github.xingshuangs</groupId>
 			<artifactId>iot-communication</artifactId>
@@ -133,42 +132,10 @@
 
 	<build>
 		<plugins>
-
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<version>3.6.0</version>
-				<executions>
-					<execution>
-						<id>make-assembly</id>
-						<phase>package</phase>
-						<goals>
-							<goal>single</goal>
-						</goals>
-						<configuration>
-							<descriptorRefs>
-								<descriptorRef>jar-with-dependencies</descriptorRef>
-							</descriptorRefs>
-							<archive>
-								<manifest>
-									<mainClass>org.tecal.ui.TecalGUI</mainClass> 
-									Classe principale 
-								</manifest>
-								<manifestEntries>
-									
-									<Permissions>all-permissions</Permissions>
-								</manifestEntries>
-							</archive>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
-				<version>3.5.0</version> <!-- Vérifiez la dernière version -->
+				<version>3.5.0</version>
 				<executions>
 					<execution>
 						<phase>package</phase>
@@ -176,13 +143,21 @@
 							<goal>shade</goal>
 						</goals>
 						<configuration>
-						 <!-- <finalName>TecalCPO</finalName> Nom du JAR généré -->
+							<filters>
+								<filter>
+									<artifact>*:*</artifact>
+									<excludes>
+										<exclude>META-INF/*.SF</exclude>
+										<exclude>META-INF/*.DSA</exclude>
+										<exclude>META-INF/*.RSA</exclude>
+									</excludes>
+								</filter>
+							</filters>
 						</configuration>
-					
 					</execution>
 				</executions>
-
 			</plugin>
+			<!--
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
@@ -202,6 +177,8 @@
 					</execution>
 				</executions>
 			</plugin>
+			-->
+			
 
 
 			<plugin>
@@ -221,19 +198,18 @@
 								<path>%JAVA_HOME%;%PATH%</path>
 								<requiresJdk>false</requiresJdk>
 								<requires64Bit>false</requires64Bit>
-								<minVersion></minVersion>
-								<maxVersion></maxVersion>
+								<minVersion>17</minVersion>
+								<maxVersion>21</maxVersion>
 							</jre>
-							<dontWrapJar>false</dontWrapJar>
+							<dontWrapJar>true</dontWrapJar>
 							<headerType>gui</headerType>
 							<outfile>TecalCPO-${project.version}.exe</outfile>
-							<jar>target/TecalCPO-${project.version}-jar-with-dependencies.jar</jar>
+							<jar>TecalCPO-${project.version}.jar</jar>
 							<icon>src/main/resources/gantt-chart-32.ico</icon>
-							<errTitle>ERR TecalCPO</errTitle>
+							<errTitle>ERR TecalCPO</errTitle>						
 							<classPath>
 								<mainClass>org.tecal.ui.CPO_IHM</mainClass>
-								<addDependencies>true</addDependencies>
-								<preCp>anything</preCp>
+								<addDependencies>true</addDependencies>								
 							</classPath>
 
 							<versionInfo>
@@ -260,19 +236,19 @@
 								<path>%JAVA_HOME%;%PATH%</path>
 								<requiresJdk>false</requiresJdk>
 								<requires64Bit>false</requires64Bit>
-								<minVersion></minVersion>
-								<maxVersion></maxVersion>
+								<minVersion>17</minVersion>
+								<maxVersion>21</maxVersion>
 							</jre>
-							<dontWrapJar>false</dontWrapJar>
+							<dontWrapJar>true</dontWrapJar>
 							<headerType>gui</headerType>
 							<outfile>TecalGUI-${project.version}.exe</outfile>
-							<jar>target/TecalCPO-${project.version}-jar-with-dependencies.jar</jar>
+							<jar>TecalCPO-${project.version}.jar</jar>
 							<icon>src/main/resources/gantt-chart-32.ico</icon>
 							<errTitle>ERR TecalGUI</errTitle>
 							<classPath>
 								<mainClass>org.tecal.ui.TecalGUI</mainClass>
-								<addDependencies>true</addDependencies>
-								<preCp>anything</preCp>
+								<!-- <addDependencies>true</addDependencies> -->
+								<preCp>lib/*</preCp>
 							</classPath>
 
 							<versionInfo>
@@ -288,47 +264,93 @@
 							</versionInfo>
 						</configuration>
 					</execution>
-					<execution>
-						<id>S7Example</id>
-						<phase>package</phase>
-						<goals>
-							<goal>launch4j</goal>
-						</goals>
-						<configuration>
-							<jre>
-								<path>%JAVA_HOME%;%PATH%</path>
-								<requiresJdk>false</requiresJdk>
-								<requires64Bit>false</requires64Bit>
-								<minVersion></minVersion>
-								<maxVersion></maxVersion>
-							</jre>
-							<dontWrapJar>false</dontWrapJar>
-							<headerType>console</headerType>
-							<outfile>S7Example.exe</outfile>
-							<jar>target/TecalCPO-${project.version}.jar</jar>
-							<icon>src/main/resources/gantt-chart-32.ico</icon>
-							<errTitle>ERR TecalGUI</errTitle>
-							<classPath>
-								<mainClass>org.tecal.S7Connector.S7Example</mainClass>
-								<addDependencies>true</addDependencies>
-								<preCp>anything</preCp>
-							</classPath>
-
-							<versionInfo>
-								<fileVersion>1.0.0.0</fileVersion>
-								<txtFileVersion>txt file version?</txtFileVersion>
-								<fileDescription>a description</fileDescription>
-								<copyright>my copyright</copyright>
-								<productVersion>4.3.2.1</productVersion>
-								<txtProductVersion>txt product version</txtProductVersion>
-								<productName>TecalGUI</productName>
-								<internalName>TecalGUI</internalName>
-								<originalFilename>TecalGUI.exe</originalFilename>
-							</versionInfo>
-						</configuration>
-					</execution>
+					
 
 				</executions>
+			</plugin>
+			<!--
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>mavenassemblyplugin</artifactId>
+				<version>3.6.0</version>
+				<executions>
+						<execution>
+								<id>makeassembly</id>
+								<phase>package</phase>
+								<goals>
+										<goal>single</goal>
+								</goals>
+								<configuration>
+										<descriptorRefs>
+												<descriptorRef>jarwithdependencies</descriptorRef>
+										</descriptorRefs>
+										<archive>
+												<manifest>
+														<mainClass>org.tecal.ui.TecalGUI</mainClass> 
+														Classe principale 
+												</manifest>
+												<manifestEntries>
+														
+														<Permissions>allpermissions</Permissions>
+												</manifestEntries>
+										</archive>
+								</configuration>
+						</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+			    <groupId>org.apache.maven.plugins</groupId>
+			    <artifactId>maven-dependency-plugin</artifactId>
+			    <version>3.6.0</version>
+			    <executions>
+			        <execution>
+			            <id>copy-dependencies</id>
+			            <phase>install</phase>
+			            <goals>
+			                <goal>copy-dependencies</goal>
+			            </goals>
+			            <configuration>
+			                <outputDirectory>${project.build.directory}/lib</outputDirectory> <!-- Où copier les fichiers .jar -->
+			                <overWriteReleases>false</overWriteReleases>
+			                <overWriteSnapshots>false</overWriteSnapshots>
+			                <overWriteIfNewer>true</overWriteIfNewer>
+			            </configuration>
+			        </execution>
+			    </executions>
+			</plugin>
+			-->
+			<plugin>
+			    <groupId>org.codehaus.mojo</groupId>
+			    <artifactId>exec-maven-plugin</artifactId>
+			    <version>3.1.0</version>
+			    <executions>
+			        <execution>
+			            <id>sign-exe</id>
+			            <phase>install</phase>
+			            <goals>
+			                <goal>exec</goal>
+			            </goals>
+			            <configuration>
+			                <executable>osslsigncode</executable>
+			                <arguments>
+			                    <!-- Chemin vers votre certificat -->
+			                    <argument>-pkcs12</argument>
+			                    <argument>mycertificate.pfx</argument>
+			                    <argument>-pass</argument>
+			                    <argument>poil_69!DEN789456*</argument>
+			                    <argument>-n</argument>
+			                    <argument>"Tecal CPO"</argument>
+			                    <argument>-i</argument>
+			                    <argument>https://zdev.tecal.com</argument>
+			                    <argument>-in</argument>
+			                    <argument>TecalCPO-${project.version}.exe</argument>
+			                    <argument>-out</argument>
+			                    <argument>TecalCPO-${project.version}-signed.exe</argument>
+			                </arguments>
+			            </configuration>
+			        </execution>
+			    </executions>
 			</plugin>
 
 		</plugins>

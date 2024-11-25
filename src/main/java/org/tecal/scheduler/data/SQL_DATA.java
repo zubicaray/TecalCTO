@@ -375,15 +375,7 @@ public  ResultSet getStatsAnodisation(String[] listeOF) {
                 SELECT
                     NumPoste,
                     DATEDIFF(SECOND, 
-                        CASE 
-                            WHEN DateEntreePoste < @DateDebut THEN @DateDebut 
-                            ELSE DateEntreePoste 
-                        END,
-                        CASE 
-                            WHEN DateSortiePoste > @DateFin THEN @DateFin 
-                            ELSE DateSortiePoste 
-                        END
-                    ) AS DureeOccupation
+                        DateEntreePoste,DateSortiePoste) AS DureeOccupation
                 FROM DetailsFichesProduction
                 WHERE NumPoste IN (18, 19, 20)
                   AND DateSortiePoste > @DateDebut
