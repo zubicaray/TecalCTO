@@ -455,6 +455,8 @@ public  ResultSet getTauxAnodisationJours( Date dateDebut , Date dateFin ) {
 	return resultSet;
 }
 
+
+
 public  ResultSet getEnteteGammes() {
 	ResultSet resultSet = null;
 

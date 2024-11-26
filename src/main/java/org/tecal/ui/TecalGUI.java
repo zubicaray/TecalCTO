@@ -226,11 +226,13 @@ public class TecalGUI {
 		buildParamsTab(tabbedPaneMain);
 		
 		TauxAnodisationPanel  taux= new TauxAnodisationPanel();
+		StatsMensuel mens=new StatsMensuel();
 		JTabbedPane statTabbedPaneMain = new JTabbedPane(SwingConstants.LEFT);
 		ImageIcon iconStat = new ImageIcon(this.getClass().getResource("/icons8-statistic-16.png"));
 		
 		tabbedPaneMain.addTab("Statistiques",iconStat,statTabbedPaneMain);
 		statTabbedPaneMain.addTab("Taux anodisation", null, taux, null);
+		statTabbedPaneMain.addTab("production", null, mens, null);
 
 		frmTecalOrdonnanceur.getContentPane().setLayout(groupLayout);
 	}
