@@ -16,6 +16,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.PreparedStatement;
@@ -120,6 +121,7 @@ public class TecalGUI {
 	private JTable tableOF;
 	private JDatePickerImpl datePicker;
 	JPanel panelVisuProd;
+	JTabbedPane mParamTabs;
 	JScrollPane scrollPaneVisuProd;
 
 	private JTextField textTEMPS_MAX_SOLVEUR;
@@ -193,18 +195,18 @@ public class TecalGUI {
 	private void initialize() {
 
 		frmTecalOrdonnanceur = new JFrame();
-
+	
 		frmTecalOrdonnanceur.setTitle("Tecal PROD");
 
 		mIcons = loadIcons(this);
-
+		frmTecalOrdonnanceur.setIconImage(mIcons.get(0));
 		frmTecalOrdonnanceur.setIconImages(mIcons);
 
 		// mCPO_IHM = new CPO(mIcons);
 
 		frmTecalOrdonnanceur.setBounds(100, 100, 729, 674);
 		frmTecalOrdonnanceur.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-
+		mParamTabs=new  JTabbedPane(SwingConstants.TOP);
 		tabbedPaneMain = new JTabbedPane(SwingConstants.TOP);
 		GroupLayout groupLayout = new GroupLayout(frmTecalOrdonnanceur.getContentPane());
 		groupLayout.setHorizontalGroup(
@@ -224,8 +226,11 @@ public class TecalGUI {
 		buildParamsTab(tabbedPaneMain);
 		
 		TauxAnodisationPanel  taux= new TauxAnodisationPanel();
+		JTabbedPane statTabbedPaneMain = new JTabbedPane(SwingConstants.LEFT);
+		ImageIcon iconStat = new ImageIcon(this.getClass().getResource("/icons8-statistic-16.png"));
 		
-		tabbedPaneMain.addTab("Taux ano.", null, taux, null);
+		tabbedPaneMain.addTab("Statistiques",iconStat,statTabbedPaneMain);
+		statTabbedPaneMain.addTab("Taux anodisation", null, taux, null);
 
 		frmTecalOrdonnanceur.getContentPane().setLayout(groupLayout);
 	}
@@ -277,8 +282,8 @@ public class TecalGUI {
 				}
 			}
 		});
-
-		tabbedPaneMain.addTab("Visuel de prod", null, panelVisuProd, null);
+		ImageIcon icon = new ImageIcon(this.getClass().getResource("/icons8-visu-16.png"));
+		tabbedPaneMain.addTab("Visuel de prod", icon, panelVisuProd, null);
 
 		JPanel buttonsDate = new JPanel(new FlowLayout());
 		buttonsDate.add(datePicker);
@@ -492,7 +497,7 @@ public class TecalGUI {
 	private void buildCalibrageTab() {
 
 		panelCalibrage = new JPanel();
-		tabbedPaneMain.addTab("Fiche de calibrages", null, panelCalibrage, null);
+		mParamTabs.addTab("Fiche de calibrages", null, panelCalibrage, null);
 
 		JPanel filterPanel = new JPanel();
 		filterTextField = new JTextField();
@@ -579,12 +584,13 @@ public class TecalGUI {
 
 	private void buildParamsTab(JTabbedPane tabbedPane) {
 
-		JTabbedPane j=new  JTabbedPane();
+		ImageIcon iconStat = new ImageIcon(this.getClass().getResource("/icons8-parameters-16.png"));
+		tabbedPane.addTab("Paramètres",iconStat,mParamTabs);
 		JPanel panel_param = new JPanel();
 		ZonesPanel panelZones = new ZonesPanel();		
-		j.addTab("Zones", null, panelZones, null);
-		j.addTab("Constantes CPO", null, panel_param, null);
-		tabbedPane.add("Paramètres",j);
+		mParamTabs.addTab("Zones", null, panelZones, null);
+		mParamTabs.addTab("Constantes CPO", null, panel_param, null);
+		
 		
 
 		JLabel lblTailleZone = new JLabel("TEMPS_ZONE_OVERLAP_MIN");
@@ -728,7 +734,7 @@ public class TecalGUI {
 
 	private void buildMvtPonts() {
 		JPanel panelMvtPonts = new JPanel(new BorderLayout());
-		tabbedPaneMain.addTab("Temps mouvements", null, panelMvtPonts, null);
+		mParamTabs.addTab("Temps mouvements", null, panelMvtPonts, null);
 
 		textStart = new JTextField();
 		textStart.setColumns(10);

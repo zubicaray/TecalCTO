@@ -1,4 +1,15 @@
-select * from ANODISATION.dbo.DetailsFichesProduction
+
+ALTER INDEX ALL ON ANODISATION.dbo.DetailsFichesProduction REBUILD;
+ALTER INDEX ALL ON ANODISATION.dbo.DetailsGammesProduction REBUILD;
+ALTER INDEX ALL ON ANODISATION.dbo.DetailsPhasesProduction REBUILD;
+ALTER INDEX ALL ON ANODISATION.dbo.DetailsChargesProduction REBUILD;
+
+truncate  table [ANODISATION].dbo.DetailsGammesProduction;
+truncate  table [ANODISATION].dbo.DetailsFichesProduction;
+truncate  table [ANODISATION].dbo.DetailsPhasesProduction;
+truncate  table [ANODISATION].dbo.DetailsChargesProduction;
+
+select count(*) from ANODISATION.dbo.DetailsFichesProduction --1707486
 where NumFicheProduction  between '00086810' and '00086775'
 
 select * from ANODISATION.dbo.Premisses where NumPosteDepart=18

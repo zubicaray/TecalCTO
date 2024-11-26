@@ -311,15 +311,15 @@
 			                <goal>copy-dependencies</goal>
 			            </goals>
 			            <configuration>
-			                <outputDirectory>${project.build.directory}/lib</outputDirectory> <!-- Où copier les fichiers .jar -->
-			                <overWriteReleases>false</overWriteReleases>
+			                <outputDirectory>${project.build.directory}/lib</outputDirectory> 
+							<overWriteReleases>false</overWriteReleases>
 			                <overWriteSnapshots>false</overWriteSnapshots>
 			                <overWriteIfNewer>true</overWriteIfNewer>
 			            </configuration>
 			        </execution>
 			    </executions>
 			</plugin>
-			-->
+			
 			<plugin>
 			    <groupId>org.codehaus.mojo</groupId>
 			    <artifactId>exec-maven-plugin</artifactId>
@@ -334,7 +334,7 @@
 			            <configuration>
 			                <executable>osslsigncode</executable>
 			                <arguments>
-			                    <!-- Chemin vers votre certificat -->
+			                    
 			                    <argument>-pkcs12</argument>
 			                    <argument>mycertificate.pfx</argument>
 			                    <argument>-pass</argument>
@@ -352,7 +352,7 @@
 			        </execution>
 			    </executions>
 			</plugin>
-
+			-->
 		</plugins>
 	</build>
 </project>

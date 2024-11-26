@@ -562,6 +562,8 @@ public class CPO_Panel extends JPanel {
 		    System.out.println(ex);
 		  }
 	}
+	
+
 
 	private void moveRowBy(int by)
 	{
