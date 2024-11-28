@@ -3,9 +3,7 @@ package org.tecal.ui;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.xy.XYSeries;
-import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.time.TimeSeries;
@@ -17,7 +15,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.sql.*;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.util.Date;
 import com.toedter.calendar.JDateChooser;
 import java.util.List;
@@ -76,7 +73,7 @@ public class StatsMensuel extends JPanel {
 
         // Ajouter le graphique dans un JPanel
         chartPanel = new ChartPanel(chart);
-        chartPanel.setPreferredSize(new Dimension(600, 600));
+        //chartPanel.setPreferredSize(new Dimension(600, 600));
 
         // Agencer les composants
         this.setLayout(new BorderLayout());
@@ -91,6 +88,8 @@ public class StatsMensuel extends JPanel {
         // Créer les sélecteurs de date
         startDateChooser = new JDateChooser();
         endDateChooser = new JDateChooser();
+        startDateChooser.setPreferredSize(new java.awt.Dimension(100, 20));
+        endDateChooser.setPreferredSize(new java.awt.Dimension(100, 20));
 
         // Ajouter les champs de date au panel
         datePanel.add(new JLabel("Date de début :"));
@@ -100,12 +99,12 @@ public class StatsMensuel extends JPanel {
 
         // Définir les dates par défaut : startDateChooser = 1 jour avant la date actuelle, endDateChooser = date du jour
         Date today = new Date();
-        Date oneDayBefore = new Date(today.getTime() - 24L * 60 * 60 * 1000*365); // Un jour avant la date actuelle
-        startDateChooser.setDate(oneDayBefore);
+        Date oneYearBefore = new Date(today.getTime() - 24L * 3600 * 1000*365); // Un an avant la date actuelle
+        startDateChooser.setDate(oneYearBefore);
         endDateChooser.setDate(today);
 
         // Ajouter un bouton pour régénérer la requête
-        JButton regenerateButton = new JButton("Régénérer la requête");
+        JButton regenerateButton = new JButton("MAJ");
         regenerateButton.addActionListener(e -> createDataset());
 
         datePanel.add(regenerateButton);
@@ -115,8 +114,8 @@ public class StatsMensuel extends JPanel {
 
    
     private void createDataset() {
-        TimeSeries rawSeries = new TimeSeries("Durée d'Occupation (Brut)");
-        TimeSeries smoothedSeries = new TimeSeries("Durée d'Occupation (Lissée)");
+        TimeSeries rawSeries = new TimeSeries("Temps en anodisation ");
+        TimeSeries smoothedSeries = new TimeSeries("Durée lissée");
 
         // Récupérer les nouvelles dates
         Date startDate = startDateChooser.getDate();

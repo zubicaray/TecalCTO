@@ -175,10 +175,10 @@ public class TecalOrdo {
 
 	static public int horizon = 0;
 
-	private StringBuilder outputMsg;
+	private StringBuilder mOutPutMsg;
 
 	public StringBuilder getOutputMsg() {
-		return outputMsg;
+		return mOutPutMsg;
 	}
 
 	private int mSource;
@@ -225,7 +225,7 @@ public class TecalOrdo {
 		Loader.loadNativeLibraries();
 		// model = new CpModel();
 
-		outputMsg = new StringBuilder();
+		mOutPutMsg = new StringBuilder();
 		model = new CpModel();
 		
 		
@@ -452,21 +452,21 @@ public class TecalOrdo {
 		CpSolverStatus status = solver.solve(model);
 
 		hasSolution = false;
-		outputMsg.append("-----------------------------------------------------------------");
-		outputMsg.append(System.getProperty("line.separator"));
+		mOutPutMsg.append("-----------------------------------------------------------------");
+		mOutPutMsg.append(System.getProperty("line.separator"));
 		if (status == CpSolverStatus.OPTIMAL || status == CpSolverStatus.FEASIBLE) {
 
 			hasSolution = true;
 			
 			
 			if(status == CpSolverStatus.OPTIMAL) {
-				outputMsg.append("Solution OPTIMALE !");
+				mOutPutMsg.append("Solution OPTIMALE !");
 			}
 			else {
-				outputMsg.append("Solution:");
+				mOutPutMsg.append("Solution:");
 			}
 
-			outputMsg.append(System.getProperty("line.separator"));
+			mOutPutMsg.append(System.getProperty("line.separator"));
 			// Create one list of assigned tasks per Zone.
 
 			createAssignedTasks();
@@ -498,15 +498,15 @@ public class TecalOrdo {
 					output += solLineTasks + "%n";
 					output += solLine + "%n";
 				}
-				outputMsg.append(String.format("Optimal Schedule Length: %f%n", solver.objectiveValue()));
-				outputMsg.append(System.getProperty("line.separator"));
-				outputMsg.append(output);
-				outputMsg.append(System.getProperty("line.separator"));
+				mOutPutMsg.append(String.format("Optimal Schedule Length: %f%n", solver.objectiveValue()));
+				mOutPutMsg.append(System.getProperty("line.separator"));
+				mOutPutMsg.append(output);
+				mOutPutMsg.append(System.getProperty("line.separator"));
 			}
 
 		} else {
-			outputMsg.append("Pas de solution trouvée.");
-			outputMsg.append(System.getProperty("line.separator"));
+			mOutPutMsg.append("Pas de solution trouvée.");
+			mOutPutMsg.append(System.getProperty("line.separator"));
 			
 			//TODO: garder les job en cours !!!
 			
@@ -520,11 +520,11 @@ public class TecalOrdo {
 		}
 
 		// Statistics.
-		// outputMsg.append("\n/////////////////////////////////////////////////////////\n");
-		outputMsg.append("Statistiques:\n");
-		outputMsg.append(String.format("  conflits: %d%n", solver.numConflicts()));
-		outputMsg.append(String.format("  branches : %d%n", solver.numBranches()));
-		outputMsg.append(String.format("  temps %f s%n", solver.wallTime()));
+		// mOutPutMsg.append("\n/////////////////////////////////////////////////////////\n");
+		mOutPutMsg.append("Statistiques:\n");
+		mOutPutMsg.append(String.format("  conflits: %d%n", solver.numConflicts()));
+		mOutPutMsg.append(String.format("  branches : %d%n", solver.numBranches()));
+		mOutPutMsg.append(String.format("  temps %f s%n", solver.wallTime()));
 	}
 
 	private void priorisationBarres(HashMap<Integer, IntVar> endByBarreIdNonPrio,
@@ -601,7 +601,7 @@ public class TecalOrdo {
 	}
 
 	public String print() {
-		return outputMsg.toString();
+		return mOutPutMsg.toString();
 	}
 
 	public static void main(String[] args) throws IOException, CsvException, URISyntaxException {
@@ -641,8 +641,12 @@ public class TecalOrdo {
 
 			JobType job = new JobType(numBarre,mBarresSettings.get(numBarre), name);
 
-			// String lgamme = entry.getKey();
+			
 			List<GammeType> zones = entry.getValue();
+			if(zones==null) {
+				mOutPutMsg.append("Pas de zones pour la barre :"+name+", on l'élimine !! \n");
+				continue;
+			}
 			// on calcul les indexes des zones a regrouper par pont
 			job.buildTaskList(zones);
 			mJobsFuturs.put(numBarre, job);
