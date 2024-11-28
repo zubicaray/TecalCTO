@@ -4,6 +4,8 @@ import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
@@ -51,6 +53,7 @@ public class TauxAnodisationPanel extends JPanel {
     TimeSeries seriesBar;
     TimeSeries seriesSmoothed ;
     TimeSeries seriesCurveSmoothed ;
+    TimeSeries seriesCorrelation; // Courbe de corrélation
 
     public TauxAnodisationPanel() {
         sqlCnx = SQL_DATA.getInstance();
@@ -67,7 +70,7 @@ public class TauxAnodisationPanel extends JPanel {
 
         datePanel.add(btnToggleSeries); // Ajouter le bouton au panneau supérieur
 
-        btnToggleSeries.addActionListener(e -> toggleSeriesVisibility(false));
+        btnToggleSeries.addActionListener(e -> toggleSeriesVisibility());
 
         JLabel lblDateDebut = new JLabel("début:");
         dateDebutChooser = new JDateChooser();
@@ -79,7 +82,29 @@ public class TauxAnodisationPanel extends JPanel {
         
         dateDebutChooser.setPreferredSize(new java.awt.Dimension(100, 20));
         dateFinChooser.setPreferredSize(new java.awt.Dimension(100, 20));
-
+        
+        // Définir les dates par défaut : startDateChooser = 1 jour avant la date actuelle, endDateChooser = date du jour
+        Date today = new Date();
+        Date oneYearBefore = new Date(today.getTime() - 24L * 3600 * 1000*365); // Un an avant la date actuelle
+        dateDebutChooser.setDate(oneYearBefore);
+        dateFinChooser.setDate(today);
+        
+       
+        dateFinChooser.getDateEditor().addPropertyChangeListener(
+        	    new PropertyChangeListener() {
+        	        @Override
+        	        public void propertyChange(PropertyChangeEvent e) {
+        	        	afficherGraphique();
+        	        }
+        	    });
+        dateDebutChooser.getDateEditor().addPropertyChangeListener(
+        	    new PropertyChangeListener() {
+        	        @Override
+        	        public void propertyChange(PropertyChangeEvent e) {
+        	        	afficherGraphique();
+        	        }
+        	    });
+        
         JButton btnAfficher = new JButton("MAJ");
         JLabel lblWindowSize = new JLabel("Lissage :");
         windowSizeField = new JTextField("10"); // Valeur par défaut
@@ -100,18 +125,19 @@ public class TauxAnodisationPanel extends JPanel {
         chartPanel.setLayout(new BorderLayout());
         add(chartPanel, BorderLayout.CENTER);
         
-     // Définir les dates par défaut : startDateChooser = 1 jour avant la date actuelle, endDateChooser = date du jour
-        Date today = new Date();
-        Date oneYearBefore = new Date(today.getTime() - 24L * 3600 * 1000*365); // Un an avant la date actuelle
-        dateDebutChooser.setDate(oneYearBefore);
-        dateFinChooser.setDate(today);
+ 
         afficherGraphique();
         
         // Action sur le bouton
         btnAfficher.addActionListener(e -> afficherGraphique());
     }
-    private void toggleSeriesVisibility(boolean update) {
-        XYPlot plot = ((JFreeChart) ((ChartPanel) chartPanel.getComponent(0)).getChart()).getXYPlot();
+    private void toggleSeriesVisibility() {
+        
+        showingSmoothCurves = !showingSmoothCurves;
+        redrawSeries();
+    }
+	private void redrawSeries() {
+		XYPlot plot = ((JFreeChart) ((ChartPanel) chartPanel.getComponent(0)).getChart()).getXYPlot();
 
         // Bascule la visibilité entre les courbes originales et lissées
         if (!showingSmoothCurves) {
@@ -128,6 +154,9 @@ public class TauxAnodisationPanel extends JPanel {
             }
             if (plot.getRenderer(3) != null) {
                 plot.getRenderer(3).setSeriesVisible(0, false); // Durée lissée
+            }
+            if (plot.getRenderer(4) != null) {
+                plot.getRenderer(4).setSeriesVisible(0, false); // Durée lissée
             }
 
             // Mettre à jour le bouton
@@ -150,11 +179,37 @@ public class TauxAnodisationPanel extends JPanel {
             // Mettre à jour le bouton
             btnToggleSeries.setText("Données brutes");
         }
+	}
+	private List<Double> calculateCorrelation(List<Double> dataX, List<Double> dataY, int windowSize) {
+	    List<Double> correlationValues = new ArrayList<>();
+	    for (int i = 0; i < dataX.size(); i++) {
+	        int start = Math.max(0, i - windowSize / 2);
+	        int end = Math.min(dataX.size() - 1, i + windowSize / 2);
 
-        // Inverser l’état
-        if( update ==false)
-        	showingSmoothCurves = !showingSmoothCurves;
-    }
+	        List<Double> subX = dataX.subList(start, end + 1);
+	        List<Double> subY = dataY.subList(start, end + 1);
+
+	        double meanX = subX.stream().mapToDouble(val -> val).average().orElse(0.0);
+	        double meanY = subY.stream().mapToDouble(val -> val).average().orElse(0.0);
+
+	        double numerator = 0.0;
+	        double denominatorX = 0.0;
+	        double denominatorY = 0.0;
+
+	        for (int j = 0; j < subX.size(); j++) {
+	            double dx = subX.get(j) - meanX;
+	            double dy = subY.get(j) - meanY;
+
+	            numerator += dx * dy;
+	            denominatorX += dx * dx;
+	            denominatorY += dy * dy;
+	        }
+
+	        double correlation = (denominatorX > 0 && denominatorY > 0) ? (numerator / Math.sqrt(denominatorX * denominatorY)) : 0.0;
+	        correlationValues.add(correlation);
+	    }
+	    return correlationValues;
+	}
 
     private void afficherGraphique() {
         Date dateDebut = dateDebutChooser.getDate();
@@ -256,15 +311,32 @@ public class TauxAnodisationPanel extends JPanel {
         valueAxis.setLabelPaint(Color.RED); // Changer la couleur du label de l'axe Y
         
         
+        TimeSeriesCollection datasetCorrelation = new TimeSeriesCollection(seriesCorrelation);
+
+        NumberAxis axisY3 = new NumberAxis("Corrélation");
+        axisY3.setLabelPaint(Color.ORANGE);
+        plot.setRangeAxis(2, axisY3);
+        plot.setDataset(4, datasetCorrelation);
+        plot.mapDatasetToRangeAxis(4, 2);
+
+       
+        
         setToolTips(dateFormat, LineRendererHeures,lineRendererHeuresSmoothed, lineRendererTaux, lineRendererTauxSmoothed);
         
 
+        //POUR L INSTANT ON MASQUE LE COEFF DE CORRELATION
+        XYLineAndShapeRenderer lineRendererCorrelation = new XYLineAndShapeRenderer(true, false);
+        lineRendererCorrelation.setSeriesPaint(0, Color.ORANGE);
+        lineRendererCorrelation.setSeriesStroke(0, new BasicStroke(2.0f));
+        plot.setRenderer(4, lineRendererCorrelation);
+        plot.getRenderer(4).setSeriesVisible(0, false); 
+        
         // Mettre à jour le panel du graphique
         chartPanel.removeAll();
         chartPanel.add(new ChartPanel(chart), BorderLayout.CENTER);
         chartPanel.validate();
         
-        toggleSeriesVisibility(true);
+        redrawSeries();
     }
 	private void getDatas(Date dateDebut, Date dateFin, int windowSize) {
 		// Récupération des données depuis la base de données
@@ -272,7 +344,9 @@ public class TauxAnodisationPanel extends JPanel {
         seriesBar = new TimeSeries("Taux de remplissage (%)");
         seriesSmoothed = new TimeSeries("Taux de remplissage lissé");
         seriesCurveSmoothed = new TimeSeries("Total heures lissé");
-
+        seriesCorrelation = new TimeSeries("Corrélation entre Taux et Durée");
+        
+       
         List<Integer> tauxData = new ArrayList<>();
         List<Integer> dureeData = new ArrayList<>();
         List<Date> dates = new ArrayList<>();
@@ -300,11 +374,20 @@ public class TauxAnodisationPanel extends JPanel {
                 seriesSmoothed.addOrUpdate(new Day(dates.get(i)), smoothedTaux.get(i));
             }
             
-            List<Double> smoothedCurveData = smoothData(dureeData,windowSize // Taille de la fenêtre pour le lissage
+            List<Double> smoothedDuree = smoothData(dureeData,windowSize // Taille de la fenêtre pour le lissage
                 );
-            for (int i = 0; i < smoothedCurveData.size(); i++) {
-                seriesCurveSmoothed.addOrUpdate(seriesCurve.getTimePeriod(i), smoothedCurveData.get(i));
+            for (int i = 0; i < smoothedDuree.size(); i++) {
+                seriesCurveSmoothed.addOrUpdate(seriesCurve.getTimePeriod(i), smoothedDuree.get(i));
             }
+            
+          
+            List<Double> correlationValues = calculateCorrelation(smoothedTaux, smoothedDuree, windowSize);
+            for (int i = 0; i < correlationValues.size(); i++) {
+                seriesCorrelation.addOrUpdate(new Day(dates.get(i)), correlationValues.get(i));
+            }
+
+            
+            
         } catch (SQLException ex) {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(this, "Erreur lors de la récupération des données : " + ex.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);

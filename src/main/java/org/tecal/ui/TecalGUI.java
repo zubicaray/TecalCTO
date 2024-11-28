@@ -204,7 +204,7 @@ public class TecalGUI {
 
 		// mCPO_IHM = new CPO(mIcons);
 
-		frmTecalOrdonnanceur.setBounds(100, 100, 729, 674);
+		frmTecalOrdonnanceur.setBounds(100, 100, 889, 674);
 		frmTecalOrdonnanceur.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		mParamTabs=new  JTabbedPane(SwingConstants.TOP);
 		tabbedPaneMain = new JTabbedPane(SwingConstants.TOP);
