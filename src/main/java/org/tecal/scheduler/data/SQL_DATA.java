@@ -8,7 +8,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -23,6 +27,8 @@ import javax.swing.JOptionPane;
 
 import org.ini4j.Ini;
 import org.ini4j.InvalidFileFormatException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.tecal.scheduler.types.GammeType;
 import org.tecal.scheduler.types.PosteBDD;
 import org.tecal.scheduler.types.PosteProd;
@@ -31,6 +37,7 @@ import org.tecal.scheduler.types.ZoneType;
 class TempsDeplacement 		extends HashMap<List<Integer>,Integer[]>	{	private static final long serialVersionUID = 1L;}
 
 public class SQL_DATA {
+	private static final Logger logger = LogManager.getLogger(SQL_DATA.class);
 	private Connection mConnection ;
 	public Connection getmConnection() {
 		return mConnection;
@@ -109,11 +116,12 @@ public class SQL_DATA {
 
 		} catch (InvalidFileFormatException e) {
 			JOptionPane.showMessageDialog(null, e, "Alerte exception ! \r\n"+ connectionUrl,JOptionPane.ERROR_MESSAGE);
+			logger.fatal(e);
 			e.printStackTrace();
 		} catch (IOException e) {
 			JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
-			JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
+			logger.fatal(e);
 		}
 
 
@@ -127,7 +135,8 @@ public class SQL_DATA {
 			
 		} catch (SQLException e) {
 			JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
-			e.printStackTrace();
+			
+			logger.fatal(e);
 		}
 
 
@@ -190,7 +199,7 @@ public  void setZonesSecu() {
         }
 	} catch (SQLException e) {
 		JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
-		e.printStackTrace();
+		logger.error(e);
 	}
 
 
@@ -224,7 +233,7 @@ public  void setZones() {
         }
 	} catch (SQLException e) {
 		JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
-		e.printStackTrace();
+		logger.error(e);
 	}
 
 
@@ -272,7 +281,7 @@ public HashMap<Integer,PosteBDD> getPostes(String[] listeOF) {
 	        }
 		} catch (SQLException e) {
 			JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
-			e.printStackTrace();
+			logger.error(e);
 		}
 
 
@@ -330,7 +339,7 @@ private void  setLignesGammes() {
 	        }
 		} catch (SQLException e) {
 			JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
-			e.printStackTrace();
+			logger.error(e);
 		}
 
 
@@ -350,7 +359,7 @@ public  ResultSet getBDDZones() {
     } catch (SQLException e) {
        
         JOptionPane.showMessageDialog(null, e, "Erreur lors du chargement des données : " + e.getMessage(), JOptionPane.ERROR_MESSAGE);
-		e.printStackTrace();
+        logger.error(e);
     }
 	
 	return rs;
@@ -397,7 +406,7 @@ public  ResultSet getStatsAnodisation(String[] listeOF) {
 		
 	} catch (SQLException e) {
 		JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
-		e.printStackTrace();
+		logger.error(e);
 		
 	}
 	
@@ -449,7 +458,7 @@ public  ResultSet getTauxAnodisationJours( Date dateDebut , Date dateFin ) {
 		
 	} catch (SQLException e) {
 		JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
-		e.printStackTrace();
+		logger.error(e);
 	}
 	
 	return resultSet;
@@ -476,7 +485,7 @@ public  ResultSet getEnteteGammes() {
 
 	} catch (SQLException e) {
 		JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
-		e.printStackTrace();
+		logger.error(e);
 	}
 
 	return resultSet;
@@ -514,7 +523,7 @@ public void  setMissingTimeMovesGammes() {
 
 	} catch (SQLException e) {
 		JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
-		e.printStackTrace();
+		logger.error(e);
 	}
 
 }
@@ -541,7 +550,7 @@ public boolean gammeChangedAfterOF(String of,String gamme) {
 
 		} catch (SQLException e) {
 			JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
-			e.printStackTrace();
+			logger.error(e);
 			res=false;
 		}
 
@@ -566,7 +575,7 @@ public boolean gammeCalibrageExists(String gamme) {
 
 		} catch (SQLException e) {
 			JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
-			e.printStackTrace();
+			logger.error(e);
 			res=false;
 		}
 
@@ -591,7 +600,7 @@ public boolean updateCalibrageGamme(String gamme,String of,java.util.Date d) {
 
 		} catch (SQLException e) {
 			JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
-			e.printStackTrace();
+			logger.error(e);
 			res=false;
 		}
 
@@ -617,7 +626,7 @@ public boolean insertCalibrageGamme(String gamme,String of,java.util.Date d) {
 
 		} catch (SQLException e) {
 			JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
-			e.printStackTrace();
+			logger.error(e);
 			res=false;
 		}
 
@@ -672,7 +681,7 @@ public boolean updateTpsMvts(String of,boolean updateNoNull) {
 
 		} catch (SQLException e) {
 			JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
-			e.printStackTrace();
+			logger.error(e);
 			res=false;
 		}
 
@@ -692,7 +701,7 @@ public boolean eraseTpsMvts() {
 
 		} catch (SQLException e) {
 			JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
-			e.printStackTrace();
+			logger.error(e);
 			res=false;
 		}
 
@@ -744,7 +753,7 @@ public boolean resetAllTpsMvts() {
 
 		} catch (SQLException e) {
 			JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
-			e.printStackTrace();
+			logger.error(e);
 			res=false;
 		}
 
@@ -780,7 +789,7 @@ public ResultSet getTpsMvts() {
 
 	} catch (SQLException e) {
 		JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
-		e.printStackTrace();
+		logger.error(e);
 	}
 
 	return resultSet;
@@ -819,7 +828,7 @@ public ResultSet getVisuProd(java.util.Date inDate) {
 
 	} catch (SQLException e) {
 		JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
-		e.printStackTrace();
+		logger.error(e);
 	}
 
 	return resultSet;
@@ -855,7 +864,7 @@ public HashMap<String, String>  getFicheGamme(String[] listeOF) {
 	        }
 		} catch (SQLException e) {
 			JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
-			e.printStackTrace();
+			logger.error(e);
 		}
 
 		return res;
@@ -894,7 +903,7 @@ public void setTempsDeplacements() {
 	        }
 		} catch (SQLException e) {
 			JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
-			e.printStackTrace();
+			logger.error(e);
 		}
 
 
@@ -960,13 +969,42 @@ public void setTempsDeplacements() {
 	        }
 		} catch (SQLException e) {
 			JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
-			e.printStackTrace();
+			logger.error(e);
 		}
 
       return finalArray;
 
     }
 
+    public  void insertLogCPO(LocalDateTime d,int idbarre, String label, int cptZone,int numZone, LocalTime entree, LocalTime sortie) {
+        
+    	
+    	logger.info("logs de la barre "+label);
+        // Requête SQL pour insérer une ligne
+        String sql = "INSERT INTO LOGS_CPO (date_log, idbarre, label, idZone, NumZone, entree, sortie) VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+        try (            PreparedStatement preparedStatement = mConnection.prepareStatement(sql)) {
+
+            // Définir les paramètres de la requête
+            preparedStatement.setTimestamp(1,Timestamp.valueOf(d)); // Date actuelle comme clé primaire
+            preparedStatement.setInt(2, idbarre);                                // Champ idbarre
+            preparedStatement.setString(3, label);                              // Champ label
+            preparedStatement.setInt(4, cptZone);
+            preparedStatement.setInt(5, numZone);                               // Champ NumZone
+            preparedStatement.setTime(6, Time.valueOf(entree));                 // Heure d'entrée
+            preparedStatement.setTime(7, Time.valueOf(sortie));                 // Heure de sortie
+
+            // Exécuter la requête
+            int rowsInserted = preparedStatement.executeUpdate();
+            if (rowsInserted > 0) {
+                System.out.println("Une nouvelle ligne a été insérée avec succès !");
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            logger.error("Erreur lors de l'insertion des données : " + e.getMessage());
+        }
+    }
 
     static TempsDeplacement getmTempsDeplacement() {
 		return mTempsDeplacement;

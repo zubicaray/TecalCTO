@@ -10,8 +10,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -24,6 +28,7 @@ import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
@@ -103,6 +108,22 @@ public class CPO_IHM extends JFrame {
 
 
 					CPO_IHM frame = new CPO_IHM();
+					frame.addWindowListener(new WindowAdapter() {
+			            @Override
+			            public void windowClosing(WindowEvent e) {
+			                int response = JOptionPane.showConfirmDialog(
+			                        frame,
+			                        "Voulez-vous vraiment quitter ?",
+			                        "Confirmation",
+			                        JOptionPane.YES_NO_OPTION,
+			                        JOptionPane.QUESTION_MESSAGE
+			                );
+
+			                if (response == JOptionPane.YES_OPTION) {
+			                    frame.dispose(); // Ferme la fenêtre
+			                }
+			            }
+			        });
 			
 
 					frame.setTitle("Tecal Ordonnanceur");
@@ -159,8 +180,11 @@ public class CPO_IHM extends JFrame {
 
 	    	mGanttTecalOR.getTimeBar().setValue(mGanttTecalOR.getTimeBar().getValue()+1);
 
+	    	List<Integer> barreToremove = new ArrayList<>();
+	    	
 	    	//TODO
-	    	// mutualiser avec fct manageOngoingJobs
+	    	// 1 mutualiser avec fct manageOngoingJobs
+	    	// 2 faire un autre tableau pour les assignedTask qui sont déjà passées
 	    	double current_time=mGanttTecalOR.getTimeBar().getValue();
 	    	for( Entry<Integer, List<AssignedTask>> entry  :mTecalOrdo.getAssignedTasksByBarreId().entrySet()) {
 
@@ -168,17 +192,46 @@ public class CPO_IHM extends JFrame {
 				AssignedTask first=values.get(0);
 				int barreid=entry.getKey();
 				if( first.start<current_time) {
-					// on ne garde pas les taches du job car il n'a pas encore commencé
-					mCPO_PANEL.removeBarre(barreid);
+					// on ne garde pas les taches du job car il a déjà commencé
+					mCPO_PANEL.removeBarre(barreid);					
+					barreToremove.add(barreid);
 				}
 				if( first.end == current_time+60   ) 	 {
 					CountdownWindow countdownModal = new CountdownWindow(mTecalOrdo.getBarreLabels().get(barreid));
-				     countdownModal.startCountdown();
+				    countdownModal.startCountdown();
 				}
 
 			}
+	    	
+	    	logAndRemoveBarreTasks(barreToremove);
+	    	
 
 	    }
+
+		private void logAndRemoveBarreTasks(List<Integer> barreToremove) {
+			for ( Integer i : barreToremove) {
+	    		
+	    		List<AssignedTask> listTask=mTecalOrdo.getAssignedTasksByBarreId().get(i);
+	    		
+	    		LocalDateTime d=LocalDateTime.now();
+	    		LocalTime start=mGanttTecalOR.getStartTime();
+	    		int cptZone=1;
+	    		
+	    		for(AssignedTask a:listTask) {
+	    			
+	    			LocalTime deb=start.plusSeconds(a.start-CST.CPT_GANTT_OFFSET);
+	    			LocalTime fin=start.plusSeconds(a.end-CST.CPT_GANTT_OFFSET);
+	    			
+	    			
+	    			SQL_DATA.getInstance().insertLogCPO(d,a.barreID, mTecalOrdo.getBarreLabels().get(i),cptZone, a.numzone, deb, fin);
+	    			cptZone++;
+	    		}
+	    		
+	    		
+	    		//on loggera les temps de chaque zone avant
+	    		mTecalOrdo.removeAssignedTaskByBarreId(i);
+	    	}
+		}
 	}
 
 	private void manageOngoingJobs() {

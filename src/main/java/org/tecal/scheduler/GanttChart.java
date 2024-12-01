@@ -51,6 +51,9 @@ public class GanttChart extends JFrame {
 	@SuppressWarnings("unused")
 	private  LocalTime mStartTime;
 
+	public LocalTime getStartTime() {
+		return mStartTime;
+	}
 	@SuppressWarnings("unused")
 	private String[] mZonesAllGamme;
 	private XYIntervalSeriesCollection mDataset;
@@ -187,7 +190,7 @@ public class GanttChart extends JFrame {
 
 		LinkedHashMap<Integer, ArrayList<GammeType> > barreZones	= inTecalOrdo.getBarreZonesAll();
 		LinkedHashMap<Integer,String> barreLabels					= inTecalOrdo.getBarreLabels();
-		Map<Integer, List<AssignedTask>> assignedTasksByNumzone		= inTecalOrdo.getAssignedJobs();
+		Map<Integer, List<AssignedTask>> mAssignedTasksByNumzone		= inTecalOrdo.getAssignedJobs();
 
 		indexToBarreIndex.clear();
 		barreToIndex.clear();
@@ -247,7 +250,7 @@ public class GanttChart extends JFrame {
 		 // et du coup les zones cumul s'affiche mal
 		 mTabAssignedJobsSorted=new HashMap<>();
 
-		 computeTasksByBarreID(assignedTasksByNumzone, zonesCumul);
+		 computeTasksByBarreID(mAssignedTasksByNumzone, zonesCumul);
 
 
 
@@ -330,11 +333,11 @@ public class GanttChart extends JFrame {
 
 	}
 
-	private void computeTasksByBarreID(Map<Integer, List<AssignedTask>> assignedTasksByNumzone,
+	private void computeTasksByBarreID(Map<Integer, List<AssignedTask>> mAssignedTasksByNumzone,
 			HashMap<Integer, ZoneCumul> zonesCumul) {
 		Map<Integer, List<AssignedTask>> cumulTask=new HashMap<>();
 		 //réorga par jobid/list zones
-		 assignedTasksByNumzone.values().forEach( taskArr->{
+		 mAssignedTasksByNumzone.values().forEach( taskArr->{
 
 			taskArr.forEach( task->{
 

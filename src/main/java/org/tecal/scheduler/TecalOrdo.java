@@ -104,7 +104,7 @@ public class TecalOrdo {
 	private long mCurrentTime;
 
 	// map de toutes les gammes
-	private HashMap<String, ArrayList<GammeType>> 	mGammes;
+	private HashMap<String, ArrayList<GammeType>> 			mGammes;
 	// geston des barres
 	private HashMap<Integer, ArrayList<GammeType>>			mBarreFutures;	
 	private LinkedHashMap<Integer, Barre>					mBarresSettings;
@@ -121,7 +121,7 @@ public class TecalOrdo {
 
 		for(Integer barreId:nouvellesBarresEnCours) {
 			if(!mJobsEnCours.containsKey(barreId))
-				mJobsEnCours.put(barreId, mJobsFuturs.get(barreId).makeFixedJob(assignedTasksByBarreId.get(barreId)));
+				mJobsEnCours.put(barreId, mJobsFuturs.get(barreId).makeFixedJob(mAssignedTasksByBarreId.get(barreId)));
 			else {
 				mJobsEnCours.get(barreId).clear();
 			}
@@ -154,8 +154,8 @@ public class TecalOrdo {
 	private Map<Integer, List<IntervalVar>> multiZoneIntervals 	= new HashMap<>();
 	private Map<Integer, List<IntervalVar>> cumulDemands 		= new HashMap<>();
 
-	private Map<Integer, List<AssignedTask>> 			assignedTasksByNumzone;
-	private LinkedHashMap<Integer, List<AssignedTask>> 	assignedTasksByBarreId;
+	private Map<Integer, List<AssignedTask>> 			mAssignedTasksByNumzone;
+	private LinkedHashMap<Integer, List<AssignedTask>> 	mAssignedTasksByBarreId;
 	//private LinkedHashMap<Integer, List<AssignedTask>> 	ongoingTasksByBarreId;
 	// AssignedTask des génération précédentes et qu sont en cours de production
 
@@ -167,8 +167,12 @@ public class TecalOrdo {
 
 
 	public LinkedHashMap<Integer, List<AssignedTask>> getAssignedTasksByBarreId() {
-		return assignedTasksByBarreId;
+		
+		
+		
+		return mAssignedTasksByBarreId;
 	}
+	
 
 	public static CpModel model;
 	public static CpSolver solver;
@@ -216,8 +220,8 @@ public class TecalOrdo {
 		mBarresEnCours	=new HashSet<>();
 		mBarresPrioritaires=new LinkedHashSet<>();
 
-		assignedTasksByNumzone = new HashMap<>();
-		assignedTasksByBarreId = new LinkedHashMap<>();
+		mAssignedTasksByNumzone = new HashMap<>();
+		mAssignedTasksByBarreId = new LinkedHashMap<>();
 		//ongoingTasksByBarreId = new LinkedHashMap<>();
 
 		arrayAllJobs=new ArrayList<>();
@@ -303,7 +307,7 @@ public class TecalOrdo {
 	}
 
 	public Map<Integer, List<AssignedTask>> getAssignedJobs() {
-		return assignedTasksByNumzone;
+		return mAssignedTasksByNumzone;
 	}
 
 	public HashMap<Integer, ArrayList<GammeType>> getBarresFutures() {
@@ -446,8 +450,8 @@ public class TecalOrdo {
 		// PARAM MIRACLE
 		solver.getParameters().setMaxTimeInSeconds(mTEMPS_MAX_SOLVEUR);
 
-		assignedTasksByNumzone.clear();
-		assignedTasksByBarreId.clear();
+		mAssignedTasksByNumzone.clear();
+		mAssignedTasksByBarreId.clear();
 
 		CpSolverStatus status = solver.solve(model);
 
@@ -476,16 +480,16 @@ public class TecalOrdo {
 				String output = "";
 				for (int numzone : numzoneArr) {
 
-					if (assignedTasksByNumzone.get(numzone) == null) {
+					if (mAssignedTasksByNumzone.get(numzone) == null) {
 						continue;
 					}
 
 					// Sort by starting time.
-					Collections.sort(assignedTasksByNumzone.get(numzone), new SortTasks());
+					Collections.sort(mAssignedTasksByNumzone.get(numzone), new SortTasks());
 					String solLineTasks = "Zone " + numzone + ": ";
 					String solLine = "           ";
 
-					for (AssignedTask assignedTask : assignedTasksByNumzone.get(numzone)) {
+					for (AssignedTask assignedTask : mAssignedTasksByNumzone.get(numzone)) {
 						String name = "job_" + assignedTask.barreID + "_task_" + assignedTask.taskID;
 						// Add spaces to output to align columns.
 						solLineTasks += String.format("%-15s", name);
@@ -589,12 +593,12 @@ public class TecalOrdo {
 
 
 				AssignedTask assignedTask = new AssignedTask(barre, taskID, task.numzone, debut, (int) (finBDD - debut),(int) derive);
-				assignedTasksByNumzone.computeIfAbsent(task.numzone, (Integer k) -> new ArrayList<>());
-				assignedTasksByNumzone.get(task.numzone).add(assignedTask);
+				mAssignedTasksByNumzone.computeIfAbsent(task.numzone, (Integer k) -> new ArrayList<>());
+				mAssignedTasksByNumzone.get(task.numzone).add(assignedTask);
 
 
-				assignedTasksByBarreId.computeIfAbsent(barre, (Integer k) -> new ArrayList<>());
-				assignedTasksByBarreId.get(barre).add(assignedTask);
+				mAssignedTasksByBarreId.computeIfAbsent(barre, (Integer k) -> new ArrayList<>());
+				mAssignedTasksByBarreId.get(barre).add(assignedTask);
 
 			}
 		}
@@ -997,6 +1001,11 @@ public class TecalOrdo {
 
 	public LinkedHashMap<Integer, ArrayList<GammeType>> getBarreZonesAll() {
 		return mBarresAll;
+	}
+
+	public void removeAssignedTaskByBarreId(int barreid) {
+	
+		mAssignedTasksByBarreId.remove(barreid);
 	}
 	
 }

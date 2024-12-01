@@ -12,3 +12,4 @@ TecalGUI*.exe
 histoSFTP
 deploy.sh
 dependency-reduced-pom.xml
+logs

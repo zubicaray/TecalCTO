@@ -45,6 +45,8 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.tecal.scheduler.CST;
 import org.tecal.scheduler.data.SQL_DATA;
 import org.tecal.scheduler.types.Barre;
@@ -52,9 +54,7 @@ import org.tecal.scheduler.types.Barre;
 
 public class CPO_Panel extends JPanel {
 
-	/**
-	 *
-	 */
+	private static final Logger logger = LogManager.getLogger(CPO_Panel.class);
 	private static final long serialVersionUID = 1L;
 	private JTable mTableGammes;
 	private JTable mTableBarres;
@@ -295,6 +295,10 @@ public class CPO_Panel extends JPanel {
 	    	 mModelGammes = new DefaultTableModel() {
 
 				private static final long serialVersionUID = 1L;
+				public boolean isCellEditable(int row, int col) {					
+						return false; //Renders column 0 uneditable.
+					
+				}
 	     	};
 
 	     	mTableGammes = new JTable(mModelGammes) {
@@ -385,6 +389,8 @@ public class CPO_Panel extends JPanel {
 							int indexDesc = mVitesseCombo.getSelectedIndex();
 
 							boolean prio=(Boolean) mTableBarres.getValueAt(count, 4);
+							if (prio)
+								logger.info("barre: "+nomBarre+" prioritaire !");
 							gammes.put(idbarre,gamme);
 							barres.put(idbarre,new Barre(idbarre,nomBarre,gamme,indexMontee,indexDesc,prio));
 						}

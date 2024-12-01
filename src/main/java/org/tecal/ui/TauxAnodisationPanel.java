@@ -329,7 +329,7 @@ public class TauxAnodisationPanel extends JPanel {
         lineRendererCorrelation.setSeriesPaint(0, Color.ORANGE);
         lineRendererCorrelation.setSeriesStroke(0, new BasicStroke(2.0f));
         plot.setRenderer(4, lineRendererCorrelation);
-        plot.getRenderer(4).setSeriesVisible(0, false); 
+        //plot.getRenderer(4).setSeriesVisible(0, false); 
         
         // Mettre à jour le panel du graphique
         chartPanel.removeAll();
