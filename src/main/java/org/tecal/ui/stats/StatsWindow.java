@@ -1,4 +1,4 @@
-package org.tecal.ui;
+package org.tecal.ui.stats;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;

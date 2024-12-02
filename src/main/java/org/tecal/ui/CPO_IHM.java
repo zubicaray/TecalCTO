@@ -108,6 +108,7 @@ public class CPO_IHM extends JFrame {
 
 
 					CPO_IHM frame = new CPO_IHM();
+					frame.runTest();
 					frame.addWindowListener(new WindowAdapter() {
 			            @Override
 			            public void windowClosing(WindowEvent e) {
@@ -152,7 +153,7 @@ public class CPO_IHM extends JFrame {
 		mBarresSettingsFutures=barres;
 
 		// on garde les jobs en cours des générations précédentes
-		manageOngoingJobs();
+		//manageOngoingJobs();
 		mCPO_PANEL.setModelBarres(mBarresSettingsFutures);
 		if(mBarresSettingsFutures.size()>0) {
 			mTecalOrdo.run(mBarresSettingsFutures,(long)mGanttTecalOR.getTimeBar().getValue());
@@ -178,10 +179,59 @@ public class CPO_IHM extends JFrame {
 	    public void run() {
 	        //System.out.println("Email sent at: " + LocalDateTime.ofInstant(Instant.ofEpochMilli(scheduledExecutionTime()), ZoneId.systemDefault()));
 
-	    	mGanttTecalOR.getTimeBar().setValue(mGanttTecalOR.getTimeBar().getValue()+1);
-
-	    	List<Integer> barreToremove = new ArrayList<>();
 	    	
+
+	    	List<Integer> barreCommencanteToremove = new ArrayList<>();
+	    	List<Integer> barreFinieToremove = new ArrayList<>();
+	    	double current_time=mGanttTecalOR.getTimeBar().getValue();
+	    	mGanttTecalOR.getTimeBar().setValue(current_time+1);
+	    	
+	    	//if(mTecalOrdo.getAssignedTasksByBarreId().size() ==0){ 				return;			}
+
+			ArrayList<Integer> barresCommencantes	=new ArrayList<>();
+
+			
+			for( Entry<Integer, List<AssignedTask>> entry  :mTecalOrdo.getAssignedTasksByBarreId().entrySet()) {
+
+				List<AssignedTask> values=entry.getValue();
+				AssignedTask first=values.get(0);
+				AssignedTask last=values.get(values.size()-1);
+				int barreid=entry.getKey();
+				if(first.end<current_time && last.start>current_time) {
+					//job commencé et non fini
+					barresCommencantes.add(barreid);
+					mCPO_PANEL.removeBarre(barreid);
+					barreCommencanteToremove.add(barreid);
+				}
+
+				if( first.end == current_time+60   ) 	 {
+					CountdownWindow countdownModal = new CountdownWindow(mTecalOrdo.getBarreLabels().get(barreid));
+				    countdownModal.startCountdown();
+				}
+				
+			}
+			for( Entry<Integer, List<AssignedTask>> entry  :mTecalOrdo.getPassedTasksByBarreId().entrySet()) {
+				List<AssignedTask> values=entry.getValue();
+				int barreid=entry.getKey();
+				AssignedTask last=values.get(values.size()-1);
+				if(last.start<current_time) {
+					// job fini
+					mTecalOrdo.removeBarreFinie(barreid);
+					barreFinieToremove.add(barreid);
+				}
+				
+			}
+			
+			logAndRemoveBarreTasks(barreCommencanteToremove,barreFinieToremove);
+			mTecalOrdo.setBarresEnCours(barresCommencantes);
+
+			for(Integer barreId:barresCommencantes) {
+				mBarresSettingsFutures.remove(barreId);
+			}
+			
+			
+	    	
+	    	/*
 	    	//TODO
 	    	// 1 mutualiser avec fct manageOngoingJobs
 	    	// 2 faire un autre tableau pour les assignedTask qui sont déjà passées
@@ -196,19 +246,18 @@ public class CPO_IHM extends JFrame {
 					mCPO_PANEL.removeBarre(barreid);					
 					barreToremove.add(barreid);
 				}
-				if( first.end == current_time+60   ) 	 {
-					CountdownWindow countdownModal = new CountdownWindow(mTecalOrdo.getBarreLabels().get(barreid));
-				    countdownModal.startCountdown();
-				}
+				
 
 			}
+	    	*/
 	    	
-	    	logAndRemoveBarreTasks(barreToremove);
+	    	
+	    	
 	    	
 
 	    }
 
-		private void logAndRemoveBarreTasks(List<Integer> barreToremove) {
+		private void logAndRemoveBarreTasks(List<Integer> barreToremove,List<Integer>  barreFinieToremove) {
 			for ( Integer i : barreToremove) {
 	    		
 	    		List<AssignedTask> listTask=mTecalOrdo.getAssignedTasksByBarreId().get(i);
@@ -231,6 +280,11 @@ public class CPO_IHM extends JFrame {
 	    		//on loggera les temps de chaque zone avant
 	    		mTecalOrdo.removeAssignedTaskByBarreId(i);
 	    	}
+			
+			for ( Integer i : barreFinieToremove) {
+				//on loggera les temps de chaque zone avant
+	    		mTecalOrdo.removePassedTaskByBarreId(i);
+			}
 		}
 	}
 

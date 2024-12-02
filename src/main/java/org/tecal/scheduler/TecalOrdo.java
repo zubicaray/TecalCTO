@@ -37,7 +37,11 @@ import com.google.ortools.sat.IntervalVar;
 import com.google.ortools.sat.LinearExpr;
 import com.opencsv.exceptions.CsvException;
 
-class TempsDeplacement extends HashMap<Integer[], Integer[]> {
+class ArrayCoordsRincagePonts extends ArrayList<CoordsRincage> {
+	private static final long serialVersionUID = 1L;
+}
+
+class ArrayListeZonePonts extends ArrayList<ListeZone> {
 	private static final long serialVersionUID = 1L;
 }
 
@@ -49,23 +53,11 @@ class CoordsRincage extends ArrayList<IntVar[]> {
 	private static final long serialVersionUID = 1L;
 }
 
-class ArrayCoordsRincagePonts extends ArrayList<CoordsRincage> {
-	private static final long serialVersionUID = 1L;
-}
-
-class ZonesIntervalVar extends ArrayList<IntervalVar> {
+class ListeTaskOrdo extends ArrayList<TaskOrdo> {
 	private static final long serialVersionUID = 1L;
 }
 
 class ListeZone extends ArrayList<IntervalVar> {
-	private static final long serialVersionUID = 1L;
-}
-
-class ArrayListeZonePonts extends ArrayList<ListeZone> {
-	private static final long serialVersionUID = 1L;
-}
-
-class ListeTaskOrdo extends ArrayList<TaskOrdo> {
 	private static final long serialVersionUID = 1L;
 }
 
@@ -80,13 +72,11 @@ class SortTasks implements Comparator<AssignedTask> {
 	}
 }
 
-
-
 class Task {
-	int numzone;
+	int derive;
 	int duration;
 	int egouttage;
-	int derive;
+	int numzone;
 
 
 	Task(int duration, int numzone, int egouttage,int derive) {
@@ -121,7 +111,7 @@ public class TecalOrdo {
 
 		for(Integer barreId:nouvellesBarresEnCours) {
 			if(!mJobsEnCours.containsKey(barreId))
-				mJobsEnCours.put(barreId, mJobsFuturs.get(barreId).makeFixedJob(mAssignedTasksByBarreId.get(barreId)));
+				mJobsEnCours.put(barreId, mJobsFuturs.get(barreId).makeFixedJob(mPassedTasksByBarreId.get(barreId)));
 			else {
 				mJobsEnCours.get(barreId).clear();
 			}
@@ -156,7 +146,7 @@ public class TecalOrdo {
 
 	private Map<Integer, List<AssignedTask>> 			mAssignedTasksByNumzone;
 	private LinkedHashMap<Integer, List<AssignedTask>> 	mAssignedTasksByBarreId;
-	//private LinkedHashMap<Integer, List<AssignedTask>> 	ongoingTasksByBarreId;
+	private LinkedHashMap<Integer, List<AssignedTask>> 	mPassedTasksByBarreId;
 	// AssignedTask des génération précédentes et qu sont en cours de production
 
 	private ArrayList<JobType> arrayAllJobs;
@@ -166,11 +156,11 @@ public class TecalOrdo {
 	}
 
 
-	public LinkedHashMap<Integer, List<AssignedTask>> getAssignedTasksByBarreId() {
-		
-		
-		
+	public LinkedHashMap<Integer, List<AssignedTask>> getAssignedTasksByBarreId() {		
 		return mAssignedTasksByBarreId;
+	}
+	public LinkedHashMap<Integer, List<AssignedTask>> getPassedTasksByBarreId() {		
+		return mPassedTasksByBarreId;
 	}
 	
 
@@ -222,7 +212,7 @@ public class TecalOrdo {
 
 		mAssignedTasksByNumzone = new HashMap<>();
 		mAssignedTasksByBarreId = new LinkedHashMap<>();
-		//ongoingTasksByBarreId = new LinkedHashMap<>();
+		mPassedTasksByBarreId = new LinkedHashMap<>();
 
 		arrayAllJobs=new ArrayList<>();
 
@@ -452,6 +442,7 @@ public class TecalOrdo {
 
 		mAssignedTasksByNumzone.clear();
 		mAssignedTasksByBarreId.clear();
+		//mPassedTasksByBarreId.clear();
 
 		CpSolverStatus status = solver.solve(model);
 
@@ -597,8 +588,12 @@ public class TecalOrdo {
 				mAssignedTasksByNumzone.get(task.numzone).add(assignedTask);
 
 
-				mAssignedTasksByBarreId.computeIfAbsent(barre, (Integer k) -> new ArrayList<>());
-				mAssignedTasksByBarreId.get(barre).add(assignedTask);
+				// on ajoute pas si la barre est en cours
+				if(! mPassedTasksByBarreId.containsKey(barre)) {
+					mAssignedTasksByBarreId.computeIfAbsent(barre, (Integer k) -> new ArrayList<>());
+					mAssignedTasksByBarreId.get(barre).add(assignedTask);
+				}
+				
 
 			}
 		}
@@ -1005,7 +1000,34 @@ public class TecalOrdo {
 
 	public void removeAssignedTaskByBarreId(int barreid) {
 	
+		mPassedTasksByBarreId.put(barreid,mAssignedTasksByBarreId.get(barreid));
 		mAssignedTasksByBarreId.remove(barreid);
 	}
 	
+	public void removePassedTaskByBarreId(int barreid) {
+		
+		mPassedTasksByBarreId.remove(barreid);
+	}
+	public LinkedHashMap<Integer, List<AssignedTask>> getAllTaskByBarreId() {
+		
+		
+		LinkedHashMap<Integer, List<AssignedTask>> ret =new LinkedHashMap<>();
+		
+		ret.putAll(mPassedTasksByBarreId);
+		ret.putAll(mAssignedTasksByBarreId);
+		
+		return ret;
+		
+	}
+	
+}
+
+
+
+class TempsDeplacement extends HashMap<Integer[], Integer[]> {
+	private static final long serialVersionUID = 1L;
+}
+
+class ZonesIntervalVar extends ArrayList<IntervalVar> {
+	private static final long serialVersionUID = 1L;
 }

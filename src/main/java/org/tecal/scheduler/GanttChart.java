@@ -188,9 +188,9 @@ public class GanttChart extends JFrame {
 
 		mLowerBound=0;
 
-		LinkedHashMap<Integer, ArrayList<GammeType> > barreZones	= inTecalOrdo.getBarreZonesAll();
-		LinkedHashMap<Integer,String> barreLabels					= inTecalOrdo.getBarreLabels();
-		Map<Integer, List<AssignedTask>> mAssignedTasksByNumzone		= inTecalOrdo.getAssignedJobs();
+		LinkedHashMap<Integer, ArrayList<GammeType> > 	barreZones	= inTecalOrdo.getBarreZonesAll();
+		LinkedHashMap<Integer,String> 					barreLabels	= inTecalOrdo.getBarreLabels();
+		Map<Integer, List<AssignedTask>> mAssignedTasksByNumzone	= inTecalOrdo.getAssignedJobs();
 
 		indexToBarreIndex.clear();
 		barreToIndex.clear();

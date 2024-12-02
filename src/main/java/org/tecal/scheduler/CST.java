@@ -38,7 +38,9 @@ public class CST {
 	public final static String testPbNoSolu[] ={"000794","000794","000794"};
 	
 	
-	public final static String gammesTest[] ={"000697"};
+	public final static String gammesTest[] ={
+			"000034","000003","000774","000774","000818","000117",
+			"000774","000601","000117","000601","000818","000811"};
 	
 
 	
@@ -100,7 +102,7 @@ public class CST {
 	
 	
 	//------------------------------------------------------------
-	public final static int TEMPS_MAX_SOLVEUR		=40;
+	public final static int TEMPS_MAX_SOLVEUR		=400;
 	public final static int TEMPS_MAX_JOURNEE		=86400;
 	public final static int CAPACITE_ANODISATION 	=3;
 	public final static int ANODISATION_NUMZONE 	=15;

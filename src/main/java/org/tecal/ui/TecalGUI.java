@@ -16,7 +16,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.PreparedStatement;
@@ -71,6 +70,9 @@ import org.tecal.scheduler.CST;
 import org.tecal.scheduler.GanttChart;
 import org.tecal.scheduler.data.SQL_DATA;
 import org.tecal.scheduler.types.Barre;
+import org.tecal.ui.stats.StatsMensuel;
+import org.tecal.ui.stats.StatsWindow;
+import org.tecal.ui.stats.TauxAnodisationPanel;
 
 import com.formdev.flatlaf.FlatDarkLaf;
 
@@ -293,6 +295,9 @@ public class TecalGUI {
 		buttonsDate.add(btnRunVisuProd);
 		JButton btnGanttCpo = new JButton("Gantt CPO");
 		buttonsDate.add(btnGanttCpo);
+		
+		JButton btnGanttCpoLogs = new JButton("CPO logs");
+		buttonsDate.add(btnGanttCpoLogs);
 
 		panelVisuProd.add(buttonsDate, BorderLayout.PAGE_START);
 
@@ -340,6 +345,30 @@ public class TecalGUI {
 
 			}
 		});
+		
+		btnGanttCpoLogs.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+
+				java.util.Date d = (java.util.Date) datePicker.getModel().getValue();
+				if(d == null ){
+					JOptionPane.showMessageDialog(frmTecalOrdonnanceur, "Pas de date choisie !", "LOGS CPO",
+							JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+
+				CPO_LOGS_GANT panel = new CPO_LOGS_GANT(d);
+
+				// Créer la fenêtre
+				JFrame frame = new JFrame("Diagramme de Gantt");
+				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+				frame.setSize(800, 600);
+				frame.add(panel);
+				frame.setVisible(true);
+
+			}
+		});
+		
 
 		btnGanttCpo.addActionListener(new ActionListener() {
 			@Override

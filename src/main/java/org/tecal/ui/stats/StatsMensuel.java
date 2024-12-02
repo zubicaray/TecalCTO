@@ -1,4 +1,4 @@
-package org.tecal.ui;
+package org.tecal.ui.stats;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;

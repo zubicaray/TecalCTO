@@ -1,28 +1,11 @@
 package org.tecal.ui;
 
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartPanel;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.axis.SymbolAxis;
-import org.jfree.chart.axis.ValueAxis;
-import org.jfree.chart.plot.XYPlot;
-import org.jfree.chart.renderer.xy.StandardXYBarPainter;
-import org.jfree.chart.renderer.xy.XYBarRenderer;
-import org.jfree.data.xy.IntervalXYDataset;
-import org.jfree.data.xy.XYDataset;
-import org.jfree.data.xy.XYIntervalSeries;
-import org.jfree.data.xy.XYIntervalSeriesCollection;
-import org.jfree.chart.labels.StandardXYToolTipGenerator;
-
-
-import org.tecal.scheduler.data.SQL_DATA;
-
-import com.formdev.flatlaf.json.ParseException;
-
-import javax.swing.*;
-import java.awt.*;
-import java.sql.*;
+import java.awt.BorderLayout;
+import java.awt.Font;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Time;
 import java.text.FieldPosition;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
@@ -30,13 +13,38 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.WindowConstants;
+
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartMouseEvent;
+import org.jfree.chart.ChartMouseListener;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.SymbolAxis;
+import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.entity.ChartEntity;
+import org.jfree.chart.entity.LegendItemEntity;
+import org.jfree.chart.labels.StandardXYToolTipGenerator;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.StandardXYBarPainter;
+import org.jfree.chart.renderer.xy.XYBarRenderer;
+import org.jfree.data.xy.IntervalXYDataset;
+import org.jfree.data.xy.XYDataset;
+import org.jfree.data.xy.XYIntervalSeries;
+import org.jfree.data.xy.XYIntervalSeriesCollection;
+import org.tecal.scheduler.data.SQL_DATA;
+
+import com.formdev.flatlaf.json.ParseException;
 
 @SuppressWarnings("serial")
 public class CPO_LOGS_GANT extends JPanel {
     private final Date dDate;
+    private Comparable<?> focusedSeriesKey = null;
 
     public CPO_LOGS_GANT(Date dDate) {
         this.dDate = dDate;
@@ -68,9 +76,9 @@ public class CPO_LOGS_GANT extends JPanel {
 
         return zoneLabels;
     }
-    
-private void initialize() {
-	
+
+    private void initialize() {
+
 	Map<Integer, String> zoneLabels=loadZoneLabels();
     // Créer le dataset
     IntervalXYDataset dataset = getDatasetFromDatabase();
@@ -95,9 +103,10 @@ private void initialize() {
     // Configuration du renderer
     renderer.setUseYInterval(true);
     renderer.setShadowVisible(false);
+
     //renderer.setBaseToolTipGenerator(new StandardXYToolTipGenerator());
     renderer.setBarPainter(new StandardXYBarPainter());
-    
+
     renderer.setBaseToolTipGenerator(new StandardXYToolTipGenerator() {
         private static final long serialVersionUID = 1L;
 
@@ -123,8 +132,8 @@ private void initialize() {
 
     // Configuration de l'axe des X
     ValueAxis domainAxis = plot.getDomainAxis();
-    domainAxis.setLabel("Temps (HH:mm:ss)");
-    domainAxis.setRange(0, 24 * 3600); // Plage horaire en secondes
+    domainAxis.setLabel("HH:mm:ss");
+    //domainAxis.setRange(0, 24 * 3600); // Plage horaire en secondes
 
     // Appliquer un format personnalisé à l'axe des X
     NumberAxis numberAxis = (NumberAxis) domainAxis;
@@ -157,9 +166,9 @@ private void initialize() {
     for (Map.Entry<Integer, String> entry : zoneLabels.entrySet()) {
         labels[entry.getKey()] = entry.getValue();
     }
-    
+
     labels[0] = "";
-    
+
     SymbolAxis rangeAxis = new SymbolAxis("Zones", labels);
     rangeAxis.setRange(0, zoneLabels.size());
     rangeAxis.setTickLabelFont(new Font("SansSerif", Font.PLAIN, 10));
@@ -170,11 +179,58 @@ private void initialize() {
     ChartPanel chartPanel = new ChartPanel(chart);
     chartPanel.setMouseWheelEnabled(true);
 
+	 // Ajouter un écouteur de souris au panneau
+	 chartPanel.addChartMouseListener(new ChartMouseListener() {
+	     @Override
+	     public void chartMouseClicked(ChartMouseEvent event) {
+	         ChartEntity entity = event.getEntity();
+	         if (entity instanceof LegendItemEntity) {
+	             LegendItemEntity legendItem = (LegendItemEntity) entity;
+
+	             // Récupérer la clé de la série associée à l'élément de légende
+	             Comparable<?> clickedSeriesKey = legendItem.getSeriesKey();
+
+	             XYPlot plot = (XYPlot) chart.getPlot();
+	             boolean isRefocusing = clickedSeriesKey.equals(focusedSeriesKey);
+
+	             if (isRefocusing) {
+	                 // Si on clique à nouveau sur la même légende, tout réafficher
+	                 for (int i = 0; i < plot.getDatasetCount(); i++) {
+	                     XYDataset dataset = plot.getDataset(i);
+	                     for (int seriesIndex = 0; seriesIndex < dataset.getSeriesCount(); seriesIndex++) {
+	                         plot.getRenderer(i).setSeriesVisible(seriesIndex, true);
+	                     }
+	                 }
+	                 focusedSeriesKey = null; // Réinitialiser l'état de focus
+	             } else {
+	                 // Sinon, afficher uniquement la série cliquée
+	                 for (int i = 0; i < plot.getDatasetCount(); i++) {
+	                     XYDataset dataset = plot.getDataset(i);
+	                     for (int seriesIndex = 0; seriesIndex < dataset.getSeriesCount(); seriesIndex++) {
+	                         boolean isTargetSeries = dataset.getSeriesKey(seriesIndex).equals(clickedSeriesKey);
+	                         plot.getRenderer(i).setSeriesVisible(seriesIndex, isTargetSeries);
+	                     }
+	                 }
+	                 focusedSeriesKey = clickedSeriesKey; // Mettre à jour la série actuellement en focus
+	             }
+	         }
+	     }
+		@Override
+		public void chartMouseMoved(ChartMouseEvent event) {
+			// TODO Auto-generated method stub
+
+		}
+
+
+
+
+	 });
+
     this.setLayout(new BorderLayout());
     this.add(chartPanel, BorderLayout.CENTER);
 }
 
-private String formatTime(Time time) {
+    private String formatTime(Time time) {
     if (time == null) {
         return "N/A"; // Si l'heure est nulle
     }
@@ -183,12 +239,13 @@ private String formatTime(Time time) {
     int seconds = time.getSeconds();
     return String.format("%02d:%02d:%02d", hours, minutes, seconds);
 }
+
     private XYIntervalSeriesCollection getDatasetFromDatabase() {
         XYIntervalSeriesCollection dataset = new XYIntervalSeriesCollection();
 
-        
-   
-        
+
+
+
         try (PreparedStatement stmt = SQL_DATA.getInstance().getPreparedStatement("""
                 SELECT Z.NumZone, idbarre,Z.CodeZone, label, entree, sortie
                 FROM Zones Z
@@ -201,7 +258,7 @@ private String formatTime(Time time) {
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
                 int numZone = rs.getInt("NumZone");
-                int idbarre = rs.getInt("idbarre");
+               // int idbarre = rs.getInt("idbarre");
                 String label = rs.getString("label");
                 Time entree = rs.getTime("entree");
                 Time sortie = rs.getTime("sortie");
@@ -239,15 +296,15 @@ private String formatTime(Time time) {
 
     public static void main(String[] args) {
         // Créer un LocalDate
-        LocalDate localDate = LocalDate.of(2024, 11, 30);
-        
+        LocalDate localDate = LocalDate.of(2024, 12, 1);
+
         // Convertir en java.util.Date si nécessaire
         Date today = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
         CPO_LOGS_GANT panel = new CPO_LOGS_GANT(today);
 
         // Créer la fenêtre
         JFrame frame = new JFrame("Diagramme de Gantt");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setSize(800, 600);
         frame.add(panel);
         frame.setVisible(true);

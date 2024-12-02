@@ -1,4 +1,4 @@
-package org.tecal.ui;
+package org.tecal.ui.stats;
 
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
