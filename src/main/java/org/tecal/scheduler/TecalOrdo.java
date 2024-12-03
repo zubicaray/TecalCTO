@@ -37,11 +37,7 @@ import com.google.ortools.sat.IntervalVar;
 import com.google.ortools.sat.LinearExpr;
 import com.opencsv.exceptions.CsvException;
 
-class ArrayCoordsRincagePonts extends ArrayList<CoordsRincage> {
-	private static final long serialVersionUID = 1L;
-}
-
-class ArrayListeZonePonts extends ArrayList<ListeZone> {
+class TempsDeplacement extends HashMap<Integer[], Integer[]> {
 	private static final long serialVersionUID = 1L;
 }
 
@@ -53,11 +49,23 @@ class CoordsRincage extends ArrayList<IntVar[]> {
 	private static final long serialVersionUID = 1L;
 }
 
-class ListeTaskOrdo extends ArrayList<TaskOrdo> {
+class ArrayCoordsRincagePonts extends ArrayList<CoordsRincage> {
+	private static final long serialVersionUID = 1L;
+}
+
+class ZonesIntervalVar extends ArrayList<IntervalVar> {
 	private static final long serialVersionUID = 1L;
 }
 
 class ListeZone extends ArrayList<IntervalVar> {
+	private static final long serialVersionUID = 1L;
+}
+
+class ArrayListeZonePonts extends ArrayList<ListeZone> {
+	private static final long serialVersionUID = 1L;
+}
+
+class ListeTaskOrdo extends ArrayList<TaskOrdo> {
 	private static final long serialVersionUID = 1L;
 }
 
@@ -72,11 +80,13 @@ class SortTasks implements Comparator<AssignedTask> {
 	}
 }
 
+
+
 class Task {
-	int derive;
+	int numzone;
 	int duration;
 	int egouttage;
-	int numzone;
+	int derive;
 
 
 	Task(int duration, int numzone, int egouttage,int derive) {
@@ -97,8 +107,9 @@ public class TecalOrdo {
 	private HashMap<String, ArrayList<GammeType>> 			mGammes;
 	// geston des barres
 	private HashMap<Integer, ArrayList<GammeType>>			mBarreFutures;	
-	private LinkedHashMap<Integer, Barre>					mBarresSettings;
+
 	private LinkedHashMap<Integer, ArrayList<GammeType>>	mBarresAll;
+	private LinkedHashMap<Integer, Barre>					mBarresSettings;
 	private LinkedHashMap<Integer, String> 					mBarreLabels;	
 	private HashSet<Integer> 								mBarresEnCours;
 	private LinkedHashSet<Integer> 							mBarresPrioritaires;
@@ -106,6 +117,12 @@ public class TecalOrdo {
 	
 	public HashSet<Integer> getBarresEnCours() {		return mBarresEnCours;	}
 
+	public void adBarreEnCours(int barre) {
+		
+		this.mBarresEnCours.add(barre);
+		
+	}
+	
 	public void setBarresEnCours(ArrayList<Integer> nouvellesBarresEnCours) {
 		this.mBarresEnCours.addAll(nouvellesBarresEnCours) ;
 
@@ -116,8 +133,22 @@ public class TecalOrdo {
 				mJobsEnCours.get(barreId).clear();
 			}
 		}
+		
 	}
 
+	public void  addFixedJobsEnCours(int barreId) {
+		adBarreEnCours(barreId);
+		mJobsEnCours.put(barreId, mJobsFuturs.get(barreId).makeFixedJob(mAssignedTasksByBarreId.get(barreId)));
+	}
+	public void  updateFixedJobsEnCours() {
+		
+		for(int barreId:mPassedTasksByBarreId.keySet()) {
+			JobTypeFixed j=mJobsEnCours.get(barreId).makeFixedJob(mPassedTasksByBarreId.get(barreId));
+			mJobsEnCours.remove(barreId);
+			mJobsEnCours.put(barreId,j);
+		}
+		
+	}
 	private boolean hasSolution;
 
 	private CSV_DATA csv;
@@ -156,11 +187,11 @@ public class TecalOrdo {
 	}
 
 
-	public LinkedHashMap<Integer, List<AssignedTask>> getAssignedTasksByBarreId() {		
+	public LinkedHashMap<Integer, List<AssignedTask>> getAssignedTasksByBarreId() {
+		
+		
+		
 		return mAssignedTasksByBarreId;
-	}
-	public LinkedHashMap<Integer, List<AssignedTask>> getPassedTasksByBarreId() {		
-		return mPassedTasksByBarreId;
 	}
 	
 
@@ -175,16 +206,6 @@ public class TecalOrdo {
 		return mOutPutMsg;
 	}
 
-	public void printInfo() {
-		System.out.println("mJobsEnCours:"+mJobsEnCours.keySet());
-		System.out.println("mJobsFuturs:"+mJobsFuturs.keySet());
-		System.out.println("mBarreFutures"+mBarreFutures.keySet());
-		System.out.println("mBarresPrioritaires"+mBarresPrioritaires);
-		System.out.println("mBarresEnCours"+mBarresEnCours);
-		System.out.println("mBarresAll"+mBarresAll.keySet());
-		
-		System.out.println("---------------------------------------------------------------------------");
-	}
 	private int mSource;
 
 	@SuppressWarnings("unused")
@@ -245,14 +266,9 @@ public class TecalOrdo {
 		mBarresEnCours.remove(idbarre);
 		mBarreLabels.remove(idbarre);
 		mBarresAll.remove(idbarre);
+		mPassedTasksByBarreId.remove(idbarre);
 	}
-	public void removeFromBarresFutures(int idbarre) {
-		
-		mJobsFuturs.remove(idbarre);
-		mBarreFutures.remove(idbarre);
-		
-	}
-	
+
 	public void setParams(int[] inParams) {
 
 		mTEMPS_ZONE_OVERLAP_MIN = inParams[0];
@@ -323,6 +339,7 @@ public class TecalOrdo {
 	public void setBarres(final LinkedHashMap<Integer, Barre> inBarresSettingsFutures) {
 
 		// mBarreLabels=inBarres;
+		printBarres();
 		mBarreFutures.clear();
 		mBarresSettings=inBarresSettingsFutures;
 		mBarresPrioritaires.clear();
@@ -359,8 +376,15 @@ public class TecalOrdo {
 			mBarresAll.remove(barre);
 		}
 		
-		
+		printBarres();
 
+	}
+
+	private void printBarres() {
+		System.out.println("mBarreFutures="+mBarreFutures.keySet());
+		System.out.println("mBarreLabels="+mBarreLabels);
+		System.out.println("mBarresEnCours="+mBarresEnCours);
+		System.out.println("mBarresAll="+mBarresAll.keySet());
 	}
 
 	public LinkedHashMap<Integer, Barre> runTest() {
@@ -386,8 +410,10 @@ public class TecalOrdo {
 	}
 
 	private void execute() {
+		
+		printInfos();
+		
 		model = new CpModel();
-		printInfo();
 		prepareZones();
 		// --------------------------------------------------------------------------------------------
 		// CONSTRAINTES SUR CHAQUE JOB
@@ -459,12 +485,9 @@ public class TecalOrdo {
 
 		mAssignedTasksByNumzone.clear();
 		mAssignedTasksByBarreId.clear();
-		//mPassedTasksByBarreId.clear();
 
 		CpSolverStatus status = solver.solve(model);
-		
-		printInfo();
-
+		printInfos();
 		hasSolution = false;
 		mOutPutMsg.append("-----------------------------------------------------------------");
 		mOutPutMsg.append(System.getProperty("line.separator"));
@@ -541,6 +564,11 @@ public class TecalOrdo {
 		mOutPutMsg.append(String.format("  temps %f s%n", solver.wallTime()));
 	}
 
+	private void printInfos() {
+		System.out.println("mJobsEnCours="+mJobsEnCours.keySet());
+		System.out.println("mJobsFutures="+mJobsFuturs.keySet());
+	}
+
 	private void priorisationBarres(HashMap<Integer, IntVar> endByBarreIdNonPrio,
 			HashMap<Integer, IntVar> endByBarreIdPrio) {
 		for( IntVar prio:endByBarreIdPrio.values()) {
@@ -606,13 +634,11 @@ public class TecalOrdo {
 				mAssignedTasksByNumzone.computeIfAbsent(task.numzone, (Integer k) -> new ArrayList<>());
 				mAssignedTasksByNumzone.get(task.numzone).add(assignedTask);
 
-
-				// on ajoute pas si la barre est en cours
-				if(! mPassedTasksByBarreId.containsKey(barre)) {
+				if(!mPassedTasksByBarreId.containsKey(barre)){
 					mAssignedTasksByBarreId.computeIfAbsent(barre, (Integer k) -> new ArrayList<>());
 					mAssignedTasksByBarreId.get(barre).add(assignedTask);
 				}
-				
+			
 
 			}
 		}
@@ -681,6 +707,8 @@ public class TecalOrdo {
 		arrayAllJobs.addAll(d);
 
 		mAllJobs.clear();
+		
+		updateFixedJobsEnCours();
 		mAllJobs.putAll(mJobsEnCours);
 		mAllJobs.putAll(mJobsFuturs);
 
@@ -723,7 +751,6 @@ public class TecalOrdo {
 		  horizon*=2;
 		else  horizon/=2; 	
 		*/
-		horizon*=2;
 		horizon=Math.min(horizon,CST.TEMPS_MAX_JOURNEE);
 
 	}
@@ -1020,34 +1047,13 @@ public class TecalOrdo {
 
 	public void removeAssignedTaskByBarreId(int barreid) {
 	
+		
 		mPassedTasksByBarreId.put(barreid,mAssignedTasksByBarreId.get(barreid));
 		mAssignedTasksByBarreId.remove(barreid);
 	}
-	
-	public void removePassedTaskByBarreId(int barreid) {
-		
-		mPassedTasksByBarreId.remove(barreid);
-	}
-	public LinkedHashMap<Integer, List<AssignedTask>> getAllTaskByBarreId() {
-		
-		
-		LinkedHashMap<Integer, List<AssignedTask>> ret =new LinkedHashMap<>();
-		
-		ret.putAll(mPassedTasksByBarreId);
-		ret.putAll(mAssignedTasksByBarreId);
-		
-		return ret;
-		
+
+	public LinkedHashMap<Integer, List<AssignedTask>> getPassedTasksByBarreId() {
+		return mPassedTasksByBarreId;
 	}
 	
-}
-
-
-
-class TempsDeplacement extends HashMap<Integer[], Integer[]> {
-	private static final long serialVersionUID = 1L;
-}
-
-class ZonesIntervalVar extends ArrayList<IntervalVar> {
-	private static final long serialVersionUID = 1L;
 }
