@@ -102,7 +102,7 @@ public class CST {
 	
 	
 	//------------------------------------------------------------
-	public final static int TEMPS_MAX_SOLVEUR		=400;
+	public final static int TEMPS_MAX_SOLVEUR		=40;
 	public final static int TEMPS_MAX_JOURNEE		=86400;
 	public final static int CAPACITE_ANODISATION 	=3;
 	public final static int ANODISATION_NUMZONE 	=15;

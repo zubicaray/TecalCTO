@@ -12,6 +12,7 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.net.InetAddress;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
@@ -65,115 +66,7 @@ public class CPO_IHM extends JFrame {
 	private DefaultTableModel mModelDerives;
 	private JTable mTableDerives;
 	
-	private timerGantt mTimer;
-	private TecalOrdo mTecalOrdo;
-
-
-	private LinkedHashMap<Integer,Barre> mBarresSettingsFutures;
-
-	public LinkedHashMap<Integer,Barre> getBarres() {
-		return mBarresSettingsFutures;
-	}
-	/*
-	public void setBarres(LinkedHashMap<Integer,Barre> inBarresSettingsFutures) {
-		this.mBarresSettingsFutures = inBarresSettingsFutures;
-	}
-	*/
-	public TecalOrdo getTecalOrdo() {
-		return mTecalOrdo;
-	}
-	public void setTecalOrdo(TecalOrdo mTecalOrdo) {
-		this.mTecalOrdo = mTecalOrdo;
-	}
-
-	private CPO_Panel mCPO_PANEL;
-	private JButton btnForeButton;
-	private JButton btnBackButton;
-	private JButton btnStartButton;
-
-	public CPO_Panel getCpoPanel() {
-		return mCPO_PANEL;
-	}
-
-
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				try {
-
-
-
-					CPO_IHM frame = new CPO_IHM();
-					frame.runTest();
-					frame.addWindowListener(new WindowAdapter() {
-			            @Override
-			            public void windowClosing(WindowEvent e) {
-			                int response = JOptionPane.showConfirmDialog(
-			                        frame,
-			                        "Voulez-vous vraiment quitter ?",
-			                        "Confirmation",
-			                        JOptionPane.YES_NO_OPTION,
-			                        JOptionPane.QUESTION_MESSAGE
-			                );
-
-			                if (response == JOptionPane.YES_OPTION) {
-			                    frame.dispose(); // Ferme la fenêtre
-			                }
-			            }
-			        });
-			
-
-					frame.setTitle("Tecal Ordonnanceur");
-					if(System.getenv("TEST_CPO") != null && System.getenv("TEST_CPO").equals("1")) {
-						frame.runTest();
-					}
-					frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
-
-	public void runTest () {
-		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-		mBarresSettingsFutures=mTecalOrdo.runTest();
-		mCPO_PANEL.setModelBarres(mBarresSettingsFutures);
-		execute();
-		setCursor(Cursor.getDefaultCursor());
-	}
-
-	public void run (LinkedHashMap<Integer,Barre> barres) {
-
-		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-		mBarresSettingsFutures=barres;
-
-		// on garde les jobs en cours des générations précédentes
-		//manageOngoingJobs();
-		mCPO_PANEL.setModelBarres(mBarresSettingsFutures);
-		if(mBarresSettingsFutures.size()>0) {
-			mTecalOrdo.run(mBarresSettingsFutures,(long)mGanttTecalOR.getTimeBar().getValue());
-		}
-		else {
-			mTecalOrdo.setHasSolution(true);
-		}
-
-
-		execute();
-
-		if(mTecalOrdo.hasSolution()) {
-			mTabbedPane.setSelectedIndex(1);
-			//mCPO_PANEL.getModelBarres().setRowCount(0);
-		}
-
-		setCursor(Cursor.getDefaultCursor());
-
-	}
-
+	
 	public class timerGantt extends TimerTask {
 	    @Override
 	    public void run() {
@@ -227,10 +120,11 @@ public class CPO_IHM extends JFrame {
 
 			for(Integer barreId:barresCommencantes) {
 				mBarresSettingsFutures.remove(barreId);
+				mTecalOrdo.removeFromBarresFutures(barreId);
 			}
 			
 			
-	    	
+			//mTecalOrdo.printInfo();
 	    	/*
 	    	//TODO
 	    	// 1 mutualiser avec fct manageOngoingJobs
@@ -288,40 +182,123 @@ public class CPO_IHM extends JFrame {
 		}
 	}
 
-	private void manageOngoingJobs() {
+	private timerGantt mTimer;
+	private TecalOrdo mTecalOrdo;
 
 
-		if(mTecalOrdo.getAssignedTasksByBarreId().size() ==0){
-			return;
-		}
+	private LinkedHashMap<Integer,Barre> mBarresSettingsFutures;
 
-		ArrayList<Integer> barresCommencantes	=new ArrayList<>();
-
-		double current_time=mGanttTecalOR.getTimeBar().getValue();
-		for( Entry<Integer, List<AssignedTask>> entry  :mTecalOrdo.getAssignedTasksByBarreId().entrySet()) {
-
-			List<AssignedTask> values=entry.getValue();
-			AssignedTask first=values.get(0);
-			AssignedTask last=values.get(values.size()-1);
-			int barreid=entry.getKey();
-			if(first.end<current_time && last.start>current_time) {
-				//job commencé et non fini
-				barresCommencantes.add(barreid);
-			}
-
-			if(last.start<current_time) {
-				// job fini
-				mTecalOrdo.removeBarreFinie(barreid);
-			}
-		}
-
-		mTecalOrdo.setBarresEnCours(barresCommencantes);
-
-		for(Integer barreId:barresCommencantes) {
-			mBarresSettingsFutures.remove(barreId);
-		}
+	public LinkedHashMap<Integer,Barre> getBarres() {
+		return mBarresSettingsFutures;
+	}
+	/*
+	public void setBarres(LinkedHashMap<Integer,Barre> inBarresSettingsFutures) {
+		this.mBarresSettingsFutures = inBarresSettingsFutures;
+	}
+	*/
+	public TecalOrdo getTecalOrdo() {
+		return mTecalOrdo;
+	}
+	public void setTecalOrdo(TecalOrdo mTecalOrdo) {
+		this.mTecalOrdo = mTecalOrdo;
 	}
 
+	private CPO_Panel mCPO_PANEL;
+	private JButton btnForeButton;
+	private JButton btnBackButton;
+	private JButton btnStartButton;
+
+	public CPO_Panel getCpoPanel() {
+		return mCPO_PANEL;
+	}
+
+
+	/**
+	 * Launch the application.
+	 */
+	public static void main(String[] args) {
+		EventQueue.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				try {
+
+
+
+					CPO_IHM frame = new CPO_IHM();
+					    
+					// Récupérer le nom de l'hôte
+					String hostname = InetAddress.getLocalHost().getHostName();
+					
+					
+					//if(hostname.equals("zubi-Latitude-5300"))
+						//frame.runTest();
+					
+					frame.addWindowListener(new WindowAdapter() {
+			            @Override
+			            public void windowClosing(WindowEvent e) {
+			                int response = JOptionPane.showConfirmDialog(
+			                        frame,
+			                        "Voulez-vous vraiment quitter ?",
+			                        "Confirmation",
+			                        JOptionPane.YES_NO_OPTION,
+			                        JOptionPane.QUESTION_MESSAGE
+			                );
+
+			                if (response == JOptionPane.YES_OPTION) {
+			                    frame.dispose(); // Ferme la fenêtre
+			                }
+			            }
+			        });
+			
+
+					frame.setTitle("Tecal Ordonnanceur");
+					if(System.getenv("TEST_CPO") != null && System.getenv("TEST_CPO").equals("1")) {
+						//frame.runTest();
+					}
+					frame.setVisible(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+
+	public void runTest () {
+		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		mBarresSettingsFutures=mTecalOrdo.runTest();
+		mCPO_PANEL.setModelBarres(mBarresSettingsFutures);
+		execute();
+		setCursor(Cursor.getDefaultCursor());
+	}
+
+	public void run (LinkedHashMap<Integer,Barre> barres) {
+
+		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		mBarresSettingsFutures=barres;
+
+		// on garde les jobs en cours des générations précédentes
+		//manageOngoingJobs();
+		mCPO_PANEL.setModelBarres(mBarresSettingsFutures);
+		if(mBarresSettingsFutures.size()>0) {
+			mTecalOrdo.run(mBarresSettingsFutures,(long)mGanttTecalOR.getTimeBar().getValue());
+		}
+		else {
+			mTecalOrdo.setHasSolution(true);
+		}
+
+
+		execute();
+
+		if(mTecalOrdo.hasSolution()) {
+			mTabbedPane.setSelectedIndex(1);
+			//mCPO_PANEL.getModelBarres().setRowCount(0);
+		}
+
+		setCursor(Cursor.getDefaultCursor());
+
+	}
+
+	
 	private void execute() {
 
 		mGanttTecalOR.model_diag(mTecalOrdo);

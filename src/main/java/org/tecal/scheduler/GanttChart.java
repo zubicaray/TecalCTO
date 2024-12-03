@@ -562,6 +562,7 @@ public class GanttChart extends JFrame {
 		 }
 		 XYBarRenderer renderer = new XYBarRenderer();
 		 renderer.setUseYInterval(true);
+		
 		 renderer.setShadowXOffset(0);
          renderer.setShadowYOffset(0);
          renderer.setBaseToolTipGenerator(new StandardXYToolTipGenerator());

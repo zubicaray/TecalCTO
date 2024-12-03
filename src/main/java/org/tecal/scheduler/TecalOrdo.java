@@ -175,6 +175,16 @@ public class TecalOrdo {
 		return mOutPutMsg;
 	}
 
+	public void printInfo() {
+		System.out.println("mJobsEnCours:"+mJobsEnCours.keySet());
+		System.out.println("mJobsFuturs:"+mJobsFuturs.keySet());
+		System.out.println("mBarreFutures"+mBarreFutures.keySet());
+		System.out.println("mBarresPrioritaires"+mBarresPrioritaires);
+		System.out.println("mBarresEnCours"+mBarresEnCours);
+		System.out.println("mBarresAll"+mBarresAll.keySet());
+		
+		System.out.println("---------------------------------------------------------------------------");
+	}
 	private int mSource;
 
 	@SuppressWarnings("unused")
@@ -236,7 +246,13 @@ public class TecalOrdo {
 		mBarreLabels.remove(idbarre);
 		mBarresAll.remove(idbarre);
 	}
-
+	public void removeFromBarresFutures(int idbarre) {
+		
+		mJobsFuturs.remove(idbarre);
+		mBarreFutures.remove(idbarre);
+		
+	}
+	
 	public void setParams(int[] inParams) {
 
 		mTEMPS_ZONE_OVERLAP_MIN = inParams[0];
@@ -371,6 +387,7 @@ public class TecalOrdo {
 
 	private void execute() {
 		model = new CpModel();
+		printInfo();
 		prepareZones();
 		// --------------------------------------------------------------------------------------------
 		// CONSTRAINTES SUR CHAQUE JOB
@@ -445,6 +462,8 @@ public class TecalOrdo {
 		//mPassedTasksByBarreId.clear();
 
 		CpSolverStatus status = solver.solve(model);
+		
+		printInfo();
 
 		hasSolution = false;
 		mOutPutMsg.append("-----------------------------------------------------------------");
@@ -704,6 +723,7 @@ public class TecalOrdo {
 		  horizon*=2;
 		else  horizon/=2; 	
 		*/
+		horizon*=2;
 		horizon=Math.min(horizon,CST.TEMPS_MAX_JOURNEE);
 
 	}

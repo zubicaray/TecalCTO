@@ -997,7 +997,7 @@ public void setTempsDeplacements() {
             // Exécuter la requête
             int rowsInserted = preparedStatement.executeUpdate();
             if (rowsInserted > 0) {
-                System.out.println("Une nouvelle ligne a été insérée avec succès !");
+               // System.out.println("Une nouvelle ligne a été insérée avec succès !");
             }
 
         } catch (SQLException e) {

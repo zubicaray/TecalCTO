@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Time;
+import java.time.LocalTime;
 import java.text.FieldPosition;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
@@ -121,8 +122,8 @@ public class CPO_LOGS_GANT extends JPanel {
             int end = (int) xySeries.getXHighValue(item);
 
             // Convertir les valeurs de temps
-            String formattedStart = formatTime(new Time(start * 1000L));
-            String formattedEnd = formatTime(new Time(end * 1000L));
+            String formattedStart = formatTime(new Time(start * 1000L).toLocalTime());
+            String formattedEnd = formatTime(new Time(end * 1000L).toLocalTime());
 
             // Retourner le texte de l'infobulle
             return String.format("<html><b>%s</b><br>Entrée : %s<br>Sortie : %s</html>", label, formattedStart, formattedEnd);
@@ -132,7 +133,7 @@ public class CPO_LOGS_GANT extends JPanel {
 
     // Configuration de l'axe des X
     ValueAxis domainAxis = plot.getDomainAxis();
-    domainAxis.setLabel("HH:mm:ss");
+    domainAxis.setLabel("heure");
     //domainAxis.setRange(0, 24 * 3600); // Plage horaire en secondes
 
     // Appliquer un format personnalisé à l'axe des X
@@ -230,13 +231,13 @@ public class CPO_LOGS_GANT extends JPanel {
     this.add(chartPanel, BorderLayout.CENTER);
 }
 
-    private String formatTime(Time time) {
+    private String formatTime(LocalTime time) {
     if (time == null) {
         return "N/A"; // Si l'heure est nulle
     }
-    int hours = time.getHours();
-    int minutes = time.getMinutes();
-    int seconds = time.getSeconds();
+    int hours = time.getHour();
+    int minutes = time.getMinute();
+    int seconds = time.getSecond();
     return String.format("%02d:%02d:%02d", hours, minutes, seconds);
 }
 
@@ -260,8 +261,8 @@ public class CPO_LOGS_GANT extends JPanel {
                 int numZone = rs.getInt("NumZone");
                // int idbarre = rs.getInt("idbarre");
                 String label = rs.getString("label");
-                Time entree = rs.getTime("entree");
-                Time sortie = rs.getTime("sortie");
+                LocalTime entree = rs.getTime("entree").toLocalTime();
+                LocalTime sortie = rs.getTime("sortie").toLocalTime();
 
                 // Convertir heures en secondes depuis minuit
                 if (entree != null && sortie != null) {
@@ -289,8 +290,8 @@ public class CPO_LOGS_GANT extends JPanel {
         return dataset;
     }
 
-    private int timeToSeconds(Time time) {
-        return ((time.getHours() * 3600) + (time.getMinutes() * 60) + time.getSeconds());
+    private int timeToSeconds(LocalTime time) {
+        return ((time.getHour() * 3600) + (time.getMinute() * 60) + time.getSecond());
     }
 
 
