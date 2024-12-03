@@ -99,6 +99,8 @@ public class CST {
 	public final static boolean PrintZonesTime		=false;
 	public final static boolean PrintMvtsPont		=false;
 	public final static boolean PrintGroupementZones=false;
+	public final static boolean PRINT_BARRES		=true;
+	public final static boolean PRINT_JOBS			=true;
 	
 	
 	//------------------------------------------------------------

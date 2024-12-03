@@ -109,8 +109,6 @@ public class CPO_Panel extends JPanel {
 					 //mModelGammes.fireTableStructureChanged();
 					 //mTableGammes.revalidate();
 					 mTableGammes.repaint();
-
-
 				}
 			});
 
@@ -164,13 +162,22 @@ public class CPO_Panel extends JPanel {
 		btnDelButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				
-    	        int row = mTableBarres.getSelectedRow();
-    	        if (row!= -1) {
-    	        	
-    	        	mModelBarres.removeRow(row);
-    	        	mTableGammes.repaint();
-    	        }
+				 int row = mTableBarres.getSelectedRow(); 
+				  if (row != -1) { // Vérifie qu'une ligne est sélectionnée
+			            try {
+			                mModelBarres.removeRow(row); // Supprime la ligne dans le modèle
+			                mTableBarres.clearSelection(); // Efface la sélection pour éviter des indices invalides
+			            } catch (ArrayIndexOutOfBoundsException ex) {
+			                System.err.println("Erreur : ligne invalide sélectionnée.");
+			            }
+			        } else {
+			            JOptionPane.showMessageDialog(
+			                mTableBarres,
+			                "Aucune ligne sélectionnée.",
+			                "Erreur",
+			                JOptionPane.ERROR_MESSAGE
+			            );
+			        }
 			}
 		});
 		
@@ -369,41 +376,32 @@ public class CPO_Panel extends JPanel {
 					LinkedHashMap<Integer,String> gammes=new LinkedHashMap <>();
 					LinkedHashMap<Integer,Barre> barres=new LinkedHashMap <>();
 
-					//if(mTableBarres.getRowCount()<2) {
-					//	JOptionPane.showMessageDialog(mCPO_IHM, "Minimum deux barres requises !","Tecal CPO", JOptionPane.ERROR_MESSAGE);
-					//}else {
+				
 
-						// utiliser un objet de classe Barre ave vitesse et prio
-						gammes.clear();
-						for (int count = 0; count < mTableBarres.getRowCount(); count++){
-							//int idbarre=(int) mTableBarres.getValueAt(count, 0);
-							int idbarre=(int) mModelBarres.getValueAt(count, 0);
-							String gamme=mTableBarres.getValueAt(count, 1).toString();
-							String nomBarre=mTableBarres.getValueAt(count, 0).toString();
+					// utiliser un objet de classe Barre ave vitesse et prio
+					gammes.clear();
+					for (int count = 0; count < mTableBarres.getRowCount(); count++){
+						//int idbarre=(int) mTableBarres.getValueAt(count, 0);
+						int idbarre=(int) mModelBarres.getValueAt(count, 0);
+						String gamme=mTableBarres.getValueAt(count, 1).toString();
+						String nomBarre=mTableBarres.getValueAt(count, 0).toString();
 
-							mVitesseCombo.setSelectedItem( mTableBarres.getValueAt(count, 2) );
-							int indexMontee= mVitesseCombo.getSelectedIndex();
+						mVitesseCombo.setSelectedItem( mTableBarres.getValueAt(count, 2) );
+						int indexMontee= mVitesseCombo.getSelectedIndex();
 
 
-							mVitesseCombo.setSelectedItem( mTableBarres.getValueAt(count, 3) );
-							int indexDesc = mVitesseCombo.getSelectedIndex();
+						mVitesseCombo.setSelectedItem( mTableBarres.getValueAt(count, 3) );
+						int indexDesc = mVitesseCombo.getSelectedIndex();
 
-							boolean prio=(Boolean) mTableBarres.getValueAt(count, 4);
-							if (prio)
-								logger.info("barre: "+nomBarre+" prioritaire !");
-							gammes.put(idbarre,gamme);
-							barres.put(idbarre,new Barre(idbarre,nomBarre,gamme,indexMontee,indexDesc,prio));
-						}
-
-
-						mCPO_IHM.run(barres);
+						boolean prio=(Boolean) mTableBarres.getValueAt(count, 4);
+						if (prio)
+							logger.info("barre: "+nomBarre+" prioritaire !");
+						gammes.put(idbarre,gamme);
+						barres.put(idbarre,new Barre(idbarre,nomBarre,gamme,indexMontee,indexDesc,prio));
+					}
 
 
-
-
-
-					//}
-
+					mCPO_IHM.run(barres);
 
 				}
 			});

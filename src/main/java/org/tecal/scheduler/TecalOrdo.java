@@ -123,19 +123,6 @@ public class TecalOrdo {
 		
 	}
 	
-	public void setBarresEnCours(ArrayList<Integer> nouvellesBarresEnCours) {
-		this.mBarresEnCours.addAll(nouvellesBarresEnCours) ;
-
-		for(Integer barreId:nouvellesBarresEnCours) {
-			if(!mJobsEnCours.containsKey(barreId))
-				mJobsEnCours.put(barreId, mJobsFuturs.get(barreId).makeFixedJob(mPassedTasksByBarreId.get(barreId)));
-			else {
-				mJobsEnCours.get(barreId).clear();
-			}
-		}
-		
-	}
-
 	public void  addFixedJobsEnCours(int barreId) {
 		adBarreEnCours(barreId);
 		mJobsEnCours.put(barreId, mJobsFuturs.get(barreId).makeFixedJob(mAssignedTasksByBarreId.get(barreId)));
@@ -381,10 +368,13 @@ public class TecalOrdo {
 	}
 
 	private void printBarres() {
-		System.out.println("mBarreFutures="+mBarreFutures.keySet());
-		System.out.println("mBarreLabels="+mBarreLabels);
-		System.out.println("mBarresEnCours="+mBarresEnCours);
-		System.out.println("mBarresAll="+mBarresAll.keySet());
+		if(CST.PRINT_BARRES) {
+			System.out.println("mBarreFutures="+mBarreFutures.keySet());
+			System.out.println("mBarreLabels="+mBarreLabels);
+			System.out.println("mBarresEnCours="+mBarresEnCours);
+			System.out.println("mBarresAll="+mBarresAll.keySet());
+		}
+		
 	}
 
 	public LinkedHashMap<Integer, Barre> runTest() {
@@ -565,8 +555,11 @@ public class TecalOrdo {
 	}
 
 	private void printInfos() {
-		System.out.println("mJobsEnCours="+mJobsEnCours.keySet());
-		System.out.println("mJobsFutures="+mJobsFuturs.keySet());
+		if(CST.PRINT_JOBS) {
+			System.out.println("mJobsEnCours="+mJobsEnCours.keySet());
+			System.out.println("mJobsFutures="+mJobsFuturs.keySet());
+		}
+		
 	}
 
 	private void priorisationBarres(HashMap<Integer, IntVar> endByBarreIdNonPrio,
@@ -702,13 +695,13 @@ public class TecalOrdo {
 		Collection<JobType> c=mJobsEnCours.values();
 		Collection<JobType> d=mJobsFuturs.values();
 
+		updateFixedJobsEnCours();
+		
 		arrayAllJobs.clear();
 		arrayAllJobs.addAll(c);
 		arrayAllJobs.addAll(d);
 
-		mAllJobs.clear();
-		
-		updateFixedJobsEnCours();
+		mAllJobs.clear();		
 		mAllJobs.putAll(mJobsEnCours);
 		mAllJobs.putAll(mJobsFuturs);
 

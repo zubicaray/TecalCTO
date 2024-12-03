@@ -12,6 +12,7 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.net.InetAddress;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
@@ -43,6 +44,8 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.tecal.scheduler.CST;
 import org.tecal.scheduler.GanttChart;
 import org.tecal.scheduler.TecalOrdo;
@@ -67,6 +70,7 @@ public class CPO_IHM extends JFrame {
 	
 	private timerGantt mTimer;
 	private TecalOrdo mTecalOrdo;
+	private static final Logger logger = LogManager.getLogger(CPO_IHM.class);
 
 
 	private LinkedHashMap<Integer,Barre> mBarresSettingsFutures;
@@ -74,11 +78,7 @@ public class CPO_IHM extends JFrame {
 	public LinkedHashMap<Integer,Barre> getBarres() {
 		return mBarresSettingsFutures;
 	}
-	/*
-	public void setBarres(LinkedHashMap<Integer,Barre> inBarresSettingsFutures) {
-		this.mBarresSettingsFutures = inBarresSettingsFutures;
-	}
-	*/
+	
 	public TecalOrdo getTecalOrdo() {
 		return mTecalOrdo;
 	}
@@ -108,22 +108,32 @@ public class CPO_IHM extends JFrame {
 
 
 					CPO_IHM frame = new CPO_IHM();
+					
+					// Récupérer le nom de l'hôte
+					String hostname = InetAddress.getLocalHost().getHostName();
+					
+					
+					if(hostname.equals("zubi-Latitude-5300"))
+						frame.runTest();
+					
 					frame.addWindowListener(new WindowAdapter() {
-			            @Override
-			            public void windowClosing(WindowEvent e) {
-			                int response = JOptionPane.showConfirmDialog(
-			                        frame,
-			                        "Voulez-vous vraiment quitter ?",
-			                        "Confirmation",
-			                        JOptionPane.YES_NO_OPTION,
-			                        JOptionPane.QUESTION_MESSAGE
-			                );
+					    @Override
+					    public void windowClosing(WindowEvent e) {
+					        int response = JOptionPane.showConfirmDialog(
+					                frame,
+					                "Voulez-vous vraiment quitter ?",
+					                "Confirmation",
+					                JOptionPane.YES_NO_OPTION,
+					                JOptionPane.QUESTION_MESSAGE
+					        );
 
-			                if (response == JOptionPane.YES_OPTION) {
-			                    frame.dispose(); // Ferme la fenêtre
-			                }
-			            }
-			        });
+					        if (response == JOptionPane.YES_OPTION) {
+					            frame.dispose(); // Ferme la fenêtre
+					        } else {
+					            frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE); // Empêche la fermeture
+					        }
+					    }
+					});
 			
 
 					frame.setTitle("Tecal Ordonnanceur");
@@ -155,14 +165,28 @@ public class CPO_IHM extends JFrame {
 		//manageOngoingJobs();
 		mCPO_PANEL.setModelBarres(mBarresSettingsFutures);
 		if(mBarresSettingsFutures.size()>0) {
-			mTecalOrdo.run(mBarresSettingsFutures,(long)mGanttTecalOR.getTimeBar().getValue());
+			try {
+				mTecalOrdo.run(mBarresSettingsFutures,(long)mGanttTecalOR.getTimeBar().getValue());
+			}
+			catch(Exception e){
+				String msg="Erreur du moteur Google OR: " + e.getMessage();
+				logger.error(msg);
+				JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
+			}
+			
 		}
 		else {
 			mTecalOrdo.setHasSolution(true);
 		}
 
-
-		execute();
+		try {
+			execute();
+		}
+		catch(Exception e){
+			String msg="Erreur de contruction du diagramme de Gantt : " + e.getMessage();
+			logger.error(msg);
+			JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
+		}
 
 		if(mTecalOrdo.hasSolution()) {
 			mTabbedPane.setSelectedIndex(1);
@@ -228,7 +252,7 @@ public class CPO_IHM extends JFrame {
 			AssignedTask first=values.get(0);
 			AssignedTask last=values.get(values.size()-1);
 			int barreid=entry.getKey();
-			if(first.end<current_time && last.start>current_time) {
+			if(first.end<current_time ) { //&& last.start>current_time) {
 				//job commencé et non fini
 				barresCommencantes.add(barreid);
 				mTecalOrdo.addFixedJobsEnCours(barreid);
@@ -243,7 +267,7 @@ public class CPO_IHM extends JFrame {
 
 		
 		}
-
+/*
 		for( Entry<Integer, List<AssignedTask>> entry  :mTecalOrdo.getPassedTasksByBarreId().entrySet()) {
 			
 			List<AssignedTask> values=entry.getValue();
@@ -252,10 +276,11 @@ public class CPO_IHM extends JFrame {
 			AssignedTask last=values.get(values.size()-1);
 			if(last.start<current_time) {
 				// job fini
+				//todo: a remettre
 				mTecalOrdo.removeBarreFinie(barreid);
 			}
 		}
-		
+		*/
 		
 		logAndRemoveBarreTasks(barresCommencantes);
 		

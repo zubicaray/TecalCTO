@@ -978,8 +978,7 @@ public void setTempsDeplacements() {
 
     public  void insertLogCPO(LocalDateTime d,int idbarre, String label, int cptZone,int numZone, LocalTime entree, LocalTime sortie) {
         
-    	
-    	logger.info("logs de la barre "+label);
+    	    	
         // Requête SQL pour insérer une ligne
         String sql = "INSERT INTO LOGS_CPO (date_log, idbarre, label, idZone, NumZone, entree, sortie) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
