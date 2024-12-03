@@ -28,3 +28,11 @@ Ordonnanceur pour anodisation
 5. **TecalOrdo.brigesSecurity()**:	
 	toutes les zones "zones sécurités" ne peuvent se croiser
 
+## Gestion des barres en cours
+une fois qu'une barre est démarrée, *ie* le curseur a passé, la fin de la zone de chargement:
+- toutes ses zones sont loggées dans la table CPO_LOGS
+- son job passe de mJobsFuturs à mJobsEnCours, la struture des jobs dont les zones sont fixés une fos pour toutes dans le temps
+- ses données temporelles (**AssignedTask**), calculées grace à Google OR, passent de **mAssignedTasksByBarreId** à **mPassedTasksByBarreId**:
+    avec, on pourra ainsi recalculer des **FixeIntervalVar** pour le job en cours à chaque fois que l'on va générer d'autres ordonnancements
+    	
+  	
