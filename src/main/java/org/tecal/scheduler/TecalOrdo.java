@@ -19,6 +19,8 @@ import java.util.Map.Entry;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jfree.ui.RefineryUtilities;
 import org.tecal.scheduler.data.CSV_DATA;
 import org.tecal.scheduler.data.SQL_DATA;
@@ -26,6 +28,7 @@ import org.tecal.scheduler.types.AssignedTask;
 import org.tecal.scheduler.types.Barre;
 import org.tecal.scheduler.types.GammeType;
 import org.tecal.scheduler.types.ZoneType;
+import org.tecal.ui.CPO_IHM;
 
 import com.google.ortools.Loader;
 import com.google.ortools.sat.CpModel;
@@ -102,7 +105,7 @@ class Task {
 public class TecalOrdo {
 	
 	private long mCurrentTime;
-
+	private static final Logger logger = LogManager.getLogger(TecalOrdo.class);
 	// map de toutes les gammes
 	private HashMap<String, ArrayList<GammeType>> 			mGammes;
 	// geston des barres
@@ -127,6 +130,8 @@ public class TecalOrdo {
 		adBarreEnCours(barreId);
 		mJobsEnCours.put(barreId, mJobsFuturs.get(barreId).makeFixedJob(mAssignedTasksByBarreId.get(barreId)));
 	}
+
+	//OBLIGATOIRE SINON : NO SOLUTION !
 	public void  updateFixedJobsEnCours() {
 		
 		for(int barreId:mPassedTasksByBarreId.keySet()) {
@@ -169,18 +174,10 @@ public class TecalOrdo {
 
 	private ArrayList<JobType> arrayAllJobs;
 
-	public  ArrayList<JobType> getArrayJobs() {
-		return arrayAllJobs;
-	}
-
-
-	public LinkedHashMap<Integer, List<AssignedTask>> getAssignedTasksByBarreId() {
-		
-		
-		
-		return mAssignedTasksByBarreId;
-	}
 	
+	private boolean mOngoingWork=false;
+
+
 
 	public static CpModel model;
 	public static CpSolver solver;
@@ -308,7 +305,7 @@ public class TecalOrdo {
 			Barre b=new Barre(i,i+"",gamme,CST.VITESSE_NORMALE,CST.VITESSE_NORMALE,false);
 			mBarreFutures.put(i, mGammes.get(b.gamme));
 			mBarresAll.put(i, mGammes.get(b.gamme));
-			mBarreLabels.put(i, gamme);
+			mBarreLabels.put(i, i+" - "+gamme);
 			res.put(i,b);
 		}
 
@@ -369,10 +366,10 @@ public class TecalOrdo {
 
 	private void printBarres() {
 		if(CST.PRINT_BARRES) {
-			System.out.println("mBarreFutures="+mBarreFutures.keySet());
-			System.out.println("mBarreLabels="+mBarreLabels);
-			System.out.println("mBarresEnCours="+mBarresEnCours);
-			System.out.println("mBarresAll="+mBarresAll.keySet());
+			logger.info("mBarreFutures="+mBarreFutures.keySet());
+			logger.info("mBarreLabels="+mBarreLabels);
+			logger.info("mBarresEnCours="+mBarresEnCours);
+			logger.info("mBarresAll="+mBarresAll.keySet());
 		}
 		
 	}
@@ -404,6 +401,7 @@ public class TecalOrdo {
 		printInfos();
 		
 		model = new CpModel();
+		mOngoingWork=true;
 		prepareZones();
 		// --------------------------------------------------------------------------------------------
 		// CONSTRAINTES SUR CHAQUE JOB
@@ -477,6 +475,7 @@ public class TecalOrdo {
 		mAssignedTasksByBarreId.clear();
 
 		CpSolverStatus status = solver.solve(model);
+		mOngoingWork=false;
 		printInfos();
 		hasSolution = false;
 		mOutPutMsg.append("-----------------------------------------------------------------");
@@ -556,8 +555,8 @@ public class TecalOrdo {
 
 	private void printInfos() {
 		if(CST.PRINT_JOBS) {
-			System.out.println("mJobsEnCours="+mJobsEnCours.keySet());
-			System.out.println("mJobsFutures="+mJobsFuturs.keySet());
+			logger.info("mJobsEnCours="+mJobsEnCours.keySet());
+			logger.info("mJobsFutures="+mJobsFuturs.keySet());
 		}
 		
 	}
@@ -1048,5 +1047,18 @@ public class TecalOrdo {
 	public LinkedHashMap<Integer, List<AssignedTask>> getPassedTasksByBarreId() {
 		return mPassedTasksByBarreId;
 	}
+
+	public boolean isWorking() {
+		// TODO Auto-generated method stub
+		return mOngoingWork;
+	}
+
+	public LinkedHashMap<Integer, List<AssignedTask>> getAssignedTasksByBarreId() {		
+		return mAssignedTasksByBarreId;
+	}
+	public  ArrayList<JobType> getArrayJobs() {
+		return arrayAllJobs;
+	}
+	
 	
 }

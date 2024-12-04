@@ -12,6 +12,7 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -23,6 +24,8 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
 import javax.swing.DefaultRowSorter;
 import javax.swing.GroupLayout;
@@ -60,14 +63,14 @@ public class CPO_IHM extends JFrame {
 	private JPanel mMainPane;
 
 	private JTabbedPane mTabbedPane ;
-	
+
 	private JPanel mPanelGantt ;
 	private GanttChart mGanttTecalOR;
-	
+
 	private JPanel mPanelDerives;
 	private DefaultTableModel mModelDerives;
 	private JTable mTableDerives;
-	
+
 	private timerGantt mTimer;
 	private TecalOrdo mTecalOrdo;
 	private static final Logger logger = LogManager.getLogger(CPO_IHM.class);
@@ -78,7 +81,7 @@ public class CPO_IHM extends JFrame {
 	public LinkedHashMap<Integer,Barre> getBarres() {
 		return mBarresSettingsFutures;
 	}
-	
+
 	public TecalOrdo getTecalOrdo() {
 		return mTecalOrdo;
 	}
@@ -95,6 +98,21 @@ public class CPO_IHM extends JFrame {
 		return mCPO_PANEL;
 	}
 
+	private static String getManifestVersion() {
+        try {
+            // Lire le MANIFEST.MF depuis le classpath
+            InputStream manifestStream = CPO_Panel.class
+                    .getResourceAsStream("/META-INF/MANIFEST.MF");
+            if (manifestStream != null) {
+                Manifest manifest = new Manifest(manifestStream);
+                Attributes attributes = manifest.getMainAttributes();
+                return attributes.getValue("Implementation-Version");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "Inconnue";
+    }
 
 	/**
 	 * Launch the application.
@@ -106,16 +124,18 @@ public class CPO_IHM extends JFrame {
 				try {
 
 
+					String version = getManifestVersion();
+
 
 					CPO_IHM frame = new CPO_IHM();
 					
 					// Récupérer le nom de l'hôte
 					String hostname = InetAddress.getLocalHost().getHostName();
-					
-					
-					if(hostname.equals("zubi-Latitude-5300"))
-						frame.runTest();
-					
+					frame.setTitle("Tecal CPO - " + version);
+					if(hostname.equals("zubi-Latitude-5300")) {
+						//frame.runTest();
+					}
+					 
 					frame.addWindowListener(new WindowAdapter() {
 					    @Override
 					    public void windowClosing(WindowEvent e) {
@@ -130,13 +150,13 @@ public class CPO_IHM extends JFrame {
 					        if (response == JOptionPane.YES_OPTION) {
 					            frame.dispose(); // Ferme la fenêtre
 					        } else {
-					            frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE); // Empêche la fermeture
+					            frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE); // Empêche la fermeture
 					        }
 					    }
 					});
-			
 
-					frame.setTitle("Tecal Ordonnanceur");
+
+
 					if(System.getenv("TEST_CPO") != null && System.getenv("TEST_CPO").equals("1")) {
 						frame.runTest();
 					}
@@ -173,7 +193,7 @@ public class CPO_IHM extends JFrame {
 				logger.error(msg);
 				JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
 			}
-			
+
 		}
 		else {
 			mTecalOrdo.setHasSolution(true);
@@ -204,34 +224,34 @@ public class CPO_IHM extends JFrame {
 
 	    	mGanttTecalOR.getTimeBar().setValue(mGanttTecalOR.getTimeBar().getValue()+1);
 
-	    	manageOngoingJobs();   
-	    	
+	    	manageOngoingJobs();
+
 
 	    }
 
-		
+
 	}
 
 	private void logAndRemoveBarreTasks(List<Integer> barreToremove) {
 		for ( Integer i : barreToremove) {
-    		
+
     		List<AssignedTask> listTask=mTecalOrdo.getAssignedTasksByBarreId().get(i);
-    		
+
     		LocalDateTime d=LocalDateTime.now();
     		LocalTime start=mGanttTecalOR.getStartTime();
     		int cptZone=1;
-    		
+
     		for(AssignedTask a:listTask) {
-    			
+
     			LocalTime deb=start.plusSeconds(a.start-CST.CPT_GANTT_OFFSET);
     			LocalTime fin=start.plusSeconds(a.end-CST.CPT_GANTT_OFFSET);
-    			
-    			
+
+
     			SQL_DATA.getInstance().insertLogCPO(d,a.barreID, mTecalOrdo.getBarreLabels().get(i),cptZone, a.numzone, deb, fin);
     			cptZone++;
     		}
-    		
-    		
+
+
     		//on loggera les temps de chaque zone avant
     		mTecalOrdo.removeAssignedTaskByBarreId(i);
     	}
@@ -239,9 +259,9 @@ public class CPO_IHM extends JFrame {
 	private void manageOngoingJobs() {
 
 
-		//if(mTecalOrdo.getAssignedTasksByBarreId().size() ==0){
-		//	return;
-		//}
+		if(mTecalOrdo.isWorking() ){
+			return;
+		}
 
 		ArrayList<Integer> barresCommencantes	=new ArrayList<>();
 
@@ -250,29 +270,31 @@ public class CPO_IHM extends JFrame {
 
 			List<AssignedTask> values=entry.getValue();
 			AssignedTask first=values.get(0);
-			AssignedTask last=values.get(values.size()-1);
+			//AssignedTask last=values.get(values.size()-1);
 			int barreid=entry.getKey();
 			if(first.end<current_time ) { //&& last.start>current_time) {
 				//job commencé et non fini
 				barresCommencantes.add(barreid);
 				mTecalOrdo.addFixedJobsEnCours(barreid);
+				logger.info("barreid:"+barreid+ " en cours ");
 				mCPO_PANEL.removeBarre(barreid);
-				
+
 			}
-			
+
 			if( first.end == current_time+60   ) 	 {
 				CountdownWindow countdownModal = new CountdownWindow(mTecalOrdo.getBarreLabels().get(barreid));
 			    countdownModal.startCountdown();
 			}
 
-		
+
 		}
-/*
+		/*
+		 * TODO
 		for( Entry<Integer, List<AssignedTask>> entry  :mTecalOrdo.getPassedTasksByBarreId().entrySet()) {
-			
+
 			List<AssignedTask> values=entry.getValue();
 			int barreid=entry.getKey();
-		
+
 			AssignedTask last=values.get(values.size()-1);
 			if(last.start<current_time) {
 				// job fini
@@ -281,14 +303,14 @@ public class CPO_IHM extends JFrame {
 			}
 		}
 		*/
-		
+
 		logAndRemoveBarreTasks(barresCommencantes);
-		
-		
+
+
 
 		for(Integer barreId:barresCommencantes) {
 			mBarresSettingsFutures.remove(barreId);
-			
+
 		}
 	}
 
@@ -492,7 +514,7 @@ public class CPO_IHM extends JFrame {
 
 		mTableDerives = new JTable(mModelDerives);
 		mTableDerives.setSize(new Dimension(32000, 50000));
-		
+
 
 
 		TableRowSorter<TableModel> sorter = new TableRowSorter<>(mTableDerives.getModel());
