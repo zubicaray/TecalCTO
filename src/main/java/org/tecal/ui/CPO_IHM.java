@@ -40,6 +40,7 @@ import javax.swing.JTable;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SortOrder;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
@@ -74,6 +75,21 @@ public class CPO_IHM extends JFrame {
 	private timerGantt mTimer;
 	private TecalOrdo mTecalOrdo;
 	private static final Logger logger = LogManager.getLogger(CPO_IHM.class);
+	
+
+	public class MyExceptionHandler {
+	    public void handle(Throwable throwable) {
+	        // Gérer les exceptions de Swing ici
+	        JOptionPane.showMessageDialog(null, 
+	            "Erreur Swing non interceptée : " + throwable.getMessage(), 
+	            "Erreur", 
+	            JOptionPane.ERROR_MESSAGE);
+	
+	        // Log de l'exception
+	        Logger logger = LogManager.getLogger(MyExceptionHandler.class);
+	        logger.error("Exception dans l'EDT", throwable);
+	    }
+	}
 
 
 	private LinkedHashMap<Integer,Barre> mBarresSettingsFutures;
@@ -97,6 +113,7 @@ public class CPO_IHM extends JFrame {
 	public CPO_Panel getCpoPanel() {
 		return mCPO_PANEL;
 	}
+	
 
 	private static String getManifestVersion() {
         try {
@@ -125,7 +142,20 @@ public class CPO_IHM extends JFrame {
 
 
 					String version = getManifestVersion();
+					Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
+					    // Gérer les exceptions non interceptées ici
+					    JOptionPane.showMessageDialog(null, 
+					        "Une erreur est survenue : " + throwable.getMessage(), 
+					        "Erreur", 
+					        JOptionPane.ERROR_MESSAGE);
 
+			
+					    logger.error("Exception non interceptée dans le thread : " + thread.getName(), throwable);
+					});
+					SwingUtilities.invokeLater(() -> {
+					    // Définit un gestionnaire global pour les exceptions dans Swing
+					    System.setProperty("sun.awt.exception.handler", "org.tecal.ui.MyExceptionHandler");
+					});
 
 					CPO_IHM frame = new CPO_IHM();
 					
@@ -180,13 +210,16 @@ public class CPO_IHM extends JFrame {
 
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		mBarresSettingsFutures=barres;
+		mCPO_PANEL.set_enable(false);
 
 		// on garde les jobs en cours des générations précédentes
 		//manageOngoingJobs();
 		mCPO_PANEL.setModelBarres(mBarresSettingsFutures);
 		if(mBarresSettingsFutures.size()>0) {
 			try {
-				mTecalOrdo.run(mBarresSettingsFutures,(long)mGanttTecalOR.getTimeBar().getValue());
+				mTecalOrdo.execute(mBarresSettingsFutures,(long)mGanttTecalOR.getTimeBar().getValue());				
+				
+				
 			}
 			catch(Exception e){
 				String msg="Erreur du moteur Google OR: " + e.getMessage();
@@ -212,22 +245,28 @@ public class CPO_IHM extends JFrame {
 			mTabbedPane.setSelectedIndex(1);
 			//mCPO_PANEL.getModelBarres().setRowCount(0);
 		}
-
+		mCPO_PANEL.set_enable(true);
 		setCursor(Cursor.getDefaultCursor());
 
 	}
 
 	public class timerGantt extends TimerTask {
-	    @Override
-	    public void run() {
-	        //System.out.println("Email sent at: " + LocalDateTime.ofInstant(Instant.ofEpochMilli(scheduledExecutionTime()), ZoneId.systemDefault()));
+		@Override
+		public void run() {
+		    try {
+		        // Votre code existant
+		        mGanttTecalOR.getTimeBar().setValue(mGanttTecalOR.getTimeBar().getValue() + 1);
+		        manageOngoingJobs();
+		    } catch (Exception e) {
+		        JOptionPane.showMessageDialog(null, 
+		            "Erreur dans la tâche périodique : " + e.getMessage(), 
+		            "Erreur", 
+		            JOptionPane.ERROR_MESSAGE);
 
-	    	mGanttTecalOR.getTimeBar().setValue(mGanttTecalOR.getTimeBar().getValue()+1);
-
-	    	manageOngoingJobs();
-
-
-	    }
+		        
+		        logger.error("Erreur dans la tâche périodique", e);
+		    }
+		}
 
 
 	}
@@ -557,5 +596,5 @@ public class CPO_IHM extends JFrame {
 	public void setTimer(timerGantt mTimer) {
 		this.mTimer = mTimer;
 	}
-
+	
 }

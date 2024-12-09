@@ -28,7 +28,7 @@ import org.tecal.scheduler.types.AssignedTask;
 import org.tecal.scheduler.types.Barre;
 import org.tecal.scheduler.types.GammeType;
 import org.tecal.scheduler.types.ZoneType;
-import org.tecal.ui.CPO_IHM;
+
 
 import com.google.ortools.Loader;
 import com.google.ortools.sat.CpModel;
@@ -382,21 +382,22 @@ public class TecalOrdo {
 		};
 
 		setParams(params);
-		execute();
+		run();
 		return mBarresSettings;
 	}
-
-	public void run(LinkedHashMap<Integer, Barre> inBarresFutures,Long currentTime) {
+	
+	public void execute(LinkedHashMap<Integer, Barre> inBarresFutures,Long currentTime) {
 
 
 		mCurrentTime=currentTime;
-
-
 		setBarres(inBarresFutures);
-		execute();
+		run();
+		
+		
+		
 	}
 
-	private void execute() {
+	public void run() {
 		
 		printInfos();
 		
@@ -431,17 +432,18 @@ public class TecalOrdo {
 
 		for (JobType job: mJobsFuturs.values()) {
 
-			int last=job.tasksJob.size()-1;
-			TaskOrdo task=job.mTaskOrdoList.get(last);
-			ends.add(task.getFin());
-			starts.add(job.mTaskOrdoList.get(0).getStart());
+			
+			
+			TaskOrdo taskFirst=job.mTaskOrdoList.get(0);
+			ends.add(taskFirst.getFin());
+			starts.add(taskFirst.getStart());
 			
 			if(mBarresPrioritaires.contains(job.mBarreId))
 			{
-				endByBarreIdPrio.put(job.mBarreId,task.getFin());
+				endByBarreIdPrio.put(job.mBarreId,taskFirst.getFin());
 			}
 			else {
-				endByBarreIdNonPrio.put(job.mBarreId,task.getFin());
+				endByBarreIdNonPrio.put(job.mBarreId,taskFirst.getFin());
 			}
 			
 			

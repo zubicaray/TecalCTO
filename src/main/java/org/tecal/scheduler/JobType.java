@@ -286,16 +286,20 @@ public class JobType {
 
 			if(task.numzone == CST.DECHARGEMENT_NUMZONE )
 				task.duration=CST.TEMPS_DECHARGEMENT;
-			
-			
+						
 			if( task.numzone == CST.CHARGEMENT_NUMZONE)
 				task.duration=CST.TEMPS_CHARGEMENT;
 			
 			
 			TaskOrdo taskOrdo;
 			
+			int derive=zt.derive;
+			if(mBarre.prioritaire) {
+				derive=Math.min(derive, 180);
+			}
+			
 			if(task.numzone == CST.DECHARGEMENT_NUMZONE  || taskID==  tasksJob.size()-1) {
-				taskOrdo = new TaskOrdo(TecalOrdo.model,task.duration,zt.derive, 0,task.egouttage,suffix);   
+				taskOrdo = new TaskOrdo(TecalOrdo.model,task.duration,derive, 0,task.egouttage,suffix);   
 			}
 			else {
 				
@@ -310,13 +314,11 @@ public class JobType {
 				else {					
 					tps = gestionVitesseManutention(tps);										
 				}
-				taskOrdo = new TaskOrdo(TecalOrdo.model,task.duration,zt.derive, tps,task.egouttage,suffix);   
-				
+				taskOrdo = new TaskOrdo(TecalOrdo.model,task.duration,derive, tps,task.egouttage,suffix);   
 				
 			}
 			
-			//minDebut+=task.duration;
-			
+			//minDebut+=task.duration;	
 			
 			
 			mTaskOrdoList.add(taskOrdo);
@@ -331,8 +333,6 @@ public class JobType {
 		
 		List<Integer> key = Arrays.asList(mBarreId, taskID);
 		allTasks.put(key, mTaskOrdoList.get(taskID));     
-			
-
 
 		
 	}
