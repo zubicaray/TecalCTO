@@ -316,7 +316,10 @@ public class CPO_IHM extends JFrame {
 				barresCommencantes.add(barreid);
 				mTecalOrdo.addFixedJobsEnCours(barreid);
 				logger.info("barreid:"+barreid+ " en cours ");
-				mCPO_PANEL.removeBarre(barreid);
+				  SwingUtilities.invokeLater(() -> {
+						mCPO_PANEL.removeBarre(barreid);
+				    });
+			
 
 			}
 
@@ -327,21 +330,7 @@ public class CPO_IHM extends JFrame {
 
 
 		}
-		/*
-		 * TODO
-		for( Entry<Integer, List<AssignedTask>> entry  :mTecalOrdo.getPassedTasksByBarreId().entrySet()) {
 
-			List<AssignedTask> values=entry.getValue();
-			int barreid=entry.getKey();
-
-			AssignedTask last=values.get(values.size()-1);
-			if(last.start<current_time) {
-				// job fini
-				//todo: a remettre
-				mTecalOrdo.removeBarreFinie(barreid);
-			}
-		}
-		*/
 
 		logAndRemoveBarreTasks(barresCommencantes);
 

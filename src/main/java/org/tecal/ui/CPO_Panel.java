@@ -37,6 +37,7 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowFilter;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -60,6 +61,7 @@ public class CPO_Panel extends JPanel {
 	private JTable mTableBarres;
 	private DefaultTableModel mModelBarres;
 	private JButton mBtnRun;
+	private JButton mBtnDelButton ;
 	private JTextArea mTextArea;
 	private JComboBox<String> mVitesseCombo;
 	private DefaultTableModel mModelGammes;
@@ -144,19 +146,19 @@ public class CPO_Panel extends JPanel {
 		JButton btnUpButton = new JButton();
 		btnUpButton.setHorizontalAlignment(SwingConstants.CENTER);
 
-		JButton btnDelButton = new JButton();
+		mBtnDelButton = new JButton();
 
-		setIconButton(this, btnDelButton, "icons8-delete-16.png");
+		setIconButton(this, mBtnDelButton, "icons8-delete-16.png");
 
 		GroupLayout gl_panelCPO = buildGrouping(scrollPaneMsg, lblGammes, textFiltre, btnReload, scrollPane_gamme,
-				scrollPaneBarres, btnDownButton, btnUpButton, btnDelButton);
+				scrollPaneBarres, btnDownButton, btnUpButton, mBtnDelButton);
 
 		setIconButton(this, btnUpButton, "icons8-up-16.png");
 		setIconButton(this, btnDownButton, "icons8-down-16.png");
 		setIconButton(this, mBtnRun, "icons8-play-16.png");
 
-		btnDelButton.setHorizontalAlignment(SwingConstants.CENTER);
-		btnDelButton.addActionListener(new ActionListener() {
+		mBtnDelButton.setHorizontalAlignment(SwingConstants.CENTER);
+		mBtnDelButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				int row = mTableBarres.getSelectedRow();
@@ -181,7 +183,10 @@ public class CPO_Panel extends JPanel {
 		btnUpButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				moveRowBy(-1);
+				 if (! mTableBarres.isEditing()) {
+					 moveRowBy(-1);
+				 }
+				
 			}
 		});
 
@@ -189,7 +194,10 @@ public class CPO_Panel extends JPanel {
 		btnDownButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				moveRowBy(1);
+				 if (! mTableBarres.isEditing()) {
+					 moveRowBy(1);				 
+				 }
+				
 			}
 		});
 
@@ -406,27 +414,41 @@ public class CPO_Panel extends JPanel {
 	public void execute() {
 		LinkedHashMap<Integer, String> gammes = new LinkedHashMap<>();
 		LinkedHashMap<Integer, Barre> barres = new LinkedHashMap<>();
+		
 
 		// utiliser un objet de classe Barre ave vitesse et prio
 		gammes.clear();
-		for (int count = 0; count < mTableBarres.getRowCount(); count++) {
-			// int idbarre=(int) mTableBarres.getValueAt(count, 0);
-			int idbarre = (int) mModelBarres.getValueAt(count, 0);
-			String gamme = mTableBarres.getValueAt(count, 1).toString();
-			String nomBarre = mTableBarres.getValueAt(count, 0).toString();
+		try {
+			for (int count = 0; count < mTableBarres.getRowCount(); count++) {
+				
+				 if (mTableBarres.getValueAt(count, 0) == null) {
+			        logger.error("mTableBarres Valeur null détectée à la ligne " + count + ", colonne 0.");
+			        continue; // Ignorer cette ligne
+			    }
+				
+				// int idbarre=(int) mTableBarres.getValueAt(count, 0);
+				int idbarre = (int) mModelBarres.getValueAt(count, 0);
+				String gamme = mTableBarres.getValueAt(count, 1).toString();
+				String nomBarre = mTableBarres.getValueAt(count, 0).toString();
 
-			mVitesseCombo.setSelectedItem(mTableBarres.getValueAt(count, 2));
-			int indexMontee = mVitesseCombo.getSelectedIndex();
+				mVitesseCombo.setSelectedItem(mTableBarres.getValueAt(count, 2));
+				int indexMontee = mVitesseCombo.getSelectedIndex();
 
-			mVitesseCombo.setSelectedItem(mTableBarres.getValueAt(count, 3));
-			int indexDesc = mVitesseCombo.getSelectedIndex();
+				mVitesseCombo.setSelectedItem(mTableBarres.getValueAt(count, 3));
+				int indexDesc = mVitesseCombo.getSelectedIndex();
 
-			boolean prio = (Boolean) mTableBarres.getValueAt(count, 4);
-			if (prio)
-				logger.info("barre: " + nomBarre + " prioritaire !");
-			gammes.put(idbarre, gamme);
-			barres.put(idbarre, new Barre(idbarre, nomBarre, gamme, indexMontee, indexDesc, prio));
+				boolean prio = (Boolean) mTableBarres.getValueAt(count, 4);
+				if (prio)
+					logger.info("barre: " + nomBarre + " prioritaire !");
+				gammes.put(idbarre, gamme);
+				barres.put(idbarre, new Barre(idbarre, nomBarre, gamme, indexMontee, indexDesc, prio));
+			}
 		}
+		catch(Exception e) {
+			logger.error("Erreurexecute recup vitesse "+e.getMessage());
+			JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
+		}
+		
 
 		mCPO_IHM.run(barres);
 	}
@@ -474,20 +496,29 @@ public class CPO_Panel extends JPanel {
 	}
 
 	public void removeBarre(int barre) {
-		int i = 0;
-		boolean found = false;
-		for (; i < mTableBarres.getRowCount(); i++) { // Loop through the rows
+	    // Terminer l'édition de cellule si nécessaire
+	    if (mTableBarres.isEditing()) {
+	        mTableBarres.getCellEditor().stopCellEditing();
+	    }
 
-			if (barre == (int) mModelBarres.getValueAt(i, 0)) {
-				found = true;
-				break;
-			}
-		}
-		if (found) {
-			mModelBarres.removeRow(i);
-			mModelBarres.fireTableDataChanged();
-			mTableBarres.addNotify();
-		}
+	    int i = 0;
+	    boolean found = false;
+	    if(mTableBarres.getRowCount()>0) {
+	    	 for (; i < mTableBarres.getRowCount(); i++) {
+	 	        if (barre == (int) mModelBarres.getValueAt(i, 0)) {
+	 	            found = true;
+	 	            break;
+	 	        }
+	 	    }
+
+	 	    if (found) {
+	 	        mModelBarres.removeRow(i); // Notifie automatiquement les changements
+	 	        logger.info("Barre avec ID " + barre + " supprimée.");
+	 	    } else {
+	 	        logger.warn("Barre avec ID " + barre + " introuvable.");
+	 	    }
+	    }
+	   
 	}
 
 	public void buildTableModelGamme() throws SQLException {
@@ -502,20 +533,22 @@ public class CPO_Panel extends JPanel {
 				JTable table = (JTable) mouseEvent.getSource();
 				Point point = mouseEvent.getPoint();
 				int row = table.rowAtPoint(point);
+				if(table.getRowCount()>0) {
+					if (row >= 0 && row < table.getRowCount()) {
+						// Appeler convertRowIndexToModel ici
+						row = table.convertRowIndexToModel(row);
+						if (mouseEvent.getClickCount() == 2 && table.getSelectedRow() != -1) {
+							String gamme = table.getModel().getValueAt(row, 0).toString();
 
-				if (row >= 0 && row < table.getRowCount()) {
-					// Appeler convertRowIndexToModel ici
-					row = table.convertRowIndexToModel(row);
-					if (mouseEvent.getClickCount() == 2 && table.getSelectedRow() != -1) {
-						String gamme = table.getModel().getValueAt(row, 0).toString();
+							Object[] rowO = { ++mNumBarre, mNumBarre + "", gamme, CST.VITESSES[CST.VITESSE_NORMALE],
+									CST.VITESSES[CST.VITESSE_NORMALE], false };
+							mModelBarres.addRow(rowO);
 
-						Object[] rowO = { ++mNumBarre, mNumBarre + "", gamme, CST.VITESSES[CST.VITESSE_NORMALE],
-								CST.VITESSES[CST.VITESSE_NORMALE], false };
-						mModelBarres.addRow(rowO);
-
+						}
+						mModelBarres.fireTableDataChanged();
 					}
-					mModelBarres.fireTableDataChanged();
 				}
+			
 
 			}
 		});
@@ -529,7 +562,7 @@ public class CPO_Panel extends JPanel {
 					boolean hasFocus, int row, int col) {
 				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
 
-				if (row >= 0 && row < table.getRowCount()) {
+				if (table.getRowCount()>0 && row >= 0 && row < table.getRowCount()) {
 					int modelIndex = table.convertRowIndexToModel(row);
 					String gamme = (String) table.getModel().getValueAt(modelIndex, 0);
 
@@ -588,28 +621,45 @@ public class CPO_Panel extends JPanel {
 	}
 
 	private void moveRowBy(int by) {
-		DefaultTableModel model = (DefaultTableModel) mTableBarres.getModel();
-		int[] rows = mTableBarres.getSelectedRows();
-		if (rows.length == 0)
-			return;
+	    DefaultTableModel model = (DefaultTableModel) mTableBarres.getModel();
+	    int[] rows = mTableBarres.getSelectedRows();
+	    if (rows.length == 0) {
+	        return; // Pas de ligne sélectionnée
+	    }
 
-		int row = rows[0];
-		int destination = row + by;
-		int rowCount = model.getRowCount();
+	    int row = rows[0];
+	    int rowCount = model.getRowCount();
+	    int destination = row + by;
 
-		if (destination >= 0 && destination < rowCount) {
-			Object[] data = new Object[model.getColumnCount()];
-			for (int col = 0; col < model.getColumnCount(); col++) {
-				data[col] = model.getValueAt(row, col);
-			}
-			model.removeRow(row);
-			model.insertRow(destination, data);
-			mTableBarres.setRowSelectionInterval(destination, destination);
-		}
+	    // Vérifiez si les indices sont valides
+	    if (row < 0 || row >= rowCount || destination < 0 || destination >= rowCount) {
+	        return;
+	    }
+
+	    try {
+	        // Sauvegarde des données de la ligne
+	        Object[] data = new Object[model.getColumnCount()];
+	        for (int col = 0; col < model.getColumnCount(); col++) {
+	            data[col] = model.getValueAt(row, col);
+	        }
+
+	        // Modification du modèle
+	        SwingUtilities.invokeLater(() -> {
+	            model.removeRow(row);
+	            model.insertRow(destination, data);
+	            mTableBarres.setRowSelectionInterval(destination, destination);
+	        });
+
+	    } catch (Exception e) {
+	        logger.error("Erreur MOVE ! " + e.getMessage(), e);
+	        JOptionPane.showMessageDialog(null, "Erreur lors du déplacement de ligne : " + e.getMessage(),
+	                "Alerte exception !", JOptionPane.ERROR_MESSAGE);
+	    }
 	}
 	public void set_enable(boolean enable) {
 		mTableBarres.setEnabled(enable);
 		mTableGammes.setEnabled(enable);
 		mBtnRun.setEnabled(enable);
+		mBtnDelButton.setEnabled(enable);
 	}
 }
