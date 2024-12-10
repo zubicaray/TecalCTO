@@ -270,6 +270,12 @@ public class TecalOrdo {
 		mNUMZONE_ANODISATION	= inParams[6];
 		mCAPACITE_ANODISATION	= inParams[7];
 	}
+	public int getTpsMaxSolver() {
+		return mTEMPS_MAX_SOLVEUR ; 
+	}
+	public void setTpsMaxSolver(int tps) {
+		 mTEMPS_MAX_SOLVEUR =tps; 
+	}
 
 	public void setDataSource(int source) {
 

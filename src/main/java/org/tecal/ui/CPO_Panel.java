@@ -63,6 +63,7 @@ public class CPO_Panel extends JPanel {
 	private JTable mTableBarres;
 	private DefaultTableModel mModelBarres;
 	private JButton mBtnRun;
+	private JTextField mTxtTpsMaxSolver;
 	private JButton mBtnDelButton ;
 	private JTextArea mTextArea;
 	private JComboBox<String> mVitesseCombo;
@@ -141,6 +142,23 @@ public class CPO_Panel extends JPanel {
 
 		mBtnRun = new JButton("GO");
 		mBtnRun.setHorizontalAlignment(SwingConstants.LEFT);
+		
+		// Ajouter JTextField pour mTecalOrdo
+	    mTxtTpsMaxSolver = new JTextField();
+	    mTxtTpsMaxSolver.setColumns(10);
+	    mTxtTpsMaxSolver.setHorizontalAlignment(SwingConstants.RIGHT);
+	    mTxtTpsMaxSolver.setText(String.valueOf(mCPO_IHM.getTecalOrdo().getTpsMaxSolver())); // Initialisation avec getTpsMaxSolver()
+
+	    // Listener pour mettre à jour mTecalOrdo
+	    mTxtTpsMaxSolver.addActionListener(e -> {
+	        try {
+	            int tps = Integer.parseInt(mTxtTpsMaxSolver.getText().trim());
+	            mCPO_IHM.getTecalOrdo().setTpsMaxSolver(tps);
+	            logger.info("Temps maximum du solver mis à jour : " + tps);
+	        } catch (NumberFormatException ex) {
+	            JOptionPane.showMessageDialog(this, "Veuillez entrer un nombre entier valide.", "Erreur", JOptionPane.ERROR_MESSAGE);
+	        }
+	    });
 
 		JButton btnDownButton = new JButton();
 		btnDownButton.setHorizontalAlignment(SwingConstants.CENTER);
@@ -220,61 +238,60 @@ public class CPO_Panel extends JPanel {
 			JButton btnReload, JScrollPane scrollPane_gamme, JScrollPane scrollPaneBarres, JButton btnDownButton,
 			JButton btnUpButton, JButton btnDelButton) {
 		GroupLayout gl_panelCPO = new GroupLayout(this);
-		gl_panelCPO.setHorizontalGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING).addGroup(gl_panelCPO
-				.createSequentialGroup().addContainerGap()
-				.addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING)
-						.addComponent(scrollPaneMsg, GroupLayout.DEFAULT_SIZE, 760, Short.MAX_VALUE)
-						.addGroup(gl_panelCPO.createSequentialGroup()
-								.addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING)
-										.addGroup(gl_panelCPO.createSequentialGroup()
-												.addComponent(scrollPane_gamme, GroupLayout.PREFERRED_SIZE, 616,
-														GroupLayout.PREFERRED_SIZE)
-												.addPreferredGap(ComponentPlacement.UNRELATED))
-										.addGroup(Alignment.TRAILING,
-												gl_panelCPO.createSequentialGroup()
-														.addComponent(lblGammes, GroupLayout.PREFERRED_SIZE, 67,
-																GroupLayout.PREFERRED_SIZE)
-														.addGap(111)
-														.addComponent(textFiltre, GroupLayout.PREFERRED_SIZE,
-																GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-														.addGap(70).addComponent(btnReload).addGap(232)))
-								.addComponent(scrollPaneBarres, GroupLayout.DEFAULT_SIZE, 33, Short.MAX_VALUE)
-								.addGap(18)
-								.addGroup(gl_panelCPO.createParallelGroup(Alignment.TRAILING)
-										.addComponent(mBtnRun, GroupLayout.PREFERRED_SIZE, 81,
-												GroupLayout.PREFERRED_SIZE)
-										.addGroup(gl_panelCPO.createSequentialGroup()
-												.addGroup(gl_panelCPO.createParallelGroup(Alignment.TRAILING)
-														.addComponent(btnDownButton, GroupLayout.PREFERRED_SIZE, 31,
-																GroupLayout.PREFERRED_SIZE)
-														.addComponent(btnUpButton, GroupLayout.PREFERRED_SIZE, 30,
-																GroupLayout.PREFERRED_SIZE)
-														.addComponent(btnDelButton, GroupLayout.PREFERRED_SIZE, 30,
-																GroupLayout.PREFERRED_SIZE))
-												.addGap(50)))))
-				.addContainerGap()));
-		gl_panelCPO.setVerticalGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_panelCPO.createSequentialGroup().addGap(50)
-						.addGroup(gl_panelCPO.createParallelGroup(Alignment.BASELINE)
-								.addComponent(lblGammes, GroupLayout.PREFERRED_SIZE, 20, GroupLayout.PREFERRED_SIZE)
-								.addComponent(textFiltre, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-										GroupLayout.PREFERRED_SIZE)
-								.addComponent(btnReload))
-						.addPreferredGap(ComponentPlacement.UNRELATED)
-						.addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING)
-								.addGroup(gl_panelCPO.createParallelGroup(Alignment.BASELINE)
-										.addComponent(scrollPane_gamme, GroupLayout.DEFAULT_SIZE, 122, Short.MAX_VALUE)
-										.addComponent(scrollPaneBarres, GroupLayout.DEFAULT_SIZE, 122, Short.MAX_VALUE))
-								.addGroup(gl_panelCPO.createSequentialGroup().addGap(35).addComponent(btnUpButton)
-										.addPreferredGap(ComponentPlacement.RELATED).addComponent(btnDownButton)
-										.addPreferredGap(ComponentPlacement.UNRELATED).addComponent(btnDelButton)
-										.addPreferredGap(ComponentPlacement.UNRELATED, GroupLayout.DEFAULT_SIZE,
-												Short.MAX_VALUE)
-										.addComponent(mBtnRun)))
-						.addGap(47)
-						.addComponent(scrollPaneMsg, GroupLayout.PREFERRED_SIZE, 149, GroupLayout.PREFERRED_SIZE)
-						.addGap(24)));
-		return gl_panelCPO;
+	    gl_panelCPO.setHorizontalGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING)
+	        .addGroup(gl_panelCPO.createSequentialGroup()
+	            .addContainerGap()
+	            .addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING)
+	                .addComponent(scrollPaneMsg, GroupLayout.DEFAULT_SIZE, 760, Short.MAX_VALUE)
+	                .addGroup(gl_panelCPO.createSequentialGroup()
+	                    .addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING)
+	                        .addGroup(gl_panelCPO.createSequentialGroup()
+	                            .addComponent(scrollPane_gamme, GroupLayout.PREFERRED_SIZE, 616, GroupLayout.PREFERRED_SIZE)
+	                            .addPreferredGap(ComponentPlacement.UNRELATED))
+	                        .addGroup(Alignment.TRAILING, gl_panelCPO.createSequentialGroup()
+	                            .addComponent(lblGammes, GroupLayout.PREFERRED_SIZE, 67, GroupLayout.PREFERRED_SIZE)
+	                            .addGap(111)
+	                            .addComponent(textFiltre, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+	                            .addGap(70).addComponent(btnReload).addGap(232)))
+	                    .addComponent(scrollPaneBarres, GroupLayout.DEFAULT_SIZE, 33, Short.MAX_VALUE)
+	                    .addGap(18)
+	                    .addGroup(gl_panelCPO.createParallelGroup(Alignment.TRAILING)
+	                    	.addComponent(mTxtTpsMaxSolver, GroupLayout.PREFERRED_SIZE, 81, GroupLayout.PREFERRED_SIZE)
+	                        .addComponent(mBtnRun, GroupLayout.PREFERRED_SIZE, 81, GroupLayout.PREFERRED_SIZE)
+	                        .addGroup(gl_panelCPO.createSequentialGroup()
+	                            .addGroup(gl_panelCPO.createParallelGroup(Alignment.TRAILING)
+	                                .addComponent(btnDownButton, GroupLayout.PREFERRED_SIZE, 31, GroupLayout.PREFERRED_SIZE)
+	                                .addComponent(btnUpButton, GroupLayout.PREFERRED_SIZE, 30, GroupLayout.PREFERRED_SIZE)
+	                                .addComponent(btnDelButton, GroupLayout.PREFERRED_SIZE, 30, GroupLayout.PREFERRED_SIZE))
+	                            .addGap(50)))))
+	            .addContainerGap())
+	        
+	    );
+	    gl_panelCPO.setVerticalGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING)
+	        .addGroup(gl_panelCPO.createSequentialGroup()
+	            .addGap(50)
+	            .addGroup(gl_panelCPO.createParallelGroup(Alignment.BASELINE)
+	                .addComponent(lblGammes, GroupLayout.PREFERRED_SIZE, 20, GroupLayout.PREFERRED_SIZE)
+	                .addComponent(textFiltre, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+	                .addComponent(btnReload))	            
+	            .addGap(18)
+	            .addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING)
+	                .addGroup(gl_panelCPO.createParallelGroup(Alignment.BASELINE)
+	                    .addComponent(scrollPane_gamme, GroupLayout.DEFAULT_SIZE, 122, Short.MAX_VALUE)
+	                    .addComponent(scrollPaneBarres, GroupLayout.DEFAULT_SIZE, 122, Short.MAX_VALUE))
+	                .addGroup(gl_panelCPO.createSequentialGroup()
+	                    .addGap(35).addComponent(btnUpButton)
+	                    .addPreferredGap(ComponentPlacement.RELATED).addComponent(btnDownButton)
+	                    .addPreferredGap(ComponentPlacement.UNRELATED).addComponent(btnDelButton)
+	                    .addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+	                    .addComponent(mTxtTpsMaxSolver, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+	                    .addGap(10)
+	                    .addComponent(mBtnRun)))
+	            .addGap(47)
+	            .addComponent(scrollPaneMsg, GroupLayout.PREFERRED_SIZE, 149, GroupLayout.PREFERRED_SIZE)
+	            .addGap(24))
+	    );
+	    return gl_panelCPO;
 	}
 
 	private void buildTables(JScrollPane scrollPaneBarres) {
@@ -372,9 +389,7 @@ public class CPO_Panel extends JPanel {
 
 	}
 
-	public void setModelBarres(DefaultTableModel mModelBarres) {
-		this.mModelBarres = mModelBarres;
-	}
+	
 
 	public void setText(String s) {
 		mTextArea.setText(mTextArea.getText() + s);
@@ -426,7 +441,7 @@ public class CPO_Panel extends JPanel {
 		});
 
 	}
-	public void execute() {	
+	public void execute() {			
 		mCPO_IHM.run();
 	}
 
