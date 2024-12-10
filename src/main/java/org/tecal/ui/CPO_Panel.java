@@ -53,6 +53,8 @@ import org.tecal.scheduler.CST;
 import org.tecal.scheduler.data.SQL_DATA;
 import org.tecal.scheduler.types.Barre;
 
+
+
 public class CPO_Panel extends JPanel {
 
 	private static final Logger logger = LogManager.getLogger(CPO_Panel.class);
@@ -168,7 +170,8 @@ public class CPO_Panel extends JPanel {
 					try {
 						mModelBarres.removeRow(row); // Supprime la ligne dans le modèle
 						mTableBarres.clearSelection(); // Efface la sélection pour éviter des indices invalides
-						mModelBarres.fireTableDataChanged();
+						mTableBarres.repaint();
+						//mModelBarres.fireTableDataChanged();
 					} catch (ArrayIndexOutOfBoundsException ex) {
 						System.err.println("Erreur : ligne invalide sélectionnée.");
 					}
@@ -344,19 +347,28 @@ public class CPO_Panel extends JPanel {
 	}
 
 	public void setModelBarres(LinkedHashMap<Integer, Barre> set) {
-		mModelBarres.setRowCount(0);
-		// mNumBarre=0;
-		for (Map.Entry<Integer, Barre> entry : set.entrySet()) {
+		
+		SwingUtilities.invokeLater(() -> {
+			mModelBarres.setRowCount(0);
+			// mNumBarre=0;
+			for (Map.Entry<Integer, Barre> entry : set.entrySet()) {
 
-			Barre b = entry.getValue();
+				Barre b = entry.getValue();
 
-			Object[] rowO = { b.idbarre, b.barreNom, b.gamme, CST.VITESSES[b.vitesseMontee],
-					CST.VITESSES[b.vitesseDescente], b.prioritaire };
-			if (b.idbarre > mNumBarre) {
-				mNumBarre = b.idbarre;
+				Object[] rowO = { b.idbarre, b.barreNom, b.gamme, CST.VITESSES[b.vitesseMontee],
+						CST.VITESSES[b.vitesseDescente], b.prioritaire };
+				if (b.idbarre > mNumBarre) {
+					mNumBarre = b.idbarre;
+				}
+				
+				mModelBarres.addRow(rowO);
+				mTableBarres.repaint();
+				mTableBarres.revalidate();
+				
+				
 			}
-			mModelBarres.addRow(rowO);
-		}
+		});
+		
 
 	}
 
@@ -404,14 +416,21 @@ public class CPO_Panel extends JPanel {
 
 	private void setActionListener() {
 		mBtnRun.addActionListener(e -> {
+			
+			
+			computeBarresFutures();
+	       
 			// Créer et démarrer un SwingWorker
 			new Worker(this).execute();
 
 		});
 
 	}
+	public void execute() {	
+		mCPO_IHM.run();
+	}
 
-	public void execute() {
+	private void computeBarresFutures() {
 		LinkedHashMap<Integer, String> gammes = new LinkedHashMap<>();
 		LinkedHashMap<Integer, Barre> barres = new LinkedHashMap<>();
 		
@@ -419,6 +438,7 @@ public class CPO_Panel extends JPanel {
 		// utiliser un objet de classe Barre ave vitesse et prio
 		gammes.clear();
 		try {
+			
 			for (int count = 0; count < mTableBarres.getRowCount(); count++) {
 				
 				 if (mTableBarres.getValueAt(count, 0) == null) {
@@ -442,15 +462,14 @@ public class CPO_Panel extends JPanel {
 					logger.info("barre: " + nomBarre + " prioritaire !");
 				gammes.put(idbarre, gamme);
 				barres.put(idbarre, new Barre(idbarre, nomBarre, gamme, indexMontee, indexDesc, prio));
+				mCPO_IHM.setBarresSettingsFutures( barres);
 			}
 		}
 		catch(Exception e) {
-			logger.error("Erreurexecute recup vitesse "+e.getMessage());
-			JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
+			logger.error("Erreur execute recup vitesse "+e.getMessage());
+			JOptionPane.showMessageDialog(null, "Erreur execute recup vitesse "+e.getMessage(), "Alerte exception !", JOptionPane.ERROR_MESSAGE);
 		}
 		
-
-		mCPO_IHM.run(barres);
 	}
 
 	public void buildTableModelBarre() throws SQLException {
@@ -466,10 +485,13 @@ public class CPO_Panel extends JPanel {
 		columnNames.add("prio.");
 
 		mModelBarres.setColumnIdentifiers(columnNames);
-
 		mTableBarres.setModel(mModelBarres);
+		
 		TableColumnModel tcm = mTableBarres.getColumnModel();
 		tcm.removeColumn(tcm.getColumn(0));
+		
+		tcm.getColumn(0).setPreferredWidth(100);
+		
 
 		TableColumn colBarre = mTableBarres.getColumnModel().getColumn(0);
 		colBarre.setCellEditor(new DefaultCellEditor(new JTextField()));
@@ -488,8 +510,8 @@ public class CPO_Panel extends JPanel {
 		colPrio.setCellRenderer(mTableBarres.getDefaultRenderer(Boolean.class));
 
 		mTableBarres.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		TableColumnModel columnModel = mTableBarres.getColumnModel();
-		columnModel.getColumn(0).setPreferredWidth(100);
+		mTableBarres.getTableHeader().setDraggedColumn( null );
+		
 		// columnModel.getColumn(0).setMaxWidth(50);
 		mTableBarres.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
 
@@ -500,25 +522,36 @@ public class CPO_Panel extends JPanel {
 	    if (mTableBarres.isEditing()) {
 	        mTableBarres.getCellEditor().stopCellEditing();
 	    }
+	    synchronized (mModelBarres) {
+	    	int rowCount = mTableBarres.getRowCount();
+		    if (rowCount > 0) {
+		        int i = 0;
+		        boolean found = false;
 
-	    int i = 0;
-	    boolean found = false;
-	    if(mTableBarres.getRowCount()>0) {
-	    	 for (; i < mTableBarres.getRowCount(); i++) {
-	 	        if (barre == (int) mModelBarres.getValueAt(i, 0)) {
-	 	            found = true;
-	 	            break;
-	 	        }
-	 	    }
+		        for (; i < rowCount; i++) {
+		            Object value = mModelBarres.getValueAt(i, 0); // Assurez-vous que l'indice est valide
+		            if (value instanceof Integer && barre == (int) value) {
+		                found = true;
+		                break;
+		            }
+		        }
 
-	 	    if (found) {
-	 	        mModelBarres.removeRow(i); // Notifie automatiquement les changements
-	 	        logger.info("Barre avec ID " + barre + " supprimée.");
-	 	    } else {
-	 	        logger.warn("Barre avec ID " + barre + " introuvable.");
-	 	    }
+		        if (found) {
+		            mModelBarres.removeRow(i); // Supprime la ligne et notifie automatiquement les changements
+		            mTableBarres.clearSelection(); // Efface la sélection pour éviter des indices invalides
+		           
+					//mModelBarres.fireTableDataChanged();
+					mTableBarres.repaint();
+		            logger.info("Barre avec ID " + barre + " supprimée.");
+		        } else {
+		            logger.warn("Barre avec ID " + barre + " introuvable.");
+		        }
+		    } else {
+		        logger.warn("Aucune barre à supprimer : la table est vide.");
+		    }
 	    }
-	   
+	    
+	    
 	}
 
 	public void buildTableModelGamme() throws SQLException {
@@ -543,9 +576,12 @@ public class CPO_Panel extends JPanel {
 							Object[] rowO = { ++mNumBarre, mNumBarre + "", gamme, CST.VITESSES[CST.VITESSE_NORMALE],
 									CST.VITESSES[CST.VITESSE_NORMALE], false };
 							mModelBarres.addRow(rowO);
+							mTableBarres.clearSelection(); 
+							mTableBarres.repaint();
+							//mModelBarres.fireTableDataChanged();
 
 						}
-						mModelBarres.fireTableDataChanged();
+						
 					}
 				}
 			
@@ -560,23 +596,27 @@ public class CPO_Panel extends JPanel {
 			@Override
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
 					boolean hasFocus, int row, int col) {
-				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+				
 
 				if (table.getRowCount()>0 && row >= 0 && row < table.getRowCount()) {
+					
 					int modelIndex = table.convertRowIndexToModel(row);
-					String gamme = (String) table.getModel().getValueAt(modelIndex, 0);
+					if(modelIndex>0) {
+						String gamme = (String) table.getModel().getValueAt(modelIndex, 0);
 
-					if (SQL_DATA.getInstance().getMissingTimeMovesGammes().contains(gamme)) {
-						setBackground(Color.RED);
-						setForeground(Color.BLACK);
-					} else {
-						setBackground(table.getBackground());
-						setForeground(table.getForeground());
+						if (SQL_DATA.getInstance().getMissingTimeMovesGammes().contains(gamme)) {
+							setBackground(Color.RED);
+							setForeground(Color.BLACK);
+						} else {
+							setBackground(table.getBackground());
+							setForeground(table.getForeground());
+						}
 					}
+					
 
 				}
-
-				return this;
+				return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+				 
 			}
 		});
 
@@ -621,40 +661,47 @@ public class CPO_Panel extends JPanel {
 	}
 
 	private void moveRowBy(int by) {
-	    DefaultTableModel model = (DefaultTableModel) mTableBarres.getModel();
-	    int[] rows = mTableBarres.getSelectedRows();
-	    if (rows.length == 0) {
-	        return; // Pas de ligne sélectionnée
-	    }
+		
+		SwingUtilities.invokeLater(() -> {
+			DefaultTableModel model = (DefaultTableModel) mTableBarres.getModel();
+		    if (model.getRowCount() > 0) {
+		    	int[] rows = mTableBarres.getSelectedRows();
+			    if (rows.length == 0) {
+			        return; // Pas de ligne sélectionnée
+			    }
 
-	    int row = rows[0];
-	    int rowCount = model.getRowCount();
-	    int destination = row + by;
+			    int row = rows[0];
+			    int rowCount = model.getRowCount();
+			    int destination = row + by;
 
-	    // Vérifiez si les indices sont valides
-	    if (row < 0 || row >= rowCount || destination < 0 || destination >= rowCount) {
-	        return;
-	    }
+			    // Vérifiez si les indices sont valides
+			    if (row < 0 || row >= rowCount || destination < 0 || destination >= rowCount) {
+			        return;
+			    }
 
-	    try {
-	        // Sauvegarde des données de la ligne
-	        Object[] data = new Object[model.getColumnCount()];
-	        for (int col = 0; col < model.getColumnCount(); col++) {
-	            data[col] = model.getValueAt(row, col);
-	        }
+			    try {
+			        // Sauvegarde des données de la ligne
+			        Object[] data = new Object[model.getColumnCount()];
+			        for (int col = 0; col < model.getColumnCount(); col++) {
+			            data[col] = model.getValueAt(row, col);
+			        }
 
-	        // Modification du modèle
-	        SwingUtilities.invokeLater(() -> {
-	            model.removeRow(row);
-	            model.insertRow(destination, data);
-	            mTableBarres.setRowSelectionInterval(destination, destination);
-	        });
+			        // Modification du modèle
+			        SwingUtilities.invokeLater(() -> {
+			            model.removeRow(row);
+			            model.insertRow(destination, data);
+			            mTableBarres.setRowSelectionInterval(destination, destination);
+			        });
 
-	    } catch (Exception e) {
-	        logger.error("Erreur MOVE ! " + e.getMessage(), e);
-	        JOptionPane.showMessageDialog(null, "Erreur lors du déplacement de ligne : " + e.getMessage(),
-	                "Alerte exception !", JOptionPane.ERROR_MESSAGE);
-	    }
+			    } catch (Exception e) {
+			        logger.error("Erreur MOVE ! " + e.getMessage(), e);
+			        JOptionPane.showMessageDialog(null, "Erreur lors du déplacement de ligne : " + e.getMessage(),
+			                "Alerte exception !", JOptionPane.ERROR_MESSAGE);
+			    }
+		    }
+		});
+	    
+	    
 	}
 	public void set_enable(boolean enable) {
 		mTableBarres.setEnabled(enable);

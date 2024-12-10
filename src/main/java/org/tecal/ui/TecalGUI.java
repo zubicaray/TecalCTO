@@ -407,7 +407,8 @@ public class TecalGUI {
 				mCPO_IHM = new CPO_IHM(params);
 				frmTecalOrdonnanceur.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				// mTecalOrdo.run(mCPO_IHM);
-				mCPO_IHM.run(barres);
+				mCPO_IHM.setBarresSettingsFutures(barres);
+				mCPO_IHM.run();
 				frmTecalOrdonnanceur.setCursor(Cursor.getDefaultCursor());
 				mCPO_IHM.setVisible(true);
 				mCPO_IHM.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); 

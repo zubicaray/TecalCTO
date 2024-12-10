@@ -94,6 +94,14 @@ public class CPO_IHM extends JFrame {
 
 	private LinkedHashMap<Integer,Barre> mBarresSettingsFutures;
 
+	public LinkedHashMap<Integer, Barre> getmBarresSettingsFutures() {
+		return mBarresSettingsFutures;
+	}
+
+	public void setBarresSettingsFutures(LinkedHashMap<Integer, Barre> mBarresSettingsFutures) {
+		this.mBarresSettingsFutures = mBarresSettingsFutures;
+	}
+
 	public LinkedHashMap<Integer,Barre> getBarres() {
 		return mBarresSettingsFutures;
 	}
@@ -144,19 +152,21 @@ public class CPO_IHM extends JFrame {
 					String version = getManifestVersion();
 					Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
 					    // Gérer les exceptions non interceptées ici
+						
 					    JOptionPane.showMessageDialog(null, 
 					        "Une erreur est survenue : " + throwable.getMessage(), 
 					        "Erreur", 
 					        JOptionPane.ERROR_MESSAGE);
 
-			
+						 
 					    logger.error("Exception non interceptée dans le thread : " + thread.getName(), throwable);
 					});
+				
 					SwingUtilities.invokeLater(() -> {
 					    // Définit un gestionnaire global pour les exceptions dans Swing
 					    System.setProperty("sun.awt.exception.handler", "org.tecal.ui.MyExceptionHandler");
 					});
-
+	
 					CPO_IHM frame = new CPO_IHM();
 					
 					// Récupérer le nom de l'hôte
@@ -206,14 +216,13 @@ public class CPO_IHM extends JFrame {
 		setCursor(Cursor.getDefaultCursor());
 	}
 
-	public void run (LinkedHashMap<Integer,Barre> barres) {
+	public void run () {
 
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-		mBarresSettingsFutures=barres;
+		
 		mCPO_PANEL.set_enable(false);
 
-		// on garde les jobs en cours des générations précédentes
-		//manageOngoingJobs();
+		
 		mCPO_PANEL.setModelBarres(mBarresSettingsFutures);
 		if(mBarresSettingsFutures.size()>0) {
 			try {
