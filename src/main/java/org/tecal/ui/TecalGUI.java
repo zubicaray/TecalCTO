@@ -53,6 +53,7 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowFilter;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -197,7 +198,7 @@ public class TecalGUI {
 	private void initialize() {
 
 		frmTecalOrdonnanceur = new JFrame();
-	
+
 		frmTecalOrdonnanceur.setTitle("Tecal PROD");
 
 		mIcons = loadIcons(this);
@@ -226,12 +227,12 @@ public class TecalGUI {
 		buildMvtPonts();
 		buildCalibrageTab();
 		buildParamsTab(tabbedPaneMain);
-		
+
 		TauxAnodisationPanel  taux= new TauxAnodisationPanel();
 		StatsMensuel mens=new StatsMensuel();
 		JTabbedPane statTabbedPaneMain = new JTabbedPane(SwingConstants.LEFT);
 		ImageIcon iconStat = new ImageIcon(this.getClass().getResource("/icons8-statistic-16.png"));
-		
+
 		tabbedPaneMain.addTab("Statistiques",iconStat,statTabbedPaneMain);
 		statTabbedPaneMain.addTab("Taux anodisation", null, taux, null);
 		statTabbedPaneMain.addTab("production", null, mens, null);
@@ -295,7 +296,7 @@ public class TecalGUI {
 		buttonsDate.add(btnRunVisuProd);
 		JButton btnGanttCpo = new JButton("Gantt CPO");
 		buttonsDate.add(btnGanttCpo);
-		
+
 		JButton btnGanttCpoLogs = new JButton("CPO logs");
 		buttonsDate.add(btnGanttCpoLogs);
 
@@ -313,8 +314,9 @@ public class TecalGUI {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 
-				if (tableOF == null)
+				if (tableOF == null) {
 					return;
+				}
 
 				int[] sel = tableOF.getSelectedRows();
 				if (sel.length == 0) {
@@ -336,16 +338,16 @@ public class TecalGUI {
 				ganttTecal.setSize(new java.awt.Dimension(1500, 870));
 				RefineryUtilities.centerFrameOnScreen(ganttTecal);
 				ganttTecal.setVisible(true);
-				ganttTecal.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+				ganttTecal.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 				frmTecalOrdonnanceur.setCursor(Cursor.getDefaultCursor());
-				
+
 				StatsWindow fenetre = new StatsWindow( lOF);
-				fenetre.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); 
+				fenetre.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 	            fenetre.setVisible(true);
 
 			}
 		});
-		
+
 		btnGanttCpoLogs.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -361,21 +363,22 @@ public class TecalGUI {
 
 				// Créer la fenêtre
 				JFrame frame = new JFrame("Diagramme de Gantt");
-				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+				frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 				frame.setSize(800, 600);
 				frame.add(panel);
 				frame.setVisible(true);
 
 			}
 		});
-		
+
 
 		btnGanttCpo.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 
-				if (tableOF == null)
+				if (tableOF == null) {
 					return;
+				}
 
 				int[] sel = tableOF.getSelectedRows();
 				if (sel.length == 0) {
@@ -403,15 +406,21 @@ public class TecalGUI {
 
 				};
 
-				// mTecalOrdo.setBarres(gammes);
-				mCPO_IHM = new CPO_IHM(params);
-				frmTecalOrdonnanceur.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				// mTecalOrdo.run(mCPO_IHM);
-				mCPO_IHM.setBarresSettingsFutures(barres);
-				mCPO_IHM.run();
-				frmTecalOrdonnanceur.setCursor(Cursor.getDefaultCursor());
-				mCPO_IHM.setVisible(true);
-				mCPO_IHM.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); 
+				SwingUtilities.invokeLater(() -> {
+					// mTecalOrdo.setBarres(gammes);
+					mCPO_IHM = new CPO_IHM(params);
+					//frmTecalOrdonnanceur.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
+					mCPO_IHM.setBarresSettingsFutures(barres);
+					//mCPO_IHM.run();
+					//frmTecalOrdonnanceur.setCursor(Cursor.getDefaultCursor());
+					mCPO_IHM.setVisible(true);
+					mCPO_IHM.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+
+
+				});
+
+
 
 			}
 		});
@@ -420,11 +429,11 @@ public class TecalGUI {
 
 	private void loadCalibrageData() {
 		try {
-			
+
 			tableModelCalibrage.setRowCount(0);
 
 			Statement stmt = SQL_DATA.getInstance().getStatement();
-			ResultSet rs = stmt.executeQuery("SELECT * FROM CalibrageTempsGammes ");	
+			ResultSet rs = stmt.executeQuery("SELECT * FROM CalibrageTempsGammes ");
 
 			// Add rows to table model
 			while (rs.next()) {
@@ -505,7 +514,7 @@ public class TecalGUI {
         if (confirm != JOptionPane.YES_OPTION) {
             return;
         }
-		
+
 		String deleteQuery = "DELETE FROM CalibrageTempsGammes WHERE NumGamme = ? AND NumFicheProduction = ?";
 		PreparedStatement pstmt = SQL_DATA.getInstance().getPreparedStatement(deleteQuery);
 
@@ -523,7 +532,7 @@ public class TecalGUI {
 
 			tableModelCalibrage.removeRow(selectedRows[i]); // Supprimer la ligne du modèle
 		}
-          
+
     }
 
 	private void buildCalibrageTab() {
@@ -564,7 +573,7 @@ public class TecalGUI {
 
 		tableModelCalibrage = new DefaultTableModel(new Object[] { "NumGamme", "NumFicheProduction", "Date" }, 0) {
 			/**
-			 * 
+			 *
 			 */
 			private static final long serialVersionUID = 1L;
 
@@ -619,11 +628,11 @@ public class TecalGUI {
 		ImageIcon iconStat = new ImageIcon(this.getClass().getResource("/icons8-parameters-16.png"));
 		tabbedPane.addTab("Paramètres",iconStat,mParamTabs);
 		JPanel panel_param = new JPanel();
-		ZonesPanel panelZones = new ZonesPanel();		
+		ZonesPanel panelZones = new ZonesPanel();
 		mParamTabs.addTab("Zones", null, panelZones, null);
 		mParamTabs.addTab("Constantes CPO", null, panel_param, null);
-		
-		
+
+
 
 		JLabel lblTailleZone = new JLabel("TEMPS_ZONE_OVERLAP_MIN");
 
@@ -828,6 +837,7 @@ public class TecalGUI {
 
 		btnEraseButton = new JButton("RAZ");
 		btnEraseButton.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 
 				int result = JOptionPane.showConfirmDialog((Component) null,
@@ -850,6 +860,7 @@ public class TecalGUI {
 
 		btnImport = new JButton("Calcul auto.");
 		btnImport.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 
 				int result = JOptionPane.showConfirmDialog((Component) null,
@@ -1091,8 +1102,9 @@ public class TecalGUI {
 							result = JOptionPane.showConfirmDialog((Component) null,
 									"La gamme a déjà un OF de calibré, MAJ ?", "alert", JOptionPane.YES_NO_OPTION);
 
-							if (result == 0)
+							if (result == 0) {
 								SQL_DATA.getInstance().updateCalibrageGamme(gamme, of, d);
+							}
 						} else {
 							SQL_DATA.getInstance().insertCalibrageGamme(gamme, of, d);
 						}

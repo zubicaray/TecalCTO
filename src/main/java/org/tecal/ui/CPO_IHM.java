@@ -270,13 +270,13 @@ public class CPO_IHM extends JFrame {
 			List<AssignedTask> listTask = mTecalOrdo.getAssignedTasksByBarreId().get(i);
 
 			LocalDateTime d = LocalDateTime.now();
-			LocalTime start = mGanttTecalOR.getStartTime();
+			LocalDateTime start = mGanttTecalOR.getStartTime();
 			int cptZone = 1;
 
 			for (AssignedTask a : listTask) {
 
-				LocalTime deb = start.plusSeconds(a.start - CST.CPT_GANTT_OFFSET);
-				LocalTime fin = start.plusSeconds(a.end - CST.CPT_GANTT_OFFSET);
+				LocalDateTime deb = start.plusSeconds(a.start - CST.CPT_GANTT_OFFSET);
+				LocalDateTime fin = start.plusSeconds(a.end - CST.CPT_GANTT_OFFSET);
 
 				SQL_DATA.getInstance().insertLogCPO(d, a.barreID, mTecalOrdo.getBarreLabels().get(i), cptZone,
 						a.numzone, deb, fin);
@@ -308,9 +308,7 @@ public class CPO_IHM extends JFrame {
 				barresCommencantes.add(barreid);
 				mTecalOrdo.addFixedJobsEnCours(barreid);
 				logger.info("barreid:" + barreid + " en cours ");
-				SwingUtilities.invokeLater(() -> {
-					mCPO_PANEL.removeBarre(barreid);
-				});
+			
 
 			}
 
@@ -325,6 +323,9 @@ public class CPO_IHM extends JFrame {
 
 		for (Integer barreId : barresCommencantes) {
 			mBarresSettingsFutures.remove(barreId);
+			SwingUtilities.invokeLater(() -> {
+				mCPO_PANEL.removeBarre(barreId);
+			});
 
 		}
 	}

@@ -2,6 +2,7 @@ package org.tecal.scheduler;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,9 +50,9 @@ public class GanttChart extends JFrame {
 	 */
 	private static final long serialVersionUID = 1L;
 	@SuppressWarnings("unused")
-	private  LocalTime mStartTime;
+	private  LocalDateTime mStartTime;
 
-	public LocalTime getStartTime() {
+	public LocalDateTime getStartTime() {
 		return mStartTime;
 	}
 	@SuppressWarnings("unused")
@@ -388,7 +389,7 @@ public class GanttChart extends JFrame {
 		 );
 	}
 	public void setStartTime() {
-		mStartTime= LocalTime.now();
+		mStartTime= LocalDateTime.now();
 	}
 
 	private void buildPlot() {

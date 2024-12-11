@@ -12,7 +12,7 @@ ORDER BY idbarre
 select distinct numzone,codezone from zones order by numzone;
 
 
-truncate table LOGS_CPO;
+truncate table ANODISATION.dbo.LOGS_CPO;
 --DROP  TABLE LOGS_CPO ;
 
 CREATE TABLE LOGS_CPO (
@@ -21,8 +21,8 @@ CREATE TABLE LOGS_CPO (
     label VARCHAR(255) NULL,              -- Champ texte
     idZone INT NOT NULL,  
     NumZone INT NOT NULL,                     -- Champ entier
-    entree TIME NOT NULL,                     -- Heure d'entrée
-    sortie TIME NOT NULL,                     -- Heure de sortie,
+    entree DATETIME NOT NULL,                     -- Heure d'entrée
+    sortie DATETIME NOT NULL,                     -- Heure de sortie,
     PRIMARY KEY (date_log, idbarre,idZone)       -- Clé primaire composée
 );
 

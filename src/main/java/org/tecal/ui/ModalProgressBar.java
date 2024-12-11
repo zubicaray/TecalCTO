@@ -21,6 +21,7 @@ public class ModalProgressBar {
         // Créer un JDialog modal
         dialog = new JDialog((Frame) null, "Veuillez patienter", true);
         dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+        dialog.setUndecorated(true); // Supprimer la décoration (barre de titre)
         dialog.setLayout(new BorderLayout());
         dialog.setSize(400, 20);
         dialog.setLocationRelativeTo(null);
