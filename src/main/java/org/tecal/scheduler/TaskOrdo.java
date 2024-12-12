@@ -34,8 +34,7 @@ public class TaskOrdo {
 	
 	private long fixedStartBDD;
 	private long fixedEndBDD;
-	private long fixedDeriveNulle;
-	@SuppressWarnings("unused")
+	private long fixedDeriveNulle;	
 	private long fixedDeriveMax;
 	private  long fixedFin;
 	

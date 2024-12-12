@@ -70,7 +70,7 @@ public class CPO_Panel extends JPanel {
 	private DefaultTableModel mModelGammes;
 	private Integer mNumBarre;
 
-	@SuppressWarnings("unused")
+	
 	private CPO_IHM mCPO_IHM;
 
 	public CPO_Panel(CPO_IHM cpoIhm) {

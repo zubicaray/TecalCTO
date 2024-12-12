@@ -64,7 +64,7 @@ void makeSafetyBetweenBridges() {
 		long deb = 0;
 		long fin= 0;
 		int bridge=0;
-		@SuppressWarnings("unused")
+		
 		TaskOrdo taskOrdoNext =null;
 		//System.out.println("Job "+name);
 		for (int taskID = 0; taskID < mTaskOrdoList.size(); ++taskID) {

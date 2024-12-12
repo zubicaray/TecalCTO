@@ -3,7 +3,7 @@ package org.tecal.scheduler;
 import java.awt.Color;
 import java.awt.Font;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -49,13 +49,13 @@ public class GanttChart extends JFrame {
 	 *
 	 */
 	private static final long serialVersionUID = 1L;
-	@SuppressWarnings("unused")
+	
 	private  LocalDateTime mStartTime;
 
 	public LocalDateTime getStartTime() {
 		return mStartTime;
 	}
-	@SuppressWarnings("unused")
+	
 	private String[] mZonesAllGamme;
 	private XYIntervalSeriesCollection mDataset;
 	private HashMap<Integer,ZoneType> mZonesBDD;
@@ -158,15 +158,17 @@ public class GanttChart extends JFrame {
 
 			String hour="";
 			String res;
+			DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+	      
 
 			if(seconds >0) {
 				minutes=toMinutes(seconds);
-				hour= mStartTime.plusSeconds(fin-CST.CPT_GANTT_OFFSET).toString().substring(0,8);
+				hour= mStartTime.plusSeconds(fin-CST.CPT_GANTT_OFFSET).format(timeFormatter);
 				res=" sortie dans "+ minutes+" minutes à "+hour;
 			}
 			else {
 				minutes=toMinutes(-1*seconds);
-				hour= mStartTime.plusSeconds(fin-CST.CPT_GANTT_OFFSET).toString().substring(0,8);
+				hour= mStartTime.plusSeconds(fin-CST.CPT_GANTT_OFFSET).format(timeFormatter);;
 				res=" sortie il y a  "+ minutes+" minutes à "+hour;
 			}
 

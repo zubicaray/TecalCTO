@@ -200,16 +200,13 @@ public class TecalOrdo {
 	@SuppressWarnings("unused")
 	private int mGAP_ZONE_NOOVERLAP = 0;
 	// temps autour d'un début de grosse zone
+	
 	@SuppressWarnings("unused")
 	private int mTEMPS_MVT_PONT = 0;
-	// temps de sécurité entre deux gammes différentes sur un même poste d'ano
-	@SuppressWarnings("unused")
-	private int mTEMPS_ANO_ENTRE_P1_P2 = 0;
-	@SuppressWarnings("unused")
-	private int mTEMPS_MAX_SOLVEUR = 0;
-	@SuppressWarnings("unused")
-	public  static int mNUMZONE_ANODISATION = CST.ANODISATION_NUMZONE;
-	@SuppressWarnings("unused")
+	// temps de sécurité entre deux gammes différentes sur un même poste d'ano	
+	private int mTEMPS_ANO_ENTRE_P1_P2 = 0;	
+	private int mTEMPS_MAX_SOLVEUR = 0;	
+	public  static int mNUMZONE_ANODISATION = CST.ANODISATION_NUMZONE;	
 	public	static int mCAPACITE_ANODISATION = CST.CAPACITE_ANODISATION;
 	
 	
