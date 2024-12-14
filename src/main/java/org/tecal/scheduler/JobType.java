@@ -170,8 +170,7 @@ public class JobType {
 		
 	}
 
-
-	 void clear() {
+	void clear() {
 		mNoOverlapP1P2.clear();
 		for(ListeZone t :bridgesMoves) {
 			t.clear();
@@ -184,12 +183,7 @@ public class JobType {
 		IntVar fin= null;
 		int bridge=0;
 		
-		
-		
-		//System.out.println("Job "+name);
 		for (int taskID = 0; taskID < mTaskOrdoList.size(); ++taskID) {
-			
-						
 			
 			TaskOrdo taskOrdo = mTaskOrdoList.get(taskID);		
 			TaskOrdo taskOrdoNext =null;
@@ -212,15 +206,17 @@ public class JobType {
 			
 			
 			if(taskOrdo.isOverlapable || taskID ==indexAnod ||  taskID == mTaskOrdoList.size()-1 ) {
-				fin=TecalOrdo.getForeward(TecalOrdo.model, (IntVar) taskOrdo.getStart(),CST.TEMPS_MVT_PONT);
+				if(taskOrdo.getBloquePont2()) {
+					fin=taskOrdo.getEndBDD();
+				}
+				else
+					fin=TecalOrdo.getForeward(TecalOrdo.model, (IntVar) taskOrdo.getStart(),CST.TEMPS_MVT_PONT);
 				
 				lBridgeMoves.add(TecalOrdo.model.newIntervalVar(deb, TecalOrdo.model.newIntVar(0, TecalOrdo.horizon, ""), fin ,""));
 				
 				if(taskID != mTaskOrdoList.size()-1)
 					deb=TecalOrdo.getBackward(TecalOrdo.model, (IntVar) taskOrdoNext.getStart(),taskOrdo.tempsDeplacement+CST.TEMPS_ANO_ENTRE_P1_P2);
-				
-				
-				
+						
 			}			
 			
 		}
@@ -254,12 +250,10 @@ public class JobType {
 			//todo check cas chargement
 			if(zt.cumul>1) {
 				multiZoneIntervals.computeIfAbsent(task.numzone, (Integer k) -> new ArrayList<>());   
-				//multiZoneIntervals.get(task.numzone).add(mTaskOrdoList.get(taskID).intervalReel);
 				multiZoneIntervals.get(task.numzone).add(inter);
 			}
 			else {
 				zoneToIntervals.computeIfAbsent(task.numzone, (Integer k) -> new ArrayList<>());              
-				//zoneToIntervals.get(task.numzone).add(mTaskOrdoList.get(taskID).intervalReel);
 				zoneToIntervals.get(task.numzone).add(inter);
 				
 				if(SQL_DATA.getInstance().getRelatedZones().containsKey(task.numzone)) {
@@ -268,7 +262,6 @@ public class JobType {
 					if(!cumulDemands.containsKey(zoneToAdd)) {
 						cumulDemands.put(zoneToAdd,new ArrayList<IntervalVar>());
 					}
-					//cumulDemands.get(zoneToAdd).add(mTaskOrdoList.get(taskID).intervalReel);
 					cumulDemands.get(zoneToAdd).add(inter);
 				}
 
@@ -372,8 +365,6 @@ public class JobType {
 		return tps;
 	}
 
-
-
 	void buildTaskList(List<ElementGamme> inzones) {
 		
 		if(CST.PrintGroupementZones) System.out.println("---------------------------------------");
@@ -400,9 +391,6 @@ public class JobType {
 
 	}
 	
-
-
-
 	public int getmBarreId() {
 		return mBarreId;
 	}

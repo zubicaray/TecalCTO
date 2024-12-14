@@ -88,6 +88,11 @@ void makeSafetyBetweenBridges() {
 			
 			
 			if(taskOrdo.isOverlapable || taskID ==indexAnod ||  taskID == mTaskOrdoList.size()-1 ) {
+				
+				if(taskOrdo.getBloquePont2()) {
+					fin=taskOrdo.getEndBDDValue();
+				}
+				else
 				fin=taskOrdo.getFixedStartBDD()+CST.TEMPS_MVT_PONT;
 				
 				lBridgeMoves.add(TecalOrdo.model.newFixedInterval(deb, fin-deb ,""));
