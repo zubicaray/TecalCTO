@@ -68,9 +68,10 @@ import org.jdatepicker.impl.JDatePickerImpl;
 import org.jdatepicker.impl.UtilDateModel;
 import org.jfree.ui.RefineryUtilities;
 import org.tecal.scheduler.CST;
-import org.tecal.scheduler.GanttChart;
+
 import org.tecal.scheduler.data.SQL_DATA;
 import org.tecal.scheduler.types.Barre;
+import org.tecal.ui.frame.CPO_LOGS_GANT;
 import org.tecal.ui.panel.ZonesPanel;
 import org.tecal.ui.stats.StatsMensuel;
 import org.tecal.ui.stats.StatsWindow;

@@ -90,10 +90,8 @@ public class CPO_Panel extends JPanel {
 	}
 
 	public CPO_Panel() {
-
 		mNumBarre = 0;
 		createPanelCPO();
-
 	}
 
 	private void createPanelCPO() {
@@ -462,7 +460,7 @@ public class CPO_Panel extends JPanel {
 	    private static final long serialVersionUID = 1L;
 		private final List<Barre> barres; // Liste des objets Barre
 	    private final String[] columnNames = { "ID", "barre","gamme",  "desc.", "montée", "prio." };
-	    public final static String[] VITESSES = { "lente", "normale", "rapide" }; // Combobox valeurs
+	    public final static String[] VITESSES = CST.VITESSES;// Combobox valeurs
 
 	    public BarreTableModel(List<Barre> barres) {
 	        this.barres = barres;

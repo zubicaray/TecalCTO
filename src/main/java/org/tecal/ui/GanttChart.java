@@ -1,4 +1,4 @@
-package org.tecal.scheduler;
+package org.tecal.ui;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -32,6 +32,8 @@ import org.jfree.chart.renderer.xy.XYBarRenderer;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYIntervalSeries;
 import org.jfree.data.xy.XYIntervalSeriesCollection;
+import org.tecal.scheduler.CST;
+import org.tecal.scheduler.TecalOrdo;
 import org.tecal.scheduler.data.SQL_DATA;
 import org.tecal.scheduler.types.AssignedTask;
 import org.tecal.scheduler.types.ElementGamme;

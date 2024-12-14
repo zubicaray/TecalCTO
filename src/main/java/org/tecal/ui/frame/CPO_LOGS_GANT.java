@@ -1,4 +1,4 @@
-package org.tecal.ui;
+package org.tecal.ui.frame;
 
 import java.awt.BorderLayout;
 import java.awt.Font;

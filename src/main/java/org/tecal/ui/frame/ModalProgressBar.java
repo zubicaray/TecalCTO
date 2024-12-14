@@ -1,4 +1,4 @@
-package org.tecal.ui;
+package org.tecal.ui.frame;
 
 import javax.swing.*;
 import java.awt.*;

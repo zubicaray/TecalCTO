@@ -26,10 +26,9 @@ public class TaskOrdo {
 	IntervalVar minimumDerive;
 	IntervalVar maximumDerive;
 	int tempsDeplacement;
-	int egouttage;
-	int derive;
-	int duration;
+
 	boolean zoneSecu=false;
+	Task mTask;
 	
 	
 	private long fixedStartBDD;
@@ -96,19 +95,13 @@ public class TaskOrdo {
 		
 		fixedEndBDD=task.end;
 				
-		fixedFin=task.derive+tempsDeplacement+egouttage;
-		
-		
-	
-		
-		
-		
+		fixedFin=task.derive+tempsDeplacement+mTask.egouttage;
 		
 	
 	}
 	
 	void createFixedIntervals() {
-		intervalBDD = TecalOrdo.model.newFixedInterval(fixedStartBDD,duration, "intervalFixeReel" );
+		intervalBDD = TecalOrdo.model.newFixedInterval(fixedStartBDD,mTask.duration, "intervalFixeReel" );
 		
 			
 		intervalReel=TecalOrdo.model.newFixedInterval(
@@ -117,30 +110,27 @@ public class TaskOrdo {
 					"intervalReel fixe");
 	}
 
-	TaskOrdo(CpModel model,int induration,int inderive,int intempsDeplacement,int egouttage,String suffix){
+	TaskOrdo(CpModel model,Task task,int tps,String suffix){
 	
-	
-		tempsDeplacement=intempsDeplacement;
-		duration=induration;
-		this.egouttage=egouttage;
-		this.derive=inderive;
+		mTask=task;
 		
-		if(inderive+duration>=CST.TEMPS_ZONE_OVERLAP_MIN){
+		tempsDeplacement=tps;
+		if(mTask.derive+mTask.duration>=CST.TEMPS_ZONE_OVERLAP_MIN){
 			isOverlapable=true;
 		}		
 		
-		int tempsIncompresible=egouttage+tempsDeplacement+duration;
+		int tempsIncompresible=mTask.egouttage+tempsDeplacement+mTask.duration;
 		startBDD 	= model.newIntVar(0, TecalOrdo.horizon, "start" + suffix); 
 		endBDD 		= model.newIntVar(0, TecalOrdo.horizon, "end"   + suffix);		
 		fin			= model.newIntVar(0, TecalOrdo.horizon, "fin_nooverlap");
 		deriveNulle= model.newIntVar(0, TecalOrdo.horizon, "deriveNulle");
 		//deriveVar	= model.newIntVar(tempsIncompresible,tempsIncompresible+inderive, "deriveVar");
 		
-		intervalBDD = model.newIntervalVar(startBDD, LinearExpr.constant(duration),endBDD, "interval" + suffix);
+		intervalBDD = model.newIntervalVar(startBDD, LinearExpr.constant(mTask.duration),endBDD, "interval" + suffix);
 		  
 		intervalReel=model.newIntervalVar(
 				startBDD,
-				LinearExpr.constant(duration+egouttage+inderive+tempsDeplacement),
+				LinearExpr.constant(mTask.duration+mTask.egouttage+mTask.derive+tempsDeplacement),
 				//TODO best solution to finish ?
 				//deriveVar,
 				fin,"");

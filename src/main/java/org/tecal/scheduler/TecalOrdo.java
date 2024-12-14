@@ -28,7 +28,7 @@ import org.tecal.scheduler.types.AssignedTask;
 import org.tecal.scheduler.types.Barre;
 import org.tecal.scheduler.types.ElementGamme;
 import org.tecal.scheduler.types.ZoneType;
-
+import org.tecal.ui.GanttChart;
 
 import com.google.ortools.Loader;
 import com.google.ortools.sat.CpModel;
@@ -90,14 +90,15 @@ class Task {
 	int duration;
 	int egouttage;
 	int derive;
+	boolean bloquePont2;
 
 
-	Task(int duration, int numzone, int egouttage,int derive) {
+	Task(int duration, int numzone, int egouttage,int derive,boolean bloquePont22) {
 		this.duration = duration;
 		this.numzone = numzone;
 		this.egouttage = egouttage;
 		this.derive = derive;	
-		
+		this.bloquePont2=bloquePont22;
 		
 	}
 }
@@ -614,7 +615,7 @@ public class TecalOrdo {
 					List<Integer> keySuivante = Arrays.asList(barre, taskID + 1);
 					//todo bug
 					derive = allTasks.get(keySuivante).getStartValue()
-							- allTasks.get(key).tempsDeplacement - allTasks.get(key).egouttage;
+							- allTasks.get(key).tempsDeplacement - allTasks.get(key).mTask.egouttage;
 				}
 				
 				

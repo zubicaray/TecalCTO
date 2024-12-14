@@ -299,7 +299,9 @@ public class JobType {
 			}
 			
 			if(task.numzone == CST.DECHARGEMENT_NUMZONE  || taskID==  tasksJob.size()-1) {
-				taskOrdo = new TaskOrdo(TecalOrdo.model,task.duration,derive, 0,task.egouttage,suffix);   
+				//TODO !! CHECk pourquoi 0 par defaut juste avant s
+				//new TaskOrdo(TecalOrdo.model,task.duration,derive, 0,task.egouttage,suffix);   
+				taskOrdo = new TaskOrdo(TecalOrdo.model,task,0,suffix);   
 			}
 			else {
 				
@@ -314,7 +316,7 @@ public class JobType {
 				else {					
 					tps = gestionVitesseManutention(tps);										
 				}
-				taskOrdo = new TaskOrdo(TecalOrdo.model,task.duration,derive, tps,task.egouttage,suffix);   
+				taskOrdo = new TaskOrdo(TecalOrdo.model,task,tps,suffix);   
 				
 			}
 			
@@ -383,7 +385,7 @@ public class JobType {
 		for (int i = 0; i < zones.size(); i++) {
 			ElementGamme gt = zones.get(i);
 			
-			tasksJob.add(new Task(gt.time, gt.numzone,gt.egouttage,gt.derive));
+			tasksJob.add(new Task(gt.time, gt.numzone,gt.egouttage,gt.derive,gt.bloquePont2));
 			if(CST.PrintGroupementZones) 
 				System.out.println("debZone: "+gt.codezone+", gt.time="+gt.time);			
 			
