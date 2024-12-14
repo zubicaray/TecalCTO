@@ -8,7 +8,7 @@ import java.util.Map;
 import org.tecal.scheduler.data.SQL_DATA;
 import org.tecal.scheduler.types.AssignedTask;
 import org.tecal.scheduler.types.Barre;
-import org.tecal.scheduler.types.GammeType;
+import org.tecal.scheduler.types.ElementGamme;
 import org.tecal.scheduler.types.ZoneType;
 
 
@@ -55,7 +55,7 @@ public class JobType {
 	int indexAnod=-1;
 
 
-	List<GammeType> zones;
+	List<ElementGamme> zones;
 	
 		
 
@@ -294,7 +294,7 @@ public class JobType {
 			TaskOrdo taskOrdo;
 			
 			int derive=zt.derive;
-			if(mBarre.prioritaire) {
+			if(mBarre.isPrioritaire()) {
 				derive=Math.min(derive, 180);
 			}
 			
@@ -339,7 +339,7 @@ public class JobType {
 
 
 	private int gestionVitesseManutention(int tps) {
-		switch(mBarre.vitesseDescente){
+		switch(mBarre.getVitesseDescente()){
 		   
 		   case CST.VITESSE_LENTE: 
 		       tps+=CST.VITESSE_LENTE_DESCENTE;
@@ -353,7 +353,7 @@ public class JobType {
 		       System.out.println("ERREUR gestionVitesseManutention descente");
 		       break;
 		}
-		switch(mBarre.vitesseMontee){
+		switch(mBarre.getVitesseMontee()){
 		   
 		   case CST.VITESSE_LENTE: 		     
 		       tps+=CST.VITESSE_LENTE_MONTEE;
@@ -372,7 +372,7 @@ public class JobType {
 
 
 
-	void buildTaskList(List<GammeType> inzones) {
+	void buildTaskList(List<ElementGamme> inzones) {
 		
 		if(CST.PrintGroupementZones) System.out.println("---------------------------------------");
 		if(CST.PrintGroupementZones) System.out.println("---------------------------------------");
@@ -381,7 +381,7 @@ public class JobType {
 		zones = inzones;
 
 		for (int i = 0; i < zones.size(); i++) {
-			GammeType gt = zones.get(i);
+			ElementGamme gt = zones.get(i);
 			
 			tasksJob.add(new Task(gt.time, gt.numzone,gt.egouttage,gt.derive));
 			if(CST.PrintGroupementZones) 

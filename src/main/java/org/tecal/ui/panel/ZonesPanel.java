@@ -1,7 +1,6 @@
-package org.tecal.ui;
-
-	import javax.swing.*;
-	import javax.swing.table.DefaultTableModel;
+package org.tecal.ui.panel;
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 
 import org.tecal.scheduler.data.SQL_DATA;

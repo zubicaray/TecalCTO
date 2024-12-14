@@ -10,7 +10,7 @@ public class ZoneType {
     public int derive;
     public int idPosteDeb;
     public int idPosteFin;
-   
+       
     public ZoneType(int numzone,String codezone,int cumul,int derive,int idzone, int idPosteDeb, int idPosteFin) {
         this.codezone = codezone;
         this.numzone = numzone;

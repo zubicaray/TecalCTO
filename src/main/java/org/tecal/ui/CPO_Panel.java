@@ -1,5 +1,6 @@
 package org.tecal.ui;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
@@ -15,7 +16,9 @@ import java.io.InputStream;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
@@ -25,10 +28,14 @@ import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
@@ -39,6 +46,7 @@ import javax.swing.RowFilter;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
+import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
@@ -52,8 +60,7 @@ import org.apache.logging.log4j.Logger;
 import org.tecal.scheduler.CST;
 import org.tecal.scheduler.data.SQL_DATA;
 import org.tecal.scheduler.types.Barre;
-
-
+import org.tecal.scheduler.types.ElementGamme;
 
 public class CPO_Panel extends JPanel {
 
@@ -61,7 +68,7 @@ public class CPO_Panel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	private JTable mTableGammes;
 	private JTable mTableBarres;
-	private DefaultTableModel mModelBarres;
+	private BarreTableModel mModelBarres;
 	private JButton mBtnRun;
 	private JTextField mTxtTpsMaxSolver;
 	private JButton mBtnDelButton ;
@@ -70,8 +77,9 @@ public class CPO_Panel extends JPanel {
 	private DefaultTableModel mModelGammes;
 	private Integer mNumBarre;
 
-	
+
 	private CPO_IHM mCPO_IHM;
+
 
 	public CPO_Panel(CPO_IHM cpoIhm) {
 
@@ -142,7 +150,7 @@ public class CPO_Panel extends JPanel {
 
 		mBtnRun = new JButton("GO");
 		mBtnRun.setHorizontalAlignment(SwingConstants.LEFT);
-		
+
 		// Ajouter JTextField pour mTecalOrdo
 	    mTxtTpsMaxSolver = new JTextField();
 	    mTxtTpsMaxSolver.setColumns(10);
@@ -186,7 +194,7 @@ public class CPO_Panel extends JPanel {
 
 				if (row >= 0 && row < max) { // Vérifie qu'une ligne est sélectionnée
 					try {
-						mModelBarres.removeRow(row); // Supprime la ligne dans le modèle
+						mModelBarres.removeBarre(row); // Supprime la ligne dans le modèle
 						mTableBarres.clearSelection(); // Efface la sélection pour éviter des indices invalides
 						mTableBarres.repaint();
 						//mModelBarres.fireTableDataChanged();
@@ -207,7 +215,7 @@ public class CPO_Panel extends JPanel {
 				 if (! mTableBarres.isEditing()) {
 					 moveRowBy(-1);
 				 }
-				
+
 			}
 		});
 
@@ -216,9 +224,9 @@ public class CPO_Panel extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				 if (! mTableBarres.isEditing()) {
-					 moveRowBy(1);				 
+					 moveRowBy(1);
 				 }
-				
+
 			}
 		});
 
@@ -232,7 +240,6 @@ public class CPO_Panel extends JPanel {
 		scrollPane_gamme.setViewportView(mTableGammes);
 		setLayout(gl_panelCPO);
 	}
-
 
 	private GroupLayout buildGrouping(JScrollPane scrollPaneMsg, JLabel lblGammes, JTextField textFiltre,
 			JButton btnReload, JScrollPane scrollPane_gamme, JScrollPane scrollPaneBarres, JButton btnDownButton,
@@ -265,7 +272,7 @@ public class CPO_Panel extends JPanel {
 	                                .addComponent(btnDelButton, GroupLayout.PREFERRED_SIZE, 30, GroupLayout.PREFERRED_SIZE))
 	                            .addGap(50)))))
 	            .addContainerGap())
-	        
+
 	    );
 	    gl_panelCPO.setVerticalGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING)
 	        .addGroup(gl_panelCPO.createSequentialGroup()
@@ -273,7 +280,7 @@ public class CPO_Panel extends JPanel {
 	            .addGroup(gl_panelCPO.createParallelGroup(Alignment.BASELINE)
 	                .addComponent(lblGammes, GroupLayout.PREFERRED_SIZE, 20, GroupLayout.PREFERRED_SIZE)
 	                .addComponent(textFiltre, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-	                .addComponent(btnReload))	            
+	                .addComponent(btnReload))
 	            .addGap(18)
 	            .addGroup(gl_panelCPO.createParallelGroup(Alignment.LEADING)
 	                .addGroup(gl_panelCPO.createParallelGroup(Alignment.BASELINE)
@@ -296,16 +303,7 @@ public class CPO_Panel extends JPanel {
 
 	private void buildTables(JScrollPane scrollPaneBarres) {
 		try {
-			mModelBarres = new DefaultTableModel() {
-				private static final long serialVersionUID = 1L;
-
-				@Override
-				public boolean isCellEditable(int row, int column) {
-					// Rendre éditables les colonnes nécessaires
-					return column == 1 || column == 5 || column == 3 || column == 4;
-				}
-			};
-
+			mModelBarres = new BarreTableModel() ;
 			mTableBarres = new JTable();
 			buildTableModelBarre();
 
@@ -324,6 +322,7 @@ public class CPO_Panel extends JPanel {
 
 				private static final long serialVersionUID = 1L;
 
+				@Override
 				public boolean isCellEditable(int row, int col) {
 					return false; // Renders column 0 uneditable.
 
@@ -359,12 +358,12 @@ public class CPO_Panel extends JPanel {
 		}
 	}
 
-	public DefaultTableModel getModelBarres() {
+	public BarreTableModel getModelBarres() {
 		return mModelBarres;
 	}
 
 	public void setModelBarres(LinkedHashMap<Integer, Barre> set) {
-		
+
 		SwingUtilities.invokeLater(() -> {
 			mModelBarres.setRowCount(0);
 			// mNumBarre=0;
@@ -372,27 +371,190 @@ public class CPO_Panel extends JPanel {
 
 				Barre b = entry.getValue();
 
-				Object[] rowO = { b.idbarre, b.barreNom, b.gamme, CST.VITESSES[b.vitesseMontee],
-						CST.VITESSES[b.vitesseDescente], b.prioritaire };
-				if (b.idbarre > mNumBarre) {
-					mNumBarre = b.idbarre;
+
+				if (b.getIdbarre() > mNumBarre) {
+					mNumBarre = b.getIdbarre();
 				}
-				
-				mModelBarres.addRow(rowO);
+
+				mModelBarres.addBarre(b);
 				mTableBarres.repaint();
 				mTableBarres.revalidate();
-				
-				
+
+
 			}
 		});
-		
+
 
 	}
 
-	
+
 
 	public void setText(String s) {
 		mTextArea.setText(mTextArea.getText() + s);
+	}
+
+	public class GammeTableModel extends AbstractTableModel {
+
+		private static final long serialVersionUID = 1L;
+		private final List<ElementGamme> gammeArray;
+	    private final String[] columnNames = { "Num Ligne", "Code Zone", "Time", "Derive", "Bloque Pont2" };
+
+	    public GammeTableModel(List<ElementGamme> gammeArray) {
+	        this.gammeArray = gammeArray;
+	    }
+
+	    @Override
+	    public int getRowCount() {
+	        return gammeArray.size();
+	    }
+
+	    @Override
+	    public int getColumnCount() {
+	        return columnNames.length;
+	    }
+	    @Override
+	    public Class<?> getColumnClass(int columnIndex) {
+	        switch (columnIndex) {
+	            case 0: return Integer.class;    // Num Ligne
+	            case 1: return String.class;     // Code Zone
+	            case 2: return Integer.class;    // Time
+	            case 3: return Integer.class;    // Derive
+	            case 4: return Boolean.class;    // Bloque Pont2
+	            default: return Object.class;
+	        }
+	    }
+
+	    @Override
+	    public Object getValueAt(int rowIndex, int columnIndex) {
+	        ElementGamme element = gammeArray.get(rowIndex);
+	        switch (columnIndex) {
+	            case 0: return element.numligne;
+	            case 1: return element.codezone;
+	            case 2: return element.time;
+	            case 3: return element.derive;
+	            case 4: return element.bloquePont2;
+	            default: return null;
+	        }
+	    }
+
+	    @Override
+	    public String getColumnName(int column) {
+	        return columnNames[column];
+	    }
+
+	    @Override
+	    public boolean isCellEditable(int rowIndex, int columnIndex) {
+	        return columnIndex == 2 || columnIndex == 3 || columnIndex == 4; // time, derive et bloquePont2
+	    }
+
+	    @Override
+	    public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+	        ElementGamme element = gammeArray.get(rowIndex);
+	        switch (columnIndex) {
+	            case 2: element.time=Integer.parseInt(aValue.toString()); break;
+	            case 3: element.derive=(int) Double.parseDouble(aValue.toString()); break;
+	            case 4: element.bloquePont2=(Boolean) aValue; break;
+	        }
+	        fireTableCellUpdated(rowIndex, columnIndex); // Notifie la table que les données ont changé
+	    }
+	}
+	public class BarreTableModel extends AbstractTableModel {
+	    private static final long serialVersionUID = 1L;
+		private final List<Barre> barres; // Liste des objets Barre
+	    private final String[] columnNames = { "ID", "barre","gamme",  "desc.", "montée", "prio." };
+	    public final static String[] VITESSES = { "lente", "normale", "rapide" }; // Combobox valeurs
+
+	    public BarreTableModel(List<Barre> barres) {
+	        this.barres = barres;
+	    }
+	    public BarreTableModel() {
+	        this.barres = new ArrayList<>();
+	    }
+
+	    @Override
+	    public int getRowCount() {
+	        return barres.size();
+	    }
+
+	    @Override
+	    public int getColumnCount() {
+	        return columnNames.length;
+	    }
+	    public Barre getBarre(int rowIndex) {
+	        return barres.get(rowIndex);
+	       }
+	    @Override
+	    public Object getValueAt(int rowIndex, int columnIndex) {
+	        Barre barre = barres.get(rowIndex);
+	        switch (columnIndex) {
+	            case 1: return barre.getBarreNom();
+	            case 0: return barre.getIdbarre();
+	            case 2: return barre.getGamme();
+	            case 3: return VITESSES[barre.getVitesseDescente()]; // Index -> Valeur
+	            case 4: return VITESSES[barre.getVitesseMontee()]; // Index -> Valeur
+	            case 5: return barre.isPrioritaire();
+	            default: return null;
+	        }
+	    }
+	    public void setRowCount(int newRowCount) {
+	        int currentRowCount = barres.size();
+
+	        if (newRowCount > currentRowCount) {
+	            // Ajouter des lignes vides si le nouveau nombre de lignes est plus grand
+	            for (int i = currentRowCount; i < newRowCount; i++) {
+	                barres.add(new Barre(0, "", "", 0, 0, false)); // Barre vide avec valeurs par défaut
+	            }
+	        } else if (newRowCount < currentRowCount) {
+	            // Supprimer les lignes en trop
+	            for (int i = currentRowCount - 1; i >= newRowCount; i--) {
+	                barres.remove(i);
+	            }
+	        }
+
+	        fireTableDataChanged(); // Notifier la table que les données ont changé
+	    }
+
+	    @Override
+	    public String getColumnName(int column) {
+	        return columnNames[column];
+	    }
+
+	    @Override
+	    public boolean isCellEditable(int rowIndex, int columnIndex) {
+	        return columnIndex == 1	 || columnIndex == 3 || columnIndex == 4 || columnIndex == 5; // Éditable pour vitesses et prioritaire
+	    }
+
+	    @Override
+	    public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+	        Barre barre = barres.get(rowIndex);
+	        switch (columnIndex) {
+		        case 1: // nom barre
+	                barre.setBarreNom  (aValue.toString());
+	                break;
+	            case 3: // Vitesse Descente
+	                barre.setVitesseDescente(java.util.Arrays.asList(VITESSES).indexOf(aValue.toString()));
+	                break;
+	            case 4: // Vitesse Montée
+	                barre.setVitesseMontee(java.util.Arrays.asList(VITESSES).indexOf(aValue.toString()));
+	                break;
+	            case 5: // Prioritaire
+	                barre.setPrioritaire((Boolean) aValue);
+	                break;
+	        }
+	        fireTableCellUpdated(rowIndex, columnIndex);
+	    }
+
+	    public void addBarre(Barre barre) {
+	    	barres.add(barre);
+	        fireTableRowsInserted(barres.size() - 1, barres.size() - 1);
+	    }
+
+	    public void removeBarre(int rowIndex) {
+	    	barres.remove(rowIndex);
+	        fireTableRowsDeleted(rowIndex, rowIndex);
+	    }
+
+
 	}
 
 	// Classe interne pour le SwingWorker
@@ -410,15 +572,15 @@ public class CPO_Panel extends JPanel {
 			try {
 				main.execute(); // Appel de la méthode
 		    } catch (Exception e) {
-		        JOptionPane.showMessageDialog(null, 
-		            "Erreur dans doInBackground: " + e.getMessage(), 
-		            "Erreur", 
+		        JOptionPane.showMessageDialog(null,
+		            "Erreur dans doInBackground: " + e.getMessage(),
+		            "Erreur",
 		            JOptionPane.ERROR_MESSAGE);
 
-		      
+
 		        logger.error("Erreur dans doInBackground", e);
 		    }
-			
+
 
 			return null;
 		}
@@ -431,52 +593,42 @@ public class CPO_Panel extends JPanel {
 
 	private void setActionListener() {
 		mBtnRun.addActionListener(e -> {
-			
-			
+
+
 			computeBarresFutures();
-	       
+
 			// Créer et démarrer un SwingWorker
 			new Worker(this).execute();
 
 		});
 
 	}
-	public void execute() {			
+	public void execute() {
 		mCPO_IHM.run();
 	}
 
 	private void computeBarresFutures() {
-		LinkedHashMap<Integer, String> gammes = new LinkedHashMap<>();
+		//LinkedHashMap<Integer, String> gammes = new LinkedHashMap<>();
 		LinkedHashMap<Integer, Barre> barres = new LinkedHashMap<>();
-		
+
 
 		// utiliser un objet de classe Barre ave vitesse et prio
-		gammes.clear();
+		//g/ammes.clear();
 		try {
-			
+
 			for (int count = 0; count < mTableBarres.getRowCount(); count++) {
-				
+
 				 if (mTableBarres.getValueAt(count, 0) == null) {
 			        logger.error("mTableBarres Valeur null détectée à la ligne " + count + ", colonne 0.");
 			        continue; // Ignorer cette ligne
 			    }
-				
-				// int idbarre=(int) mTableBarres.getValueAt(count, 0);
-				int idbarre = (int) mModelBarres.getValueAt(count, 0);
-				String gamme = mTableBarres.getValueAt(count, 1).toString();
-				String nomBarre = mTableBarres.getValueAt(count, 0).toString();
 
-				mVitesseCombo.setSelectedItem(mTableBarres.getValueAt(count, 2));
-				int indexMontee = mVitesseCombo.getSelectedIndex();
+				Barre b=mModelBarres.getBarre(count);
+				if (b.isPrioritaire()) {
+					logger.info("barre: " + b.getBarreNom() + " prioritaire !");
+				}
 
-				mVitesseCombo.setSelectedItem(mTableBarres.getValueAt(count, 3));
-				int indexDesc = mVitesseCombo.getSelectedIndex();
-
-				boolean prio = (Boolean) mTableBarres.getValueAt(count, 4);
-				if (prio)
-					logger.info("barre: " + nomBarre + " prioritaire !");
-				gammes.put(idbarre, gamme);
-				barres.put(idbarre, new Barre(idbarre, nomBarre, gamme, indexMontee, indexDesc, prio));
+				barres.put(b.getIdbarre(), b);
 				mCPO_IHM.setBarresSettingsFutures( barres);
 			}
 		}
@@ -484,29 +636,63 @@ public class CPO_Panel extends JPanel {
 			logger.error("Erreur execute recup vitesse "+e.getMessage());
 			JOptionPane.showMessageDialog(null, "Erreur execute recup vitesse "+e.getMessage(), "Alerte exception !", JOptionPane.ERROR_MESSAGE);
 		}
-		
+
+	}
+
+	private  void showGammeEditor(CPO_IHM cpo,List<ElementGamme> gammeArray) {
+	    // Créer le modèle pour gammeArray
+	    GammeTableModel gammeModel = new GammeTableModel(gammeArray);
+	    JTable gammeTable = new JTable(gammeModel);
+
+	    // Configurer les colonnes
+	    gammeTable.getColumnModel().getColumn(4).setCellEditor(new DefaultCellEditor(new JCheckBox()));
+	    gammeTable.getColumnModel().getColumn(4).setCellRenderer(new DefaultTableCellRenderer() {
+	        private static final long serialVersionUID = 1L;
+
+			@Override
+	        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+	            JCheckBox checkBox = new JCheckBox();
+	            checkBox.setSelected((Boolean) value);
+	            checkBox.setHorizontalAlignment(SwingConstants.CENTER);
+	            if (isSelected) {
+	                checkBox.setBackground(table.getSelectionBackground());
+	            } else {
+	                checkBox.setBackground(table.getBackground());
+	            }
+	            return checkBox;
+	        }
+	    });
+
+	    // Fenêtre modale
+	    JDialog dialog = new JDialog(cpo, "Éditeur de Gamme", true);
+	    dialog.setLayout(new BorderLayout());
+	    dialog.add(new JScrollPane(gammeTable), BorderLayout.CENTER);
+
+	    JButton closeButton = new JButton("Fermer");
+	    closeButton.addActionListener(e -> dialog.dispose());
+
+	    JPanel buttonPanel = new JPanel();
+	    buttonPanel.add(closeButton);
+
+	    dialog.add(buttonPanel, BorderLayout.SOUTH);
+	    dialog.setSize(600, 300);
+	    dialog.setLocationRelativeTo(null); // Centrer la fenêtre
+	    dialog.setVisible(true);
 	}
 
 	public void buildTableModelBarre() throws SQLException {
 
-		// names of columns
-		Vector<String> columnNames = new Vector<>();
 
-		columnNames.add("barre");
-		columnNames.add("id");
-		columnNames.add("gamme");
-		columnNames.add("montée");
-		columnNames.add("desc.");
-		columnNames.add("prio.");
 
-		mModelBarres.setColumnIdentifiers(columnNames);
+
+
 		mTableBarres.setModel(mModelBarres);
-		
+
 		TableColumnModel tcm = mTableBarres.getColumnModel();
 		tcm.removeColumn(tcm.getColumn(0));
-		
+
 		tcm.getColumn(0).setPreferredWidth(100);
-		
+
 
 		TableColumn colBarre = mTableBarres.getColumnModel().getColumn(0);
 		colBarre.setCellEditor(new DefaultCellEditor(new JTextField()));
@@ -526,9 +712,41 @@ public class CPO_Panel extends JPanel {
 
 		mTableBarres.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		mTableBarres.getTableHeader().setDraggedColumn( null );
-		
+
 		// columnModel.getColumn(0).setMaxWidth(50);
 		mTableBarres.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+
+		 JPopupMenu popupMenu = new JPopupMenu();
+         JMenuItem changeGammeItem = new JMenuItem("Changer Gamme");
+         popupMenu.add(changeGammeItem);
+
+         // Ajouter le menu au clic droit
+         mTableBarres.addMouseListener(new MouseAdapter() {
+             @Override
+             public void mousePressed(MouseEvent e) {
+                 if (e.isPopupTrigger()) {
+                     int row = mTableBarres.rowAtPoint(e.getPoint());
+                     if (row != -1) {
+                    	 mTableBarres.setRowSelectionInterval(row, row); // Sélectionner la ligne
+                         popupMenu.show(mTableBarres, e.getX(), e.getY());
+                     }
+                 }
+             }
+
+             @Override
+             public void mouseReleased(MouseEvent e) {
+                 mousePressed(e);
+             }
+         });
+
+         // Action pour l'item "Changer Gamme"
+         changeGammeItem.addActionListener(e -> {
+             int selectedRow = mTableBarres.getSelectedRow();
+             if (selectedRow != -1) {
+                 Barre selectedBarre = mModelBarres.getBarre(selectedRow);
+                 showGammeEditor(mCPO_IHM,selectedBarre.getGammeArray());
+             }
+         });
 
 	}
 
@@ -552,9 +770,9 @@ public class CPO_Panel extends JPanel {
 		        }
 
 		        if (found) {
-		            mModelBarres.removeRow(i); // Supprime la ligne et notifie automatiquement les changements
+		            mModelBarres.removeBarre(i); // Supprime la ligne et notifie automatiquement les changements
 		            mTableBarres.clearSelection(); // Efface la sélection pour éviter des indices invalides
-		           
+
 					//mModelBarres.fireTableDataChanged();
 					mTableBarres.repaint();
 		            logger.info("Barre avec ID " + barre + " supprimée.");
@@ -565,8 +783,8 @@ public class CPO_Panel extends JPanel {
 		        logger.warn("Aucune barre à supprimer : la table est vide.");
 		    }
 	    }
-	    
-	    
+
+
 	}
 
 	public void buildTableModelGamme() throws SQLException {
@@ -588,19 +806,16 @@ public class CPO_Panel extends JPanel {
 						if (mouseEvent.getClickCount() == 2 && table.getSelectedRow() != -1) {
 							String gamme = table.getModel().getValueAt(row, 0).toString();
 
-							Object[] rowO = { ++mNumBarre, mNumBarre + "", gamme, CST.VITESSES[CST.VITESSE_NORMALE],
-									CST.VITESSES[CST.VITESSE_NORMALE], false };
-							mModelBarres.addRow(rowO);
-							mTableBarres.clearSelection(); 
+
+							Barre b=new Barre( ++mNumBarre, mNumBarre + "", gamme, CST.VITESSE_NORMALE,
+									CST.VITESSE_NORMALE, false );
+							mModelBarres.addBarre(b);
+							mTableBarres.clearSelection();
 							mTableBarres.repaint();
-							//mModelBarres.fireTableDataChanged();
 
 						}
-						
 					}
 				}
-			
-
 			}
 		});
 
@@ -611,10 +826,10 @@ public class CPO_Panel extends JPanel {
 			@Override
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
 					boolean hasFocus, int row, int col) {
-				
+
 
 				if (table.getRowCount()>0 && row >= 0 && row < table.getRowCount()) {
-					
+
 					int modelIndex = table.convertRowIndexToModel(row);
 					if(modelIndex>0) {
 						String gamme = (String) table.getModel().getValueAt(modelIndex, 0);
@@ -627,11 +842,11 @@ public class CPO_Panel extends JPanel {
 							setForeground(table.getForeground());
 						}
 					}
-					
+
 
 				}
 				return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
-				 
+
 			}
 		});
 
@@ -676,7 +891,7 @@ public class CPO_Panel extends JPanel {
 	}
 
 	private void moveRowBy(int by) {
-		
+
 		SwingUtilities.invokeLater(() -> {
 			DefaultTableModel model = (DefaultTableModel) mTableBarres.getModel();
 		    if (model.getRowCount() > 0) {
@@ -715,8 +930,8 @@ public class CPO_Panel extends JPanel {
 			    }
 		    }
 		});
-	    
-	    
+
+
 	}
 	public void set_enable(boolean enable) {
 		mTableBarres.setEnabled(enable);

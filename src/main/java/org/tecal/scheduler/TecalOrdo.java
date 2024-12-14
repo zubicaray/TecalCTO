@@ -26,7 +26,7 @@ import org.tecal.scheduler.data.CSV_DATA;
 import org.tecal.scheduler.data.SQL_DATA;
 import org.tecal.scheduler.types.AssignedTask;
 import org.tecal.scheduler.types.Barre;
-import org.tecal.scheduler.types.GammeType;
+import org.tecal.scheduler.types.ElementGamme;
 import org.tecal.scheduler.types.ZoneType;
 
 
@@ -107,11 +107,11 @@ public class TecalOrdo {
 	private long mCurrentTime;
 	private static final Logger logger = LogManager.getLogger(TecalOrdo.class);
 	// map de toutes les gammes
-	private HashMap<String, ArrayList<GammeType>> 			mGammes;
+	
 	// geston des barres
-	private HashMap<Integer, ArrayList<GammeType>>			mBarreFutures;	
+	private HashMap<Integer, List<ElementGamme>>			mBarreFutures;	
 
-	private LinkedHashMap<Integer, ArrayList<GammeType>>	mBarresAll;
+	private LinkedHashMap<Integer, List<ElementGamme>>	mBarresAll;
 	private LinkedHashMap<Integer, Barre>					mBarresSettings;
 	private LinkedHashMap<Integer, String> 					mBarreLabels;	
 	private HashSet<Integer> 								mBarresEnCours;
@@ -279,7 +279,7 @@ public class TecalOrdo {
 		setSource(source);
 
 		if (CST.SQLSERVER == source) {
-			mGammes = SQL_DATA.getInstance().getLignesGammesAll();
+			
 			zonesBDD = SQL_DATA.getInstance().getZones();
 		} else {
 
@@ -290,7 +290,7 @@ public class TecalOrdo {
 				e.printStackTrace();
 				JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
 			}
-			mGammes = csv.getLignesGammesAll();
+			
 			zonesBDD = csv.getZones();
 
 		}
@@ -306,8 +306,8 @@ public class TecalOrdo {
 		for (String gamme : CST.gammesTest) {
 			i++;
 			Barre b=new Barre(i,i+"",gamme,CST.VITESSE_NORMALE,CST.VITESSE_NORMALE,false);
-			mBarreFutures.put(i, mGammes.get(b.gamme));
-			mBarresAll.put(i, mGammes.get(b.gamme));
+			mBarreFutures.put(i, b.getGammeArray());
+			mBarresAll.put(i, b.getGammeArray());
 			mBarreLabels.put(i, i+" - "+gamme);
 			res.put(i,b);
 		}
@@ -319,7 +319,7 @@ public class TecalOrdo {
 		return mAssignedTasksByNumzone;
 	}
 
-	public HashMap<Integer, ArrayList<GammeType>> getBarresFutures() {
+	public HashMap<Integer, List<ElementGamme>> getBarresFutures() {
 		return mBarreFutures;
 	}
 
@@ -335,17 +335,17 @@ public class TecalOrdo {
 			int numbarre = entry.getKey();
 			Barre barre = entry.getValue();
 			
-			if(barre.prioritaire) mBarresPrioritaires.add(barre.idbarre);
+			if(barre.isPrioritaire()) mBarresPrioritaires.add(barre.getIdbarre());
 
-			mBarreFutures.put(numbarre, mGammes.get(barre.gamme));
+			mBarreFutures.put(numbarre, barre.getGammeArray());
 			
 			
 			if(!mBarreLabels.containsKey(numbarre)) {
-				mBarreLabels.put(numbarre, barre.barreNom+"-"+barre.gamme);
-				mBarresAll.put(numbarre, mGammes.get(barre.gamme));
+				mBarreLabels.put(numbarre, barre.getBarreNom()+"-"+barre.getGamme());
+				mBarresAll.put(numbarre,barre.getGammeArray());
 			}
 			else {
-				mBarreLabels.put(numbarre, barre.barreNom+"-"+barre.gamme);
+				mBarreLabels.put(numbarre, barre.getBarreNom()+"-"+barre.getGamme());
 			}
 		
 
@@ -675,7 +675,7 @@ public class TecalOrdo {
 		multiZoneIntervals.clear();
 		cumulDemands.clear();
 		
-		for (Map.Entry<Integer, ArrayList<GammeType>> entry : mBarreFutures.entrySet()) {
+		for (Map.Entry<Integer, List<ElementGamme>> entry : mBarreFutures.entrySet()) {
 
 			int numBarre = entry.getKey();
 			String name = mBarreLabels.get(numBarre);
@@ -683,7 +683,7 @@ public class TecalOrdo {
 			JobType job = new JobType(numBarre,mBarresSettings.get(numBarre), name);
 
 			
-			List<GammeType> zones = entry.getValue();
+			List<ElementGamme> zones = entry.getValue();
 			if(zones==null) {
 				mOutPutMsg.append("Pas de zones pour la barre :"+name+", on l'élimine !! \n");
 				continue;
@@ -1038,7 +1038,7 @@ public class TecalOrdo {
 
 	}
 
-	public LinkedHashMap<Integer, ArrayList<GammeType>> getBarreZonesAll() {
+	public LinkedHashMap<Integer, List<ElementGamme>> getBarreZonesAll() {
 		return mBarresAll;
 	}
 

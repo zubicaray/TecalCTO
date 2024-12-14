@@ -34,7 +34,7 @@ import org.jfree.data.xy.XYIntervalSeries;
 import org.jfree.data.xy.XYIntervalSeriesCollection;
 import org.tecal.scheduler.data.SQL_DATA;
 import org.tecal.scheduler.types.AssignedTask;
-import org.tecal.scheduler.types.GammeType;
+import org.tecal.scheduler.types.ElementGamme;
 import org.tecal.scheduler.types.PosteBDD;
 import org.tecal.scheduler.types.PosteProd;
 import org.tecal.scheduler.types.ZoneType;
@@ -191,7 +191,7 @@ public class GanttChart extends JFrame {
 
 		mLowerBound=0;
 
-		LinkedHashMap<Integer, ArrayList<GammeType> > 	barreZones	= inTecalOrdo.getBarreZonesAll();
+		LinkedHashMap<Integer, List<ElementGamme> > 	barreZones	= inTecalOrdo.getBarreZonesAll();
 		LinkedHashMap<Integer,String> 					barreLabels	= inTecalOrdo.getBarreLabels();
 		Map<Integer, List<AssignedTask>> mAssignedTasksByNumzone	= inTecalOrdo.getAssignedJobs();
 
@@ -201,7 +201,7 @@ public class GanttChart extends JFrame {
 		// on doit mettre les barres sous forme d'index comme demandée
 		// par l'objet XYIntervalSeries qui est un tableau
 		int cptBarre=0;
-		for (Map.Entry<Integer, ArrayList<GammeType> > entry : barreZones.entrySet()) {
+		for (Map.Entry<Integer, List<ElementGamme> > entry : barreZones.entrySet()) {
 			barreToIndex.put(entry.getKey(),cptBarre);
 			indexToBarreIndex.put(cptBarre,entry.getKey());
 			cptBarre++;
@@ -232,7 +232,7 @@ public class GanttChart extends JFrame {
 		 XYIntervalSeries[]  series = new XYIntervalSeries[totalZoneCount];
 
 
-		 for (Map.Entry<Integer, ArrayList<GammeType> > entry : barreZones.entrySet()) {
+		 for (Map.Entry<Integer, List<ElementGamme> > entry : barreZones.entrySet()) {
 			//String lgamme =entry.getKey()+"-"+ ficheToGamme.get(entry.getKey());
 			int barre=entry.getKey();
 			String lgamme=barreLabels.get(barre);
@@ -287,7 +287,7 @@ public class GanttChart extends JFrame {
 		    for(AssignedTask at :listeTache) {
 
 
-		    	ArrayList<GammeType> df=barreZones.get(barre);
+		    	List<ElementGamme> df=barreZones.get(barre);
 		    	//on retrouve le idtask de la table ZONES SQLSERVER ( numéroté sans trou à partir de 0 <> numzone donc)
 		    	// car quant à lui,le taskid de google, est propre à l'ordres des zones d'une gamme
 		    	int posteEncours=df.get(at.taskID).idzonebdd;

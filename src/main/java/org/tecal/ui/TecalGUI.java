@@ -71,6 +71,7 @@ import org.tecal.scheduler.CST;
 import org.tecal.scheduler.GanttChart;
 import org.tecal.scheduler.data.SQL_DATA;
 import org.tecal.scheduler.types.Barre;
+import org.tecal.ui.panel.ZonesPanel;
 import org.tecal.ui.stats.StatsMensuel;
 import org.tecal.ui.stats.StatsWindow;
 import org.tecal.ui.stats.TauxAnodisationPanel;
@@ -393,7 +394,7 @@ public class TecalGUI {
 					Barre b = new Barre(j,j+"", tableOF.getModel().getValueAt(sel[i], 1).toString(), CST.VITESSE_NORMALE,
 							CST.VITESSE_NORMALE, false);
 
-					barres.put(b.idbarre, b);
+					barres.put(b.getIdbarre(), b);
 				}
 
 				int[] params = { Integer.valueOf(textTEMPS_ZONE_OVERLAP_MIN.getText()),

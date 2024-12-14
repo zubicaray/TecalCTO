@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import org.tecal.scheduler.types.GammeType;
+import org.tecal.scheduler.types.ElementGamme;
 import org.tecal.scheduler.types.ZoneType;
 
 import com.opencsv.CSVParser;
@@ -27,7 +27,7 @@ public class CSV_DATA {
 	List<String[]> mCSV_zones;
 	
 	HashMap<Integer,ZoneType> zones;
-	HashMap<String,ArrayList<GammeType> > gammes;
+	HashMap<String,ArrayList<ElementGamme> > gammes;
 	
 	public  CSV_DATA() throws IOException, CsvException, URISyntaxException  {
 		
@@ -61,7 +61,7 @@ public class CSV_DATA {
 	
 		
 		zones = new HashMap<Integer,ZoneType>();
-		gammes= new HashMap<String, ArrayList<GammeType> >();
+		gammes= new HashMap<String, ArrayList<ElementGamme> >();
 		
 		setZones();
 		setGammesZones();
@@ -98,7 +98,7 @@ public class CSV_DATA {
 
 		return zones;
 	}
-	public HashMap<String, ArrayList<GammeType> >  getLignesGammesAll() {
+	public HashMap<String, ArrayList<ElementGamme> >  getLignesGammesAll() {
 		
 		return gammes;
 	}
@@ -116,7 +116,7 @@ public class CSV_DATA {
             ZoneType zt=zones.get(numzone);
             
             //TODO:check
-            GammeType gt=new GammeType(line[0].replaceAll(" ",""),	          
+            ElementGamme gt=new ElementGamme(line[0].replaceAll(" ",""),	          
             		zt.codezone,	  
             		Integer.parseInt(line[1].replaceAll(" ","")),	            
             		numzone,
@@ -128,7 +128,7 @@ public class CSV_DATA {
             
           
             if (!gammes.containsKey(gt.numgamme)) {
-            	gammes.put(gt.numgamme, new ArrayList<GammeType>());
+            	gammes.put(gt.numgamme, new ArrayList<ElementGamme>());
             }
             
             gammes.get(gt.numgamme).add(gt);

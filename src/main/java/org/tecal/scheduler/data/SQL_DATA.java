@@ -27,7 +27,7 @@ import org.ini4j.Ini;
 import org.ini4j.InvalidFileFormatException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.tecal.scheduler.types.GammeType;
+import org.tecal.scheduler.types.ElementGamme;
 import org.tecal.scheduler.types.PosteBDD;
 import org.tecal.scheduler.types.PosteProd;
 import org.tecal.scheduler.types.ZoneType;
@@ -57,7 +57,7 @@ public class SQL_DATA {
 		return mRelatedZones;
 	}
 	
-	private HashMap<String, ArrayList<GammeType> > gammes;
+	private HashMap<String, ArrayList<ElementGamme> > gammes;
 	private HashSet<String> mMissingTimeMovesGammes;
 	static TempsDeplacement  mTempsDeplacement;
 	private   final SimpleDateFormat FMT =
@@ -73,8 +73,6 @@ public class SQL_DATA {
 	public static String toClause(String[] arrayS) {
 
 		StringJoiner joiner = new StringJoiner(",");
-
-
 		for(String s : arrayS) {
 			joiner.add(quote(s));
 		}
@@ -286,7 +284,7 @@ public HashMap<Integer,PosteBDD> getPostes(String[] listeOF) {
 
 		return res;
 	}
-public HashMap<String, ArrayList<GammeType> >  getLignesGammesAll() {
+public HashMap<String, ArrayList<ElementGamme> >  getLignesGammesAll() {
 
 	return gammes;
 }
@@ -318,7 +316,7 @@ private void  setLignesGammes() {
 
 	            int numzone=resultSet.getInt(4);
 
-	            GammeType gt=new GammeType(resultSet.getString(1),
+	            ElementGamme gt=new ElementGamme(resultSet.getString(1),
 		            resultSet.getString(2),
 		            resultSet.getInt(3),
 		            numzone,
