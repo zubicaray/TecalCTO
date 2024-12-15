@@ -5,21 +5,23 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.tecal.scheduler.data.SQL_DATA;
 import org.tecal.scheduler.types.AssignedTask;
 import org.tecal.scheduler.types.Barre;
 import org.tecal.scheduler.types.ElementGamme;
 import org.tecal.scheduler.types.ZoneType;
 
-
 import com.google.ortools.sat.IntVar;
 import com.google.ortools.sat.IntervalVar;
 import com.google.ortools.sat.LinearExpr;
 
 public class JobType {
-	List<Task> tasksJob;
-	List<TaskOrdo> mTaskOrdoList;
 	
+	private static final Logger logger = LogManager.getLogger(JobType.class);
+	List<Task> tasksJob;
+	List<TaskOrdo> mTaskOrdoList;	
 
 	ArrayListeZonePonts bridgesMoves;
 	ListeZone mNoOverlapP1P2;
@@ -27,20 +29,14 @@ public class JobType {
 	TaskOrdo taskAnod;
 	
 	private Barre mBarre;
-
-
 	
 	protected boolean isFixed=false;
 	
 
-	public boolean isFixed() {
-		return isFixed;
-	}
+	public boolean isFixed() { return isFixed;	}
 
 
-	public void setFixed(boolean isFixed) {
-		this.isFixed = isFixed;
-	}
+	public void setFixed(boolean isFixed) { 		this.isFixed = isFixed;	}
 	protected int mBarreId;
 	public int getBarreID() {
 		return mBarreId;
@@ -206,7 +202,8 @@ public class JobType {
 			
 			
 			if(taskOrdo.isOverlapable || taskID ==indexAnod ||  taskID == mTaskOrdoList.size()-1 ) {
-				if(taskOrdo.getBloquePont2()) {
+				if(taskOrdo.getBloquePont()) {
+					logger.info("Coloration en "+SQL_DATA.getInstance().getZones().get(taskOrdo.mTask.numzone).codezone+ ", job: "+name);
 					fin=taskOrdo.getEndBDD();
 				}
 				else
@@ -376,7 +373,7 @@ public class JobType {
 		for (int i = 0; i < zones.size(); i++) {
 			ElementGamme gt = zones.get(i);
 			
-			tasksJob.add(new Task(gt.time, gt.numzone,gt.egouttage,gt.derive,gt.bloquePont2));
+			tasksJob.add(new Task(gt.time, gt.numzone,gt.egouttage,gt.derive,gt.BloquePont));
 			if(CST.PrintGroupementZones) 
 				System.out.println("debZone: "+gt.codezone+", gt.time="+gt.time);			
 			

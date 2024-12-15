@@ -389,13 +389,14 @@ public class CPO_Panel extends JPanel {
 
 	public void setText(String s) {
 		mTextArea.setText(mTextArea.getText() + s);
+		mTextArea.setCaretPosition(mTextArea.getDocument().getLength());
 	}
 
 	public class GammeTableModel extends AbstractTableModel {
 
 		private static final long serialVersionUID = 1L;
 		private final List<ElementGamme> gammeArray;
-	    private final String[] columnNames = { "Num Ligne", "Code Zone", "Time", "Derive", "Bloque Pont2" };
+	    private final String[] columnNames = { "ligne", "zone", "durée", "dérive", "bloque pont" };
 
 	    public GammeTableModel(List<ElementGamme> gammeArray) {
 	        this.gammeArray = gammeArray;
@@ -417,7 +418,7 @@ public class CPO_Panel extends JPanel {
 	            case 1: return String.class;     // Code Zone
 	            case 2: return Integer.class;    // Time
 	            case 3: return Integer.class;    // Derive
-	            case 4: return Boolean.class;    // Bloque Pont2
+	            case 4: return Boolean.class;    // Bloque Pont
 	            default: return Object.class;
 	        }
 	    }
@@ -430,7 +431,7 @@ public class CPO_Panel extends JPanel {
 	            case 1: return element.codezone;
 	            case 2: return element.time;
 	            case 3: return element.derive;
-	            case 4: return element.bloquePont2;
+	            case 4: return element.BloquePont;
 	            default: return null;
 	        }
 	    }
@@ -442,7 +443,7 @@ public class CPO_Panel extends JPanel {
 
 	    @Override
 	    public boolean isCellEditable(int rowIndex, int columnIndex) {
-	        return columnIndex == 2 || columnIndex == 3 || columnIndex == 4; // time, derive et bloquePont2
+	        return columnIndex == 2 || columnIndex == 3 || columnIndex == 4; // time, derive et BloquePont
 	    }
 
 	    @Override
@@ -451,7 +452,7 @@ public class CPO_Panel extends JPanel {
 	        switch (columnIndex) {
 	            case 2: element.time=Integer.parseInt(aValue.toString()); break;
 	            case 3: element.derive=(int) Double.parseDouble(aValue.toString()); break;
-	            case 4: element.bloquePont2=(Boolean) aValue; break;
+	            case 4: element.BloquePont=(Boolean) aValue; break;
 	        }
 	        fireTableCellUpdated(rowIndex, columnIndex); // Notifie la table que les données ont changé
 	    }
@@ -627,14 +628,20 @@ public class CPO_Panel extends JPanel {
 				}
 
 				barres.put(b.getIdbarre(), b);
-				mCPO_IHM.setBarresSettingsFutures( barres);
+				
 			}
+			mCPO_IHM.setBarresSettingsFutures( barres);
 		}
 		catch(Exception e) {
 			logger.error("Erreur execute recup vitesse "+e.getMessage());
 			JOptionPane.showMessageDialog(null, "Erreur execute recup vitesse "+e.getMessage(), "Alerte exception !", JOptionPane.ERROR_MESSAGE);
 		}
 
+	}
+	public void setBarresSettingsFutures(LinkedHashMap<Integer, Barre> barresSettingsFutures) {
+		for(Barre b:barresSettingsFutures.values()) {
+			mModelBarres.addBarre(b);
+		}
 	}
 
 	private  void showGammeEditor(CPO_IHM cpo,List<ElementGamme> gammeArray) {

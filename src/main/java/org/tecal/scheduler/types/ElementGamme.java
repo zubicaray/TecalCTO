@@ -10,7 +10,7 @@ public class ElementGamme implements Cloneable {
     public int start;
     public int derive;   
     public int egouttage;
-    public boolean bloquePont2;
+    public boolean BloquePont;
    
     public ElementGamme(String numgamme,String codezone,int numligne,int numzone,
     		int time,int idzone,int derive,   int egouttage) {

@@ -96,6 +96,7 @@ public class CPO_IHM extends JFrame {
 
 	public void setBarresSettingsFutures(LinkedHashMap<Integer, Barre> mBarresSettingsFutures) {
 		this.mBarresSettingsFutures = mBarresSettingsFutures;
+		mCPO_PANEL.setBarresSettingsFutures(mBarresSettingsFutures);
 	}
 
 	public LinkedHashMap<Integer, Barre> getBarres() {
@@ -212,7 +213,7 @@ public class CPO_IHM extends JFrame {
 
 		});
 		mCPO_PANEL.set_enable(false);
-
+		// il faut mettre à jour les barres, certains ont pu avoir commencées depuis leur créatin dans mModelBArres
 		mCPO_PANEL.setModelBarres(mBarresSettingsFutures);
 		if (mBarresSettingsFutures.size() > 0) {
 			try {

@@ -89,7 +89,7 @@ void makeSafetyBetweenBridges() {
 			
 			if(taskOrdo.isOverlapable || taskID ==indexAnod ||  taskID == mTaskOrdoList.size()-1 ) {
 				
-				if(taskOrdo.getBloquePont2()) {
+				if(taskOrdo.getBloquePont()) {
 					fin=taskOrdo.getEndBDDValue();
 				}
 				else

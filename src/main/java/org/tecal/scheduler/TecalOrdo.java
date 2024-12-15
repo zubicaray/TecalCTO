@@ -90,15 +90,15 @@ class Task {
 	int duration;
 	int egouttage;
 	int derive;
-	boolean bloquePont2;
+	boolean BloquePont;
 
 
-	Task(int duration, int numzone, int egouttage,int derive,boolean bloquePont22) {
+	Task(int duration, int numzone, int egouttage,int derive,boolean BloquePont) {
 		this.duration = duration;
 		this.numzone = numzone;
 		this.egouttage = egouttage;
 		this.derive = derive;	
-		this.bloquePont2=bloquePont22;
+		this.BloquePont=BloquePont;
 		
 	}
 }
@@ -112,14 +112,14 @@ public class TecalOrdo {
 	// geston des barres
 	private HashMap<Integer, List<ElementGamme>>			mBarreFutures;	
 
-	private LinkedHashMap<Integer, List<ElementGamme>>	mBarresAll;
+	private LinkedHashMap<Integer, List<ElementGamme>>		mBarresAll;
 	private LinkedHashMap<Integer, Barre>					mBarresSettings;
 	private LinkedHashMap<Integer, String> 					mBarreLabels;	
 	private HashSet<Integer> 								mBarresEnCours;
 	private LinkedHashSet<Integer> 							mBarresPrioritaires;
 	
 	
-	public HashSet<Integer> getBarresEnCours() {		return mBarresEnCours;	}
+	public HashSet<Integer> getBarresEnCours() { return mBarresEnCours;	}
 
 	public void adBarreEnCours(int barre) {
 		

@@ -58,8 +58,8 @@ public class TaskOrdo {
 		return fixedDeriveNulle;
 	}
 	
-	public boolean getBloquePont2() {
-		return mTask.bloquePont2;
+	public boolean getBloquePont() {
+		return mTask.BloquePont;
 	}
 	public IntVar getStart() {
 		return startBDD;
