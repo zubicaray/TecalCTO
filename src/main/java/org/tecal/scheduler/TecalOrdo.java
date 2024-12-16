@@ -715,7 +715,7 @@ public class TecalOrdo {
 		// Computes horizon dynamically as the sum of all durations.
 		computeHorizon();
 
-		System.out.println("HORIZON=" + horizon);
+		
 
 		//model.clearAssumptions();
 		//model.clearObjective();
@@ -749,6 +749,7 @@ public class TecalOrdo {
 		  horizon*=2;
 		else  horizon/=2; 	
 		*/
+		logger.info("*********************************************************************");
 		horizon=Math.min(horizon,CST.TEMPS_MAX_JOURNEE);
 
 	}

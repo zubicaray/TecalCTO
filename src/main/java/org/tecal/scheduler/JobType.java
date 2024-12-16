@@ -211,8 +211,13 @@ public class JobType {
 				
 				lBridgeMoves.add(TecalOrdo.model.newIntervalVar(deb, TecalOrdo.model.newIntVar(0, TecalOrdo.horizon, ""), fin ,""));
 				
-				if(taskID != mTaskOrdoList.size()-1)
-					deb=TecalOrdo.getBackward(TecalOrdo.model, (IntVar) taskOrdoNext.getStart(),taskOrdo.tempsDeplacement+CST.TEMPS_ANO_ENTRE_P1_P2);
+				if(taskID != mTaskOrdoList.size()-1) {
+					if(taskOrdo.getBloquePont())
+						deb=TecalOrdo.getBackward(TecalOrdo.model, (IntVar) taskOrdoNext.getStart(),taskOrdo.tempsDeplacement);
+					else
+						deb=TecalOrdo.getBackward(TecalOrdo.model, (IntVar) taskOrdoNext.getStart(),taskOrdo.tempsDeplacement+CST.TEMPS_ANO_ENTRE_P1_P2);
+				}
+					
 						
 			}			
 			

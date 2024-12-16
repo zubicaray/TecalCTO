@@ -364,11 +364,10 @@ public class CPO_Panel extends JPanel {
 
 		SwingUtilities.invokeLater(() -> {
 			mModelBarres.setRowCount(0);
-			// mNumBarre=0;
+
 			for (Map.Entry<Integer, Barre> entry : set.entrySet()) {
 
 				Barre b = entry.getValue();
-
 
 				if (b.getIdbarre() > mNumBarre) {
 					mNumBarre = b.getIdbarre();
@@ -377,7 +376,6 @@ public class CPO_Panel extends JPanel {
 				mModelBarres.addBarre(b);
 				mTableBarres.repaint();
 				mTableBarres.revalidate();
-
 
 			}
 		});

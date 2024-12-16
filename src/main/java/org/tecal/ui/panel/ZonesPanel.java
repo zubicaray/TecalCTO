@@ -106,7 +106,6 @@ import java.awt.*;
 	    private static class CheckboxRenderer extends JCheckBox implements TableCellRenderer {
 	        private static final long serialVersionUID = 1L;
 
-			@SuppressWarnings("unused")
 			public CheckboxRenderer() {
 	            setHorizontalAlignment(SwingConstants.CENTER);
 	        }

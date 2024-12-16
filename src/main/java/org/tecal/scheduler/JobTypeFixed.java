@@ -93,12 +93,16 @@ void makeSafetyBetweenBridges() {
 					fin=taskOrdo.getEndBDDValue();
 				}
 				else
-				fin=taskOrdo.getFixedStartBDD()+CST.TEMPS_MVT_PONT;
+					fin=taskOrdo.getFixedStartBDD()+CST.TEMPS_MVT_PONT;
 				
 				lBridgeMoves.add(TecalOrdo.model.newFixedInterval(deb, fin-deb ,""));
 				
 				if(taskID != mTaskOrdoList.size()-1)
-					deb=taskOrdoNext.getFixedStartBDD()-(taskOrdo.tempsDeplacement+CST.TEMPS_ANO_ENTRE_P1_P2);
+					if(taskOrdo.getBloquePont()) {
+						deb=taskOrdoNext.getFixedStartBDD()-(taskOrdo.tempsDeplacement);
+					}
+					else
+						deb=taskOrdoNext.getFixedStartBDD()-(taskOrdo.tempsDeplacement+CST.TEMPS_ANO_ENTRE_P1_P2);
 				
 				
 			}			

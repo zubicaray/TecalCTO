@@ -50,13 +50,12 @@ import javax.swing.table.TableRowSorter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tecal.scheduler.CST;
-import org.tecal.ui.GanttChart;
-import org.tecal.ui.frame.CountdownWindow;
-import org.tecal.ui.frame.ModalProgressBar;
 import org.tecal.scheduler.TecalOrdo;
 import org.tecal.scheduler.data.SQL_DATA;
 import org.tecal.scheduler.types.AssignedTask;
 import org.tecal.scheduler.types.Barre;
+import org.tecal.ui.frame.CountdownWindow;
+import org.tecal.ui.frame.ModalProgressBar;
 
 public class CPO_IHM extends JFrame {
 
@@ -213,7 +212,8 @@ public class CPO_IHM extends JFrame {
 
 		});
 		mCPO_PANEL.set_enable(false);
-		// il faut mettre à jour les barres, certains ont pu avoir commencées depuis leur créatin dans mModelBArres
+		// il faut mettre à jour les barres,
+		// certaines ont pu avoir commencées depuis leur créatin dans mModelBarres
 		mCPO_PANEL.setModelBarres(mBarresSettingsFutures);
 		if (mBarresSettingsFutures.size() > 0) {
 			try {
@@ -310,7 +310,7 @@ public class CPO_IHM extends JFrame {
 				barresCommencantes.add(barreid);
 				mTecalOrdo.addFixedJobsEnCours(barreid);
 				logger.info("barreid:" + barreid + " en cours ");
-			
+
 
 			}
 
