@@ -302,14 +302,20 @@ public class TecalOrdo {
 
 	public LinkedHashMap<Integer, Barre> setBarresTest() {
 
+		HashMap<String, String> testMap = CST.transformStringToMap("{1=N4-000601, 2=22-000097, 3=55-000097, 4=25-000020, 5=26-000485, " +
+	            "6=11-000097, 7=23-000105, 8=N2-000601, 9=32-000778, 10=29-000024, " +
+	            "11=20-000097, 12=39-000811, 13=24-000097, 14=14-000152, " +
+	            "15=15-000152, 16=16-000152, 17=17-000152, 18=18-000152, 19=19-000152}");
+		
+		//testMap = CST.transformStringToMap("{1=1-000001, 2=2-000002, 3=3-000003, 4=4-000004, 5=5-000152, 6=6-000152, 7=7-000152, 8=8-000152, 10=10-000152}");
 		LinkedHashMap<Integer, Barre> res= new LinkedHashMap<>();
 		int i = 0;
-		for (String gamme : CST.gammesTest) {
+		for (Map.Entry<String, String> e : testMap.entrySet()) {
 			i++;
-			Barre b=new Barre(i,i+"",gamme,CST.VITESSE_NORMALE,CST.VITESSE_NORMALE,false);
+			Barre b=new Barre(i,e.getKey(),e.getValue(),CST.VITESSE_NORMALE,CST.VITESSE_NORMALE,false);
 			mBarreFutures.put(i, b.getGammeArray());
 			mBarresAll.put(i, b.getGammeArray());
-			mBarreLabels.put(i, i+" - "+gamme);
+			mBarreLabels.put(i, e.getKey()+" - "+e.getValue());
 			res.put(i,b);
 		}
 
@@ -394,6 +400,7 @@ public class TecalOrdo {
 
 
 		mCurrentTime=currentTime;
+		System.out.println("mCurrentTime:"+mCurrentTime);
 		setBarres(inBarresFutures);
 		run();
 		
@@ -418,9 +425,9 @@ public class TecalOrdo {
 		jobsPrecedence();	
 		// --------------------------------------------------------------------------------------------
 		// CONSTRAINTES SUR CHAQUE POSTE
-		// --------------------------------------------------------------------------------------------
+		// --------------------------------------------------------------------------------------------		
 		bridgesConstraints();
-		brigesSecurity();
+		brigesSecurity();		
 		// --------------------------------------------------------------------------------------------
 		// --------------------------------------------------------------------------------------------
 		// sur les postes d'oxy, faire en sorte que le pont 2 ne puisse pas croiser le
@@ -429,8 +436,8 @@ public class TecalOrdo {
 
 		// Makespan objective.
 		IntVar objVar = model.newIntVar(0, horizon, "makespan");
-		List<IntVar> ends = new ArrayList<>();
-		List<IntVar> starts = new ArrayList<>();
+		List<IntVar> endsFutures = new ArrayList<>();
+		List<IntVar> startsFutures = new ArrayList<>();
 		HashMap<Integer,IntVar> endByBarreIdNonPrio	= new HashMap<> ();
 		HashMap<Integer,IntVar> endByBarreIdPrio	= new HashMap<> ();
 
@@ -439,8 +446,8 @@ public class TecalOrdo {
 			
 			
 			TaskOrdo taskFirst=job.mTaskOrdoList.get(0);
-			ends.add(taskFirst.getFin());
-			starts.add(taskFirst.getStart());
+			endsFutures.add(taskFirst.getFin());
+			startsFutures.add(taskFirst.getStart());
 			
 			if(mBarresPrioritaires.contains(job.mBarreId))
 			{
@@ -457,15 +464,18 @@ public class TecalOrdo {
 		
 		// les nouvelles barres doivent commencer après celles déjà présentes
 		if(mCurrentTime>CST.CPT_GANTT_OFFSET)
-			for(IntVar iv:starts ) {
+			for(IntVar start:startsFutures ) {
 				//TODO
 				// a tester 
-				model.addLessThan(LinearExpr.constant(mCurrentTime+CST.TEMPS_MINIMAL_AVANT_DEMARRAGE),iv);
+				model.addLessThan(LinearExpr.constant(mCurrentTime+CST.TEMPS_MINIMAL_AVANT_DEMARRAGE),start);
 			}
 		
+		if(endsFutures.size()>0) {
+			model.addMaxEquality(objVar, endsFutures);
+			model.minimize(objVar);
+		}
 
-		model.addMaxEquality(objVar, ends);
-		model.minimize(objVar);
+		
 
 		// Creates a solver and solves the model.
 		solver = new CpSolver();
@@ -713,23 +723,20 @@ public class TecalOrdo {
 
 
 		// Computes horizon dynamically as the sum of all durations.
-		computeHorizon();
-
-		
+		computeHorizon();		
 
 		//model.clearAssumptions();
 		//model.clearObjective();
-		//model.clearHints();
+		//model.clearHints();		
 		
-
 		for (JobType job : arrayAllJobs) {
 			// on créé les zones avec leut temps de déplacement, égouttage, etc ...
 			job.addIntervalForModel(allTasks, zoneToIntervals, multiZoneIntervals, cumulDemands);
 			// on créé les zones corespondant a mouvement des ponts
-			job.simulateBridgesMoves();
+			job.simulateBridgesMoves(mCurrentTime);
 			// regroupement des zones qui pourraient être trop proches de zones d'autre jobs
 			// sur pont adverses
-			job.makeSafetyBetweenBridges();
+			job.makeSafetyBetweenBridges(mCurrentTime);
 			
 		}
 
@@ -749,8 +756,10 @@ public class TecalOrdo {
 		  horizon*=2;
 		else  horizon/=2; 	
 		*/
+		horizon+=mCurrentTime+CST.TEMPS_MINIMAL_AVANT_DEMARRAGE+100;
 		logger.info("*********************************************************************");
-		horizon=Math.min(horizon,CST.TEMPS_MAX_JOURNEE);
+		//horizon=Math.min(horizon,CST.TEMPS_MAX_JOURNEE);
+		logger.info("horizon"+horizon);
 
 	}
 

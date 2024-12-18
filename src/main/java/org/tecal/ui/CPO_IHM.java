@@ -164,7 +164,7 @@ public class CPO_IHM extends JFrame {
 					String hostname = InetAddress.getLocalHost().getHostName();
 					frame.setTitle("Tecal CPO - " + version);
 					if (hostname.equals("zubi-Latitude-5300")) {
-						// frame.runTest();
+						frame.runTest();
 					}
 
 					frame.addWindowListener(new WindowAdapter() {
@@ -215,7 +215,7 @@ public class CPO_IHM extends JFrame {
 		// il faut mettre à jour les barres,
 		// certaines ont pu avoir commencées depuis leur créatin dans mModelBarres
 		mCPO_PANEL.setModelBarres(mBarresSettingsFutures);
-		if (mBarresSettingsFutures.size() > 0) {
+		if (mBarresSettingsFutures.size() >= 0) {
 			try {
 				mTecalOrdo.execute(mBarresSettingsFutures, (long) mGanttTecalOR.getTimeBar().getValue());
 
@@ -253,7 +253,7 @@ public class CPO_IHM extends JFrame {
 		@Override
 		public void run() {
 			try {
-				// Votre code existant
+				
 				mGanttTecalOR.getTimeBar().setValue(mGanttTecalOR.getTimeBar().getValue() + 1);
 				manageOngoingJobs();
 			} catch (Exception e) {
@@ -297,6 +297,7 @@ public class CPO_IHM extends JFrame {
 		}
 
 		ArrayList<Integer> barresCommencantes = new ArrayList<>();
+		ArrayList<Integer> barresTerminees = new ArrayList<>();
 
 		double current_time = mGanttTecalOR.getTimeBar().getValue();
 		for (Entry<Integer, List<AssignedTask>> entry : mTecalOrdo.getAssignedTasksByBarreId().entrySet()) {
@@ -310,8 +311,6 @@ public class CPO_IHM extends JFrame {
 				barresCommencantes.add(barreid);
 				mTecalOrdo.addFixedJobsEnCours(barreid);
 				logger.info("barreid:" + barreid + " en cours ");
-
-
 			}
 
 			if (first.end == current_time + 60) {
@@ -330,6 +329,22 @@ public class CPO_IHM extends JFrame {
 			});
 
 		}
+		
+		for (Entry<Integer, List<AssignedTask>> entry : mTecalOrdo.getPassedTasksByBarreId().entrySet()) {
+
+			List<AssignedTask> values = entry.getValue();
+			
+			AssignedTask last=values.get(values.size()-1);
+			int barreid = entry.getKey();
+			if (last.start<current_time) {
+				barresTerminees.add(barreid);
+				logger.info("barreid:" + barreid + " terminées ");
+			}
+		}
+		for (Integer barreId : barresTerminees) {				
+			mTecalOrdo.removeBarreFinie(barreId);	
+		}
+		
 	}
 
 	private void execute() {
@@ -489,7 +504,7 @@ public class CPO_IHM extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (mGanttTecalOR != null) {
-					mGanttTecalOR.foreward(200);
+					mGanttTecalOR.foreward(500);
 				}
 			}
 		});

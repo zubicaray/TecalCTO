@@ -3,6 +3,7 @@ package org.tecal.scheduler;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
 
 import javax.swing.JOptionPane;
@@ -38,11 +39,32 @@ public class CST {
 	public final static String testPbNoSolu[] ={"000794","000794","000794"};
 	
 	
-	public final static String gammesTest[] ={
-			"000034","000003","000774","000774","000818","000117",
-			"000774","000601","000117","000601","000818","000811"};
+	public final static String gammesTest[] ={"000601", "000097", "000097", "000020", "000485", 
+			"000097", "000105", "000601", "000778", "000024", "000097", "000811", "000097", "000152",
+			"000152", "000152", "000152", "000152", "000152"};
 	
-
+	public static HashMap<String, String> transformStringToMap(String input) {
+        HashMap<String, String> map = new HashMap<>();
+        
+        // Retirer les accolades
+        input = input.substring(1, input.length() - 1);
+        
+        // Séparer chaque paire (index=clé-valeur)
+        String[] pairs = input.split(", ");
+        
+        for (String pair : pairs) {
+            // Isoler la partie clé-valeur
+            String[] keyValue = pair.split("=");
+            if (keyValue.length == 2) {
+                String[] parts = keyValue[1].split("-");
+                if (parts.length == 2) {
+                    map.put(parts[0], parts[1]);
+                }
+            }
+        }
+        return map;
+    }
+	
 	
 	
 	//------------------------------------------------------------

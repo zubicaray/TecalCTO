@@ -9,26 +9,33 @@ public class JobTypeFixed extends JobType {
 		isFixed=true;
 	}
 	
-void makeSafetyBetweenBridges() {
+void makeSafetyBetweenBridges(long time) {
 		
 		long deb = 0;
 		long fin= 0;
 	
 		//System.out.println("Job "+name);
 		for (int taskID = 0; taskID < mTaskOrdoList.size(); ++taskID) {
+			
+			TaskOrdo taskOrdo = mTaskOrdoList.get(taskID);		
+			if(taskOrdo.getFixedEndBDD()<time) {				
+				continue;
+			}
+		
 						
-			if(mTaskOrdoList.get(taskID).zoneSecu) {
-				deb= mTaskOrdoList.get(taskID).getFixedStartBDD();
+			if(taskOrdo.zoneSecu) {
+				
+				
+				deb= taskOrdo.getFixedStartBDD();
 				
 				if(indexAnod > 0 && taskID-1 == indexAnod) {
 					deb=mTaskOrdoList.get(indexAnod).getFixedEndBDD()-CST.TEMPS_ANO_ENTRE_P1_P2;
 				}
 				
 				if(indexAnod > 0 && taskID+1 == indexAnod) {
-					fin= mTaskOrdoList.get(indexAnod).getFixedStartBDD();
-					
+					fin= mTaskOrdoList.get(indexAnod).getFixedStartBDD();					
 				}else {
-					fin= mTaskOrdoList.get(taskID).getFixedEndBDD();
+					fin= taskOrdo.getFixedEndBDD();
 				}
 				
 				int taskID2 = taskID+1;
@@ -47,55 +54,77 @@ void makeSafetyBetweenBridges() {
 					
 					taskID=taskID2;
 				}
-				mNoOverlapP1P2.add(TecalOrdo.model.newFixedInterval( deb,fin -deb, ""));
-				
-				
-				
+				//System.out.println("SAFE BRIDGE "+name+" taskid:"+taskID+" zone:"+	SQL_DATA.getInstance().getZones().get(mTaskOrdoList.get(taskID).mTask.numzone).codezone+" deb:"+deb+", fin="+ (fin));
+				mNoOverlapP1P2.add(TecalOrdo.model.newFixedInterval( deb,fin -deb, ""));		
 			}
-			
-						
 		}
 		
 	}
 	
-	void simulateBridgesMoves() {
+	void simulateBridgesMoves(long time) {
 	
 		
 		long deb = 0;
 		long fin= 0;
 		int bridge=0;
+		int previousTpsDep=0;
 		
 		TaskOrdo taskOrdoNext =null;
 		//System.out.println("Job "+name);
 		for (int taskID = 0; taskID < mTaskOrdoList.size(); ++taskID) {
-			
 						
-			
 			TaskOrdo taskOrdo = mTaskOrdoList.get(taskID);		
-			
-			if(taskID != mTaskOrdoList.size()-1) 
-				taskOrdoNext = mTaskOrdoList.get(taskID+1);
-		
+			if(taskOrdo.getFixedFin()<time) {
+				//on garde le temps de déplacement pour aller à la prochaine zone "futures"
+				previousTpsDep=taskOrdo.tempsDeplacement;
+				continue;
+			}
 			if(taskID >indexAnod) {
 				bridge=1;								
 			}
 			ListeZone lBridgeMoves=bridgesMoves.get(bridge);
+			if(taskID != mTaskOrdoList.size()-1) 
+				taskOrdoNext = mTaskOrdoList.get(taskID+1);
+			else {
+				//la prochaine zone est uniquement de déchargement
+				//deb=taskOrdo.getFixedStartBDD()-(taskOrdo.tempsDeplacement+CST.TEMPS_ANO_ENTRE_P1_P2);
+				lBridgeMoves.add(TecalOrdo.model.newFixedInterval(deb, 2*CST.TEMPS_MVT_PONT,""));
+				//System.out.println("SIMU"+name+"taskid:"+taskID+" zone:"+
+				//SQL_DATA.getInstance().getZones().get(mTaskOrdoList.get(taskID).mTask.numzone).codezone+" deb:"+deb+", fin="+ (2*CST.TEMPS_MVT_PONT));
+				
+				break;
+			}
 			
-			if(taskID==0) {
-				deb=taskOrdoNext.getFixedStartBDD()-(taskOrdo.tempsDeplacement+CST.TEMPS_ANO_ENTRE_P1_P2);
+			
+			//System.out.println("SIMU "+name+" taskid:"+taskID+" zone:"+SQL_DATA.getInstance().getZones().get(mTaskOrdoList.get(taskID).mTask.numzone).codezone);
+			if(taskOrdo.getFixedStartBDD()<time ) {
+				// !! ZONE ENCOURS
+				deb=taskOrdoNext.getFixedStartBDD()-(taskOrdo.tempsDeplacement+CST.TEMPS_ANO_ENTRE_P1_P2);				
 				continue;
 			}
 			
 			
-			if(taskOrdo.isOverlapable || taskID ==indexAnod ||  taskID == mTaskOrdoList.size()-1 ) {
+			if(deb==0) {
+				//zone futures
+				deb=taskOrdoNext.getFixedStartBDD()-(previousTpsDep+CST.TEMPS_ANO_ENTRE_P1_P2);
+				continue;
+			}	
+			
+			
+			
+			boolean isOverlapable=taskOrdo.isOverlapable && (taskOrdo.getEndBDDValue()-time)>CST.TEMPS_ZONE_OVERLAP_MIN;
+			if(isOverlapable || taskID ==indexAnod ||  (taskID == mTaskOrdoList.size()-1 ) ) {
 				
 				if(taskOrdo.getBloquePont()) {
 					fin=taskOrdo.getEndBDDValue();
 				}
 				else
 					fin=taskOrdo.getFixedStartBDD()+CST.TEMPS_MVT_PONT;
-				
+								
 				lBridgeMoves.add(TecalOrdo.model.newFixedInterval(deb, fin-deb ,""));
+				
+				//System.out.println("SIMU"+name+"taskid:"+taskID+" zone:"+SQL_DATA.getInstance().getZones().get(mTaskOrdoList.get(taskID).mTask.numzone).codezone+" deb:"+deb+", fin="+ (fin));
+						
 				
 				if(taskID != mTaskOrdoList.size()-1)
 					if(taskOrdo.getBloquePont()) {

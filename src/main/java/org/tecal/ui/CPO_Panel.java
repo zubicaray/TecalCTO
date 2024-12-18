@@ -480,6 +480,16 @@ public class CPO_Panel extends JPanel {
 	    public Barre getBarre(int rowIndex) {
 	        return barres.get(rowIndex);
 	       }
+	    
+	    public void insertRow(int rowIndex, Barre barre) {
+	        if (rowIndex < 0 || rowIndex > barres.size()) {
+	            throw new IndexOutOfBoundsException("Index hors limites : " + rowIndex);
+	        }
+	        barres.add(rowIndex, barre); // Insère le nouvel objet à l'index spécifié
+	        fireTableRowsInserted(rowIndex, rowIndex); // Notifie la table de l'ajout
+	    }
+
+	    
 	    @Override
 	    public Object getValueAt(int rowIndex, int columnIndex) {
 	        Barre barre = barres.get(rowIndex);
@@ -778,7 +788,7 @@ public class CPO_Panel extends JPanel {
 
 					//mModelBarres.fireTableDataChanged();
 					mTableBarres.repaint();
-		            logger.info("Barre avec ID " + barre + " supprimée.");
+		            logger.info("Barre avec ID " + barre + " partie en prod.");
 		        } else {
 		            logger.warn("Barre avec ID " + barre + " introuvable.");
 		        }
@@ -896,15 +906,15 @@ public class CPO_Panel extends JPanel {
 	private void moveRowBy(int by) {
 
 		SwingUtilities.invokeLater(() -> {
-			DefaultTableModel model = (DefaultTableModel) mTableBarres.getModel();
-		    if (model.getRowCount() > 0) {
+			
+		    if (mModelBarres.getRowCount() > 0) {
 		    	int[] rows = mTableBarres.getSelectedRows();
 			    if (rows.length == 0) {
 			        return; // Pas de ligne sélectionnée
 			    }
 
 			    int row = rows[0];
-			    int rowCount = model.getRowCount();
+			    int rowCount = mModelBarres.getRowCount();
 			    int destination = row + by;
 
 			    // Vérifiez si les indices sont valides
@@ -914,15 +924,12 @@ public class CPO_Panel extends JPanel {
 
 			    try {
 			        // Sauvegarde des données de la ligne
-			        Object[] data = new Object[model.getColumnCount()];
-			        for (int col = 0; col < model.getColumnCount(); col++) {
-			            data[col] = model.getValueAt(row, col);
-			        }
-
+			    	Barre data = mModelBarres.getBarre(row);
+			        
 			        // Modification du modèle
 			        SwingUtilities.invokeLater(() -> {
-			            model.removeRow(row);
-			            model.insertRow(destination, data);
+			        	mModelBarres.removeBarre(row);
+			        	mModelBarres.insertRow(destination, data);
 			            mTableBarres.setRowSelectionInterval(destination, destination);
 			        });
 

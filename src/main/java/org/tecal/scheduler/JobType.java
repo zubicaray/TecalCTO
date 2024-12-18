@@ -41,7 +41,7 @@ public class JobType {
 	public int getBarreID() {
 		return mBarreId;
 	}
-	private String name;
+	protected String name;
 	public String getName() {
 		return name;
 	}
@@ -102,8 +102,6 @@ public class JobType {
 	}
 	
 
-
-
 	
 	@Override
 	public String toString() {
@@ -112,7 +110,7 @@ public class JobType {
 
 	}
 
-	void makeSafetyBetweenBridges() {
+	void makeSafetyBetweenBridges(long time) {
 		
 		if(indexAnod==-1) return ;
 		
@@ -156,8 +154,7 @@ public class JobType {
 					taskID=taskID2;
 				}
 				mNoOverlapP1P2.add(TecalOrdo.model.newIntervalVar( deb,TecalOrdo.model.newIntVar(0,TecalOrdo.horizon, "") ,fin, ""));
-				
-				
+								
 				
 			}
 			
@@ -172,7 +169,7 @@ public class JobType {
 			t.clear();
 		}
 	}
-	void simulateBridgesMoves() {
+	void simulateBridgesMoves(long time) {
 
 		
 		IntVar deb = null;
@@ -209,6 +206,7 @@ public class JobType {
 				else
 					fin=TecalOrdo.getForeward(TecalOrdo.model, (IntVar) taskOrdo.getStart(),CST.TEMPS_MVT_PONT);
 				
+				//System.out.println("deb:"+deb+", fin-deb="+ fin);
 				lBridgeMoves.add(TecalOrdo.model.newIntervalVar(deb, TecalOrdo.model.newIntVar(0, TecalOrdo.horizon, ""), fin ,""));
 				
 				if(taskID != mTaskOrdoList.size()-1) {
@@ -216,8 +214,7 @@ public class JobType {
 						deb=TecalOrdo.getBackward(TecalOrdo.model, (IntVar) taskOrdoNext.getStart(),taskOrdo.tempsDeplacement);
 					else
 						deb=TecalOrdo.getBackward(TecalOrdo.model, (IntVar) taskOrdoNext.getStart(),taskOrdo.tempsDeplacement+CST.TEMPS_ANO_ENTRE_P1_P2);
-				}
-					
+				}					
 						
 			}			
 			
@@ -242,8 +239,10 @@ public class JobType {
 			
 			LinearExpr deb=mTaskOrdoList.get(taskID).intervalReel.getStartExpr();
 			LinearExpr end;
-			if(taskID == tasksJob.size()-1) {
-				end=mTaskOrdoList.get(taskID).intervalReel.getEndExpr();
+			if(taskID == tasksJob.size()-1 ) {
+				//if( mTaskOrdoList.get(taskID).mTask.numzone!=CST.CHARGEMENT_NUMZONE)
+					end=mTaskOrdoList.get(taskID).intervalReel.getEndExpr();				
+					
 			}
 			else
 				end=mTaskOrdoList.get(taskID+1).intervalReel.getStartExpr();
