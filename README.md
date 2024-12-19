@@ -3,7 +3,7 @@ Ordonnanceur pour anodisation
 
 ## ALGO GENERAL
 
-1.  **TecalOrdo.preparesZones**: préparation des zones de chaque job 
+ -  **TecalOrdo.preparesZones**: préparation des zones de chaque job 
 	1. **JobType.computeCoords**: 	organise les indexes des zones par pont
 		- identification de l'indexe anodisation et indexe colmatage
 	2. **JobType.addIntervalForModel()**
@@ -13,10 +13,12 @@ Ordonnanceur pour anodisation
 		    ex: un zone comme C32  doit ajouter un demande sur la containtes de cumuls de la zone C31->C32
 	3. **JobType.simulateBridgesMoves()**
 		- pour chaque job/gamme on créé les zones **"mvts"** englobant les mouvements des ponts inter job, une zone englobante d'un mvt correspond donc à:
-                	- quelques secondes avant la fin du temps au poste (en comptant l'éventuelle dérive)
-    			- le temps de déplacement vers le prochain poste
-    			- le temps d'égoutage
-    			- quelques secondes après le début du prochain poste 
+           
+				 - quelques secondes avant la fin du temps au poste (en comptant l'éventuelle dérive)
+				 - le temps de déplacement vers le prochain poste
+				 - le temps d'égoutage
+				 - quelques secondes après le début du prochain poste
+
 		 toutes ces zones ne seront pas overlappable sur la plage d'un pont donné =>
 		 ainsi les déplacement du pont INTER JOBS ne pourront se faire qu'en dehors de ces zones
 	4. **JobType.makeSafetyBetweenBridges()**		
