@@ -1,6 +1,6 @@
 package org.tecal.scheduler;
 
-
+//import org.tecal.scheduler.data.SQL_DATA;
 
 public class JobTypeFixed extends JobType {
 
@@ -87,10 +87,13 @@ void makeSafetyBetweenBridges(long time) {
 				taskOrdoNext = mTaskOrdoList.get(taskID+1);
 			else {
 				//la prochaine zone est uniquement de déchargement
-				//deb=taskOrdo.getFixedStartBDD()-(taskOrdo.tempsDeplacement+CST.TEMPS_ANO_ENTRE_P1_P2);
+								
+				if(deb==0) {// cas où le curseur est dans la zone de déchargement
+					deb=taskOrdo.getFixedStartBDD()-previousTpsDep;
+				}
+				
 				lBridgeMoves.add(TecalOrdo.model.newFixedInterval(deb, 2*CST.TEMPS_MVT_PONT,""));
-				//System.out.println("SIMU"+name+"taskid:"+taskID+" zone:"+
-				//SQL_DATA.getInstance().getZones().get(mTaskOrdoList.get(taskID).mTask.numzone).codezone+" deb:"+deb+", fin="+ (2*CST.TEMPS_MVT_PONT));
+				//System.out.println("SIMU"+name+"taskid:"+taskID+" zone:"+SQL_DATA.getInstance().getZones().get(mTaskOrdoList.get(taskID).mTask.numzone).codezone+" deb:"+deb+", fin="+ (2*CST.TEMPS_MVT_PONT));
 				
 				break;
 			}
@@ -123,7 +126,7 @@ void makeSafetyBetweenBridges(long time) {
 								
 				lBridgeMoves.add(TecalOrdo.model.newFixedInterval(deb, fin-deb ,""));
 				
-				//System.out.println("SIMU"+name+"taskid:"+taskID+" zone:"+SQL_DATA.getInstance().getZones().get(mTaskOrdoList.get(taskID).mTask.numzone).codezone+" deb:"+deb+", fin="+ (fin));
+				//system.out.println("SIMU"+name+"taskid:"+taskID+" zone:"+SQL_DATA.getInstance().getZones().get(mTaskOrdoList.get(taskID).mTask.numzone).codezone+" deb:"+deb+", fin="+ (fin));
 						
 				
 				if(taskID != mTaskOrdoList.size()-1)

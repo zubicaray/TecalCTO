@@ -1,4 +1,6 @@
 
+select max(NumFicheProduction) from ANODISATION.dbo.DetailsFichesProduction
+
 ALTER INDEX ALL ON ANODISATION.dbo.DetailsFichesProduction REBUILD;
 ALTER INDEX ALL ON ANODISATION.dbo.DetailsGammesProduction REBUILD;
 ALTER INDEX ALL ON ANODISATION.dbo.DetailsPhasesProduction REBUILD;

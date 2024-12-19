@@ -336,7 +336,7 @@ public class CPO_IHM extends JFrame {
 			
 			AssignedTask last=values.get(values.size()-1);
 			int barreid = entry.getKey();
-			if (last.start<current_time) {
+			if (last.start<=current_time) {
 				barresTerminees.add(barreid);
 				logger.info("barreid:" + barreid + " terminées ");
 			}
