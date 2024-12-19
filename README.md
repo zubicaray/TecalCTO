@@ -12,7 +12,7 @@ Ordonnanceur pour anodisation
 		- gestion de machine virtuellement unique mais pouvant appartenir à une multiple:
 		    ex: un zone comme C32  doit ajouter un demande sur la containtes de cumuls de la zone C31->C32
 	3. **JobType.simulateBridgesMoves()**
-		- pour chaque job/gamme on créé les zones **"mvts"** englobant les mouvements des ponts inter job, une zone englobante d'un mvt correspond donc à:
+		- pour chaque job/gamme on créé les zones **"mvts"** englobant les mouvements des ponts **INTRA JOB**, une zone englobante d'un mvt correspond donc à:
            
 				 - quelques secondes avant la fin du temps au poste (en comptant l'éventuelle dérive)
 				 - le temps de déplacement vers le prochain poste
@@ -20,7 +20,7 @@ Ordonnanceur pour anodisation
 				 - quelques secondes après le début du prochain poste
 
 		 toutes ces zones ne seront pas overlappable sur la plage d'un pont donné =>
-		 ainsi les déplacement du pont INTER JOBS ne pourront se faire qu'en dehors de ces zones
+		 ainsi les déplacement du pont **INTER JOBS** ne pourront se faire qu'en dehors de ces zones
 	4. **JobType.makeSafetyBetweenBridges()**		
 		- regroupement des **"zones sécurités"** qui pourraient être trop proches de zones d'autre jobs sur le pont adverse 
 2. **TecalOrdo.jobConstraints()**:
