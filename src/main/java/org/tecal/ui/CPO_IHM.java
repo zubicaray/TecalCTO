@@ -213,7 +213,7 @@ public class CPO_IHM extends JFrame {
 		});
 		mCPO_PANEL.set_enable(false);
 		// il faut mettre à jour les barres,
-		// certaines ont pu avoir commencées depuis leur créatin dans mModelBarres
+		// certaines ont pu avoir commencées depuis leur création dans mModelBarres
 		mCPO_PANEL.setModelBarres(mBarresSettingsFutures);
 		if (mBarresSettingsFutures.size() >= 0) {
 			try {
@@ -254,7 +254,7 @@ public class CPO_IHM extends JFrame {
 		public void run() {
 			try {
 				
-				mGanttTecalOR.getTimeBar().setValue(mGanttTecalOR.getTimeBar().getValue() + 1);
+				//mGanttTecalOR.getTimeBar().setValue(mGanttTecalOR.getTimeBar().getValue() + 1);
 				manageOngoingJobs();
 			} catch (Exception e) {
 				JOptionPane.showMessageDialog(null, "Erreur dans la tâche périodique : " + e.getMessage(), "Erreur",
@@ -279,9 +279,10 @@ public class CPO_IHM extends JFrame {
 
 				LocalDateTime deb = start.plusSeconds(a.start - CST.CPT_GANTT_OFFSET);
 				LocalDateTime fin = start.plusSeconds(a.end - CST.CPT_GANTT_OFFSET);
+				Barre b=mTecalOrdo.getAllJobs().get(i).getBarre();
 
 				SQL_DATA.getInstance().insertLogCPO(d, a.barreID, mTecalOrdo.getBarreLabels().get(i), cptZone,
-						a.numzone, deb, fin);
+						a.numzone, deb, fin,(int) (a.derive-a.end),b.getVitesseDescente(),b.getVitesseMontee());
 				cptZone++;
 			}
 

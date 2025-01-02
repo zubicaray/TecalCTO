@@ -503,6 +503,7 @@ public class TecalOrdo {
 			
 			if(status == CpSolverStatus.OPTIMAL) {
 				mOutPutMsg.append("Solution OPTIMALE !");
+				logger.info("Solution OPTIMALE !");
 			}
 			else {
 				mOutPutMsg.append("Solution:");
@@ -548,6 +549,7 @@ public class TecalOrdo {
 
 		} else {
 			mOutPutMsg.append("Pas de solution trouvée.");
+			logger.info("Pas de solution trouvée.");
 			mOutPutMsg.append(System.getProperty("line.separator"));
 			
 			//TODO: garder les job en cours !!!
@@ -574,6 +576,7 @@ public class TecalOrdo {
 			logger.info("mJobsEnCours="+mJobsEnCours.keySet());
 			logger.info("mJobsFutures="+mJobsFuturs.keySet());
 		}
+		logger.info("mCurrentTime="+mCurrentTime);
 		
 	}
 

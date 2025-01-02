@@ -3,10 +3,11 @@
     <Appenders>
         <!-- Appender pour fichier avec date dans le nom -->
         <RollingFile name="DateBasedFileAppender" fileName="logs/application.log"
-                     filePattern="logs/application_%d{yyyy-MM-dd}.log">
+                     filePattern="logs/application_%d{yyyy-MM-dd}.log"  >
             <PatternLayout>
                 <Pattern>%d{yyyy-MM-dd HH:mm:ss} [%t] %-5level %logger{36} - %msg%n</Pattern>
             </PatternLayout>
+           
             <TimeBasedTriggeringPolicy />
         </RollingFile>
         
@@ -17,7 +18,7 @@
     </Appenders>
 
     <Loggers>
-        <Root level="info">
+        <Root level="debug">
             <AppenderRef ref="DateBasedFileAppender"/>
         </Root>
     </Loggers>

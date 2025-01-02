@@ -144,6 +144,11 @@ public class TaskOrdo {
 		
 
 	}
+	public int getDuration() {
+		
+		return (int) (fixedEndBDD-fixedStartBDD);
+		
+	}
 
 
 

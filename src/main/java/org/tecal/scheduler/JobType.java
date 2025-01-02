@@ -19,7 +19,7 @@ import com.google.ortools.sat.LinearExpr;
 
 public class JobType {
 	
-	private static final Logger logger = LogManager.getLogger(JobType.class);
+	protected static final Logger logger = LogManager.getLogger(JobType.class);
 	List<Task> tasksJob;
 	List<TaskOrdo> mTaskOrdoList;	
 
@@ -303,9 +303,10 @@ public class JobType {
 				
 				int tps=SQL_DATA.getInstance().getTempsDeplacement(task.numzone,taskSuivante.numzone,CST.VITESSE);
 				if (tps==0) {
-					System.out.println("---------TPS NUL !!!!---------------");
-					System.out.println("task.numzone "+task.numzone);
-					System.out.println("task.numzone "+taskSuivante.numzone);
+					//System.out.println("---------TPS NUL !!!!---------------");
+					//System.out.println("task.numzone "+task.numzone);
+					//System.out.println("task.numzone "+taskSuivante.numzone);
+					logger.info("TPS NUL !!!!  entre idzone: "+task.numzone+" et "+taskSuivante.numzone+"  -------------------");
 				}
 				else {					
 					tps = gestionVitesseManutention(tps);										
@@ -395,7 +396,9 @@ public class JobType {
 	public int getmBarreId() {
 		return mBarreId;
 	}
-	
+	public Barre getBarre() {
+		return mBarre;
+	}
 	public JobTypeFixed  makeFixedJob(List<AssignedTask> listTasks) {
 		
 		JobTypeFixed jf=new JobTypeFixed(mBarreId, name);

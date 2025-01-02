@@ -13,6 +13,8 @@ truncate  table [ANODISATION].dbo.DetailsChargesProduction;
 
 select count(*) from ANODISATION.dbo.DetailsFichesProduction --1707486
 where NumFicheProduction  between '00086810' and '00086775'
+delete from ANODISATION.dbo.LOGS_CPO; 
+select * from ANODISATION.dbo.LOGS_CPO order by date_log desc
 
 select * from ANODISATION.dbo.Premisses where NumPosteDepart=18
 --C13-TEMPO-1-AARRETRED-18-DEAC-NH -TEMPO_EGOUT-0-C17-TEMPO_STAB-1-NB -MOAC-FCY	

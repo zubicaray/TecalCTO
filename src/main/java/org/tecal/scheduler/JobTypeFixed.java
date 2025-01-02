@@ -1,5 +1,7 @@
 package org.tecal.scheduler;
 
+import org.tecal.scheduler.data.SQL_DATA;
+
 //import org.tecal.scheduler.data.SQL_DATA;
 
 public class JobTypeFixed extends JobType {
@@ -79,9 +81,15 @@ void makeSafetyBetweenBridges(long time) {
 				previousTpsDep=taskOrdo.tempsDeplacement;
 				continue;
 			}
-			if(taskID >indexAnod) {
+			
+			if(indexAnod > 0 && taskID >indexAnod) {
 				bridge=1;								
 			}
+			// si pas de zone d'ano
+			if(indexAnod < 0 && tasksJob.get(taskID).numzone >=TecalOrdo.mNUMZONE_ANODISATION) {
+				bridge=1;								
+			}
+			
 			ListeZone lBridgeMoves=bridgesMoves.get(bridge);
 			if(taskID != mTaskOrdoList.size()-1) 
 				taskOrdoNext = mTaskOrdoList.get(taskID+1);
@@ -91,9 +99,9 @@ void makeSafetyBetweenBridges(long time) {
 				if(deb==0) {// cas où le curseur est dans la zone de déchargement
 					deb=taskOrdo.getFixedStartBDD()-previousTpsDep;
 				}
-				
-				lBridgeMoves.add(TecalOrdo.model.newFixedInterval(deb, 2*CST.TEMPS_MVT_PONT,""));
-				//System.out.println("SIMU"+name+"taskid:"+taskID+" zone:"+SQL_DATA.getInstance().getZones().get(mTaskOrdoList.get(taskID).mTask.numzone).codezone+" deb:"+deb+", fin="+ (2*CST.TEMPS_MVT_PONT));
+				fin= taskOrdo.getFixedStartBDD()-deb+CST.TEMPS_MVT_PONT;
+				lBridgeMoves.add(TecalOrdo.model.newFixedInterval(deb,fin,""));
+				logger.debug("END ZONE, BRIDGE:"+bridge+" ,previousTpsDep="+previousTpsDep+", SIMU="+name+" ,taskid:"+taskID+" zone:"+SQL_DATA.getInstance().getZones().get(mTaskOrdoList.get(taskID).mTask.numzone).codezone+" deb:"+deb+", fin="+(deb+fin));
 				
 				break;
 			}
@@ -121,13 +129,16 @@ void makeSafetyBetweenBridges(long time) {
 				if(taskOrdo.getBloquePont()) {
 					fin=taskOrdo.getEndBDDValue();
 				}
-				else
-					fin=taskOrdo.getFixedStartBDD()+CST.TEMPS_MVT_PONT;
+				else {
+					int tpsSecu=Math.min(CST.TEMPS_MVT_PONT, taskOrdo.getDuration());
+					fin=taskOrdo.getFixedStartBDD()+tpsSecu;
+				}
+					
 								
 				lBridgeMoves.add(TecalOrdo.model.newFixedInterval(deb, fin-deb ,""));
 				
-				//system.out.println("SIMU"+name+"taskid:"+taskID+" zone:"+SQL_DATA.getInstance().getZones().get(mTaskOrdoList.get(taskID).mTask.numzone).codezone+" deb:"+deb+", fin="+ (fin));
-						
+				logger.debug("BRIDGE:"+bridge+" ,previousTpsDep="+previousTpsDep+", SIMU="+name+" ,taskid:"+taskID+" zone:"+SQL_DATA.getInstance().getZones().get(mTaskOrdoList.get(taskID).mTask.numzone).codezone+" deb:"+deb+", fin="+fin);
+					
 				
 				if(taskID != mTaskOrdoList.size()-1)
 					if(taskOrdo.getBloquePont()) {

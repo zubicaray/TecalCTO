@@ -972,11 +972,13 @@ public void setTempsDeplacements() {
 
     }
 
-    public  void insertLogCPO(LocalDateTime d,int idbarre, String label, int cptZone,int numZone, LocalDateTime entree, LocalDateTime sortie) {
+    public  void insertLogCPO(LocalDateTime d,int idbarre, String label, int cptZone,int numZone, LocalDateTime entree, 
+    		LocalDateTime sortie,int derive, int i, int j) {
         
     	    	
         // Requête SQL pour insérer une ligne
-        String sql = "INSERT INTO LOGS_CPO (date_log, idbarre, label, idZone, NumZone, entree, sortie) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO LOGS_CPO (date_log, idbarre, label, idZone, NumZone, entree, sortie,derive,descente, montee) "
+        		+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (            PreparedStatement preparedStatement = mConnection.prepareStatement(sql)) {
 
@@ -988,7 +990,9 @@ public void setTempsDeplacements() {
             preparedStatement.setInt(5, numZone);                               // Champ NumZone
             preparedStatement.setTimestamp(6, Timestamp.valueOf(entree));                 // Heure d'entrée
             preparedStatement.setTimestamp(7, Timestamp.valueOf(sortie));                 // Heure de sortie
-
+            preparedStatement.setInt(8,derive);                 // Heure de sortie
+            preparedStatement.setInt(9,i); 
+            preparedStatement.setInt(10,j); 
             // Exécuter la requête
             int rowsInserted = preparedStatement.executeUpdate();
             if (rowsInserted > 0) {

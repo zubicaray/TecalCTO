@@ -615,12 +615,9 @@ public class CPO_Panel extends JPanel {
 	}
 
 	private void computeBarresFutures() {
-		//LinkedHashMap<Integer, String> gammes = new LinkedHashMap<>();
+
 		LinkedHashMap<Integer, Barre> barres = new LinkedHashMap<>();
-
-
-		// utiliser un objet de classe Barre ave vitesse et prio
-		//g/ammes.clear();
+	
 		try {
 
 			for (int count = 0; count < mTableBarres.getRowCount(); count++) {
