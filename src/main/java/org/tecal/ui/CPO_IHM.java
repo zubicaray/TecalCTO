@@ -51,6 +51,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tecal.scheduler.CST;
 import org.tecal.scheduler.TecalOrdo;
+import org.tecal.scheduler.TecalOrdoParams;
 import org.tecal.scheduler.data.SQL_DATA;
 import org.tecal.scheduler.types.AssignedTask;
 import org.tecal.scheduler.types.Barre;
@@ -195,9 +196,9 @@ public class CPO_IHM extends JFrame {
 
 	public void runTest() {
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-		mBarresSettingsFutures = mTecalOrdo.runTest();
-		mCPO_PANEL.setModelBarres(mBarresSettingsFutures);
-		execute();
+		//mBarresSettingsFutures = mTecalOrdo.runTest();
+		//mCPO_PANEL.setModelBarres(mBarresSettingsFutures);
+		//execute();
 		setCursor(Cursor.getDefaultCursor());
 	}
 
@@ -205,7 +206,7 @@ public class CPO_IHM extends JFrame {
 
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
-		ModalProgressBar progressBar = new ModalProgressBar(mTecalOrdo.getTpsMaxSolver());
+		ModalProgressBar progressBar = new ModalProgressBar(TecalOrdoParams.getInstance().getTEMPS_MAX_SOLVEUR());
 
 		SwingUtilities.invokeLater(() -> {
 			progressBar.createAndShowDialog();
@@ -394,24 +395,11 @@ public class CPO_IHM extends JFrame {
 
 	public CPO_IHM() {
 		mTecalOrdo = new TecalOrdo(CST.SQLSERVER);
-		int[] params = { CST.TEMPS_ZONE_OVERLAP_MIN, CST.TEMPS_MVT_PONT_MIN_JOB, CST.GAP_ZONE_NOOVERLAP,
-				CST.TEMPS_MVT_PONT, CST.TEMPS_ANO_ENTRE_P1_P2, CST.TEMPS_MAX_SOLVEUR, CST.ANODISATION_NUMZONE,
-				CST.CAPACITE_ANODISATION };
-
-		mTecalOrdo.setParams(params);
+	
 		init();
 	}
 
-	/**
-	 * Create the frame based on production
-	 */
-	public CPO_IHM(int[] params) {
 
-		mTecalOrdo = new TecalOrdo(CST.SQLSERVER);
-		mTecalOrdo.setParams(params);
-		init();
-
-	}
 
 	private void init() {
 

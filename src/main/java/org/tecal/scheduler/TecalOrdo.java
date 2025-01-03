@@ -103,9 +103,12 @@ class Task {
 	}
 }
 
+
+
 public class TecalOrdo {
 	
 	private long mCurrentTime;
+	private TecalOrdoParams mParams;
 	private static final Logger logger = LogManager.getLogger(TecalOrdo.class);
 	// map de toutes les gammes
 	
@@ -193,28 +196,11 @@ public class TecalOrdo {
 
 	private int mSource;
 
-	@SuppressWarnings("unused")
-	private int mTEMPS_ZONE_OVERLAP_MIN = 0;
-	// temps incompresible d'un mouvement d epoint
-	@SuppressWarnings("unused")
-	private int mTEMPS_MVT_PONT_MIN_JOB = 0;
-	@SuppressWarnings("unused")
-	private int mGAP_ZONE_NOOVERLAP = 0;
-	// temps autour d'un début de grosse zone
-	
-	@SuppressWarnings("unused")
-	private int mTEMPS_MVT_PONT = 0;
-	// temps de sécurité entre deux gammes différentes sur un même poste d'ano	
-	private int mTEMPS_ANO_ENTRE_P1_P2 = 0;	
-	private int mTEMPS_MAX_SOLVEUR = 0;	
-	public  static int mNUMZONE_ANODISATION = CST.ANODISATION_NUMZONE;	
-	public	static int mCAPACITE_ANODISATION = CST.CAPACITE_ANODISATION;
-	
-	
 
 	public TecalOrdo(int source) {
 		
 		mCurrentTime=0;
+		mParams=TecalOrdoParams.getInstance();
 
 		mBarreFutures = new HashMap<>();
 		mBarresAll = new LinkedHashMap<>();
@@ -230,7 +216,7 @@ public class TecalOrdo {
 		arrayAllJobs=new ArrayList<>();
 
 		Loader.loadNativeLibraries();
-		// model = new CpModel();
+		
 
 		mOutPutMsg = new StringBuilder();
 		model = new CpModel();
@@ -251,29 +237,6 @@ public class TecalOrdo {
 		mPassedTasksByBarreId.remove(idbarre);
 	}
 
-	public void setParams(int[] inParams) {
-
-		mTEMPS_ZONE_OVERLAP_MIN = inParams[0];
-		// temps incompresible d'un mouvement d epoint
-		mTEMPS_MVT_PONT_MIN_JOB = inParams[1];
-		// temps entre les différentes "zones regroupées"
-		mGAP_ZONE_NOOVERLAP 	= inParams[2];
-		// temps autour d'un début de grosse zone
-		mTEMPS_MVT_PONT 		= inParams[3];
-		// temps de sécurité entre deux gammes différentes sur un même poste d'ano
-		mTEMPS_ANO_ENTRE_P1_P2 	= inParams[4];
-
-		mTEMPS_MAX_SOLVEUR 		= inParams[5];
-		//TODO finish dynamic numzone
-		mNUMZONE_ANODISATION	= inParams[6];
-		mCAPACITE_ANODISATION	= inParams[7];
-	}
-	public int getTpsMaxSolver() {
-		return mTEMPS_MAX_SOLVEUR ; 
-	}
-	public void setTpsMaxSolver(int tps) {
-		 mTEMPS_MAX_SOLVEUR =tps; 
-	}
 
 	public void setDataSource(int source) {
 
@@ -386,12 +349,7 @@ public class TecalOrdo {
 
 	public LinkedHashMap<Integer, Barre> runTest() {
 
-		mBarresSettings = setBarresTest();
-		int[] params = { CST.TEMPS_ZONE_OVERLAP_MIN, CST.TEMPS_MVT_PONT_MIN_JOB, CST.GAP_ZONE_NOOVERLAP,
-				CST.TEMPS_MVT_PONT, CST.TEMPS_ANO_ENTRE_P1_P2,  CST.TEMPS_MAX_SOLVEUR,CST.ANODISATION_NUMZONE,CST.CAPACITE_ANODISATION
-		};
-
-		setParams(params);
+		mBarresSettings = setBarresTest();	
 		run();
 		return mBarresSettings;
 	}
@@ -485,7 +443,7 @@ public class TecalOrdo {
 		// }
 
 		// PARAM MIRACLE
-		solver.getParameters().setMaxTimeInSeconds(mTEMPS_MAX_SOLVEUR);
+		solver.getParameters().setMaxTimeInSeconds(mParams.getTEMPS_MAX_SOLVEUR());
 
 		mAssignedTasksByNumzone.clear();
 		mAssignedTasksByBarreId.clear();
@@ -788,9 +746,9 @@ public class TecalOrdo {
 				// zone autorisant le "chevauchement" => zone contenant plus de 1 postes
 				IntVar capacity ;
 				
-				if(numzone== TecalOrdo.mNUMZONE_ANODISATION && TecalOrdo.mCAPACITE_ANODISATION >0) {
+				if(numzone== mParams.getNUMZONE_ANODISATION() && mParams.getCAPACITE_ANODISATION() >0) {
 		        	//TODO changer: code lu qu au lancement
-					capacity=model.newIntVar(0, TecalOrdo.mCAPACITE_ANODISATION, "capacity_of_" + numzone);
+					capacity=model.newIntVar(0, mParams.getCAPACITE_ANODISATION(), "capacity_of_" + numzone);
 				}
 				else 
 					capacity = model.newIntVar(0, zt.cumul, "capacity_of_" + numzone);
@@ -837,8 +795,8 @@ public class TecalOrdo {
 					LinearExpr finInter = interval.getEndExpr();
 
 					
-					IntervalVar deb = getNoOverlapZone(model, debInter, mTEMPS_ANO_ENTRE_P1_P2, mTEMPS_ANO_ENTRE_P1_P2);
-					IntervalVar fin = getNoOverlapZone(model, finInter, mTEMPS_ANO_ENTRE_P1_P2, mTEMPS_ANO_ENTRE_P1_P2);
+					IntervalVar deb = getNoOverlapZone(model, debInter, mParams.getTEMPS_ANO_ENTRE_P1_P2(), mParams.getTEMPS_ANO_ENTRE_P1_P2());
+					IntervalVar fin = getNoOverlapZone(model, finInter, mParams.getTEMPS_ANO_ENTRE_P1_P2(), mParams.getTEMPS_ANO_ENTRE_P1_P2());
 
 					nooverlapAno.add(deb);
 					nooverlapAno.add(fin);

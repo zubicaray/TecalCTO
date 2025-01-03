@@ -58,6 +58,7 @@ import javax.swing.table.TableRowSorter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tecal.scheduler.CST;
+import org.tecal.scheduler.TecalOrdoParams;
 import org.tecal.scheduler.data.SQL_DATA;
 import org.tecal.scheduler.types.Barre;
 import org.tecal.scheduler.types.ElementGamme;
@@ -153,14 +154,15 @@ public class CPO_Panel extends JPanel {
 	    mTxtTpsMaxSolver = new JTextField();
 	    mTxtTpsMaxSolver.setColumns(10);
 	    mTxtTpsMaxSolver.setHorizontalAlignment(SwingConstants.RIGHT);
-	    mTxtTpsMaxSolver.setText(String.valueOf(mCPO_IHM.getTecalOrdo().getTpsMaxSolver())); // Initialisation avec getTpsMaxSolver()
+	    mTxtTpsMaxSolver.setText(String.valueOf(TecalOrdoParams.getInstance().getTEMPS_MAX_SOLVEUR())); // Initialisation avec getTpsMaxSolver()
 
 	    // Listener pour mettre à jour mTecalOrdo
 	    mTxtTpsMaxSolver.addActionListener(e -> {
 	        try {
-	            int tps = Integer.parseInt(mTxtTpsMaxSolver.getText().trim());
-	            mCPO_IHM.getTecalOrdo().setTpsMaxSolver(tps);
+	            int tps = Integer.parseInt(mTxtTpsMaxSolver.getText().trim());	           
+	            TecalOrdoParams.getInstance().setTEMPS_MAX_SOLVEUR(tps);
 	            logger.info("Temps maximum du solver mis à jour : " + tps);
+	            
 	        } catch (NumberFormatException ex) {
 	            JOptionPane.showMessageDialog(this, "Veuillez entrer un nombre entier valide.", "Erreur", JOptionPane.ERROR_MESSAGE);
 	        }
@@ -594,7 +596,7 @@ public class CPO_Panel extends JPanel {
 
 		@Override
 		protected void done() {
-			System.out.println("Thread terminé !");
+			//System.out.println("Thread terminé !");
 		}
 	}
 

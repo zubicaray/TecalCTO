@@ -31,7 +31,7 @@ void makeSafetyBetweenBridges(long time) {
 				deb= taskOrdo.getFixedStartBDD();
 				
 				if(indexAnod > 0 && taskID-1 == indexAnod) {
-					deb=mTaskOrdoList.get(indexAnod).getFixedEndBDD()-CST.TEMPS_ANO_ENTRE_P1_P2;
+					deb=mTaskOrdoList.get(indexAnod).getFixedEndBDD()-mParams.getTEMPS_ANO_ENTRE_P1_P2();
 				}
 				
 				if(indexAnod > 0 && taskID+1 == indexAnod) {
@@ -48,7 +48,7 @@ void makeSafetyBetweenBridges(long time) {
 				
 				if(taskID2>taskID+1) {
 					if(indexAnod > 0 && taskID2 == indexAnod) {
-						fin=mTaskOrdoList.get(indexAnod).getFixedStartBDD()+CST.TEMPS_ANO_ENTRE_P1_P2;
+						fin=mTaskOrdoList.get(indexAnod).getFixedStartBDD()+mParams.getTEMPS_ANO_ENTRE_P1_P2();
 						
 					}else {
 						fin=mTaskOrdoList.get(taskID2-1).getFixedEndBDD(); 
@@ -86,7 +86,7 @@ void makeSafetyBetweenBridges(long time) {
 				bridge=1;								
 			}
 			// si pas de zone d'ano
-			if(indexAnod < 0 && tasksJob.get(taskID).numzone >=TecalOrdo.mNUMZONE_ANODISATION) {
+			if(indexAnod < 0 && tasksJob.get(taskID).numzone >=mParams.getNUMZONE_ANODISATION()) {
 				bridge=1;								
 			}
 			
@@ -99,7 +99,7 @@ void makeSafetyBetweenBridges(long time) {
 				if(deb==0) {// cas où le curseur est dans la zone de déchargement
 					deb=taskOrdo.getFixedStartBDD()-previousTpsDep;
 				}
-				fin= taskOrdo.getFixedStartBDD()-deb+CST.TEMPS_MVT_PONT;
+				fin= taskOrdo.getFixedStartBDD()-deb+mParams.getTEMPS_ANO_ENTRE_P1_P2();
 				lBridgeMoves.add(TecalOrdo.model.newFixedInterval(deb,fin,""));
 				logger.debug("END ZONE, BRIDGE:"+bridge+" ,previousTpsDep="+previousTpsDep+", SIMU="+name+" ,taskid:"+taskID+" zone:"+SQL_DATA.getInstance().getZones().get(mTaskOrdoList.get(taskID).mTask.numzone).codezone+" deb:"+deb+", fin="+(deb+fin));
 				
@@ -110,28 +110,28 @@ void makeSafetyBetweenBridges(long time) {
 			//System.out.println("SIMU "+name+" taskid:"+taskID+" zone:"+SQL_DATA.getInstance().getZones().get(mTaskOrdoList.get(taskID).mTask.numzone).codezone);
 			if(taskOrdo.getFixedStartBDD()<time ) {
 				// !! ZONE ENCOURS
-				deb=taskOrdoNext.getFixedStartBDD()-(taskOrdo.tempsDeplacement+CST.TEMPS_ANO_ENTRE_P1_P2);				
+				deb=taskOrdoNext.getFixedStartBDD()-(taskOrdo.tempsDeplacement+mParams.getTEMPS_ANO_ENTRE_P1_P2());				
 				continue;
 			}
 			
 			
 			if(deb==0) {
 				//zone futures
-				deb=taskOrdoNext.getFixedStartBDD()-(previousTpsDep+CST.TEMPS_ANO_ENTRE_P1_P2);
+				deb=taskOrdoNext.getFixedStartBDD()-(previousTpsDep+mParams.getTEMPS_ANO_ENTRE_P1_P2());
 				continue;
 			}	
 			
 			
 			
-			boolean isOverlapable=taskOrdo.isOverlapable && (taskOrdo.getEndBDDValue()-time)>CST.TEMPS_ZONE_OVERLAP_MIN;
+			boolean isOverlapable=taskOrdo.isOverlapable && (taskOrdo.getEndBDDValue()-time)>mParams.getTEMPS_ZONE_OVERLAP_MIN();
 			if(isOverlapable || taskID ==indexAnod ||  (taskID == mTaskOrdoList.size()-1 ) ) {
 				
-				if(taskOrdo.getBloquePont()) {
+				if(taskOrdo.BloquePont()) {
 					fin=taskOrdo.getEndBDDValue();
 				}
 				else {
-					int tpsSecu=Math.min(CST.TEMPS_MVT_PONT, taskOrdo.getDuration());
-					fin=taskOrdo.getFixedStartBDD()+tpsSecu;
+					//int tpsSecu=Math.min(mParams.getTEMPS_ANO_ENTRE_P1_P2(), taskOrdo.getDuration());
+					fin=taskOrdo.getFixedStartBDD()+mParams.getTEMPS_ANO_ENTRE_P1_P2();
 				}
 					
 								
@@ -141,11 +141,11 @@ void makeSafetyBetweenBridges(long time) {
 					
 				
 				if(taskID != mTaskOrdoList.size()-1)
-					if(taskOrdo.getBloquePont()) {
+					if(taskOrdo.BloquePont()) {
 						deb=taskOrdoNext.getFixedStartBDD()-(taskOrdo.tempsDeplacement);
 					}
 					else
-						deb=taskOrdoNext.getFixedStartBDD()-(taskOrdo.tempsDeplacement+CST.TEMPS_ANO_ENTRE_P1_P2);
+						deb=taskOrdoNext.getFixedStartBDD()-(taskOrdo.tempsDeplacement+mParams.getTEMPS_ANO_ENTRE_P1_P2());
 				
 				
 			}			

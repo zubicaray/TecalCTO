@@ -58,7 +58,7 @@ public class TaskOrdo {
 		return fixedDeriveNulle;
 	}
 	
-	public boolean getBloquePont() {
+	public boolean BloquePont() {
 		return mTask.BloquePont;
 	}
 	public IntVar getStart() {

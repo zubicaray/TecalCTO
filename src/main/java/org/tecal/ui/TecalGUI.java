@@ -68,7 +68,7 @@ import org.jdatepicker.impl.JDatePickerImpl;
 import org.jdatepicker.impl.UtilDateModel;
 import org.jfree.ui.RefineryUtilities;
 import org.tecal.scheduler.CST;
-
+import org.tecal.scheduler.TecalOrdoParams;
 import org.tecal.scheduler.data.SQL_DATA;
 import org.tecal.scheduler.types.Barre;
 import org.tecal.ui.frame.CPO_LOGS_GANT;
@@ -396,26 +396,25 @@ public class TecalGUI {
 							CST.VITESSE_NORMALE, false);
 
 					barres.put(b.getIdbarre(), b);
-				}
-
-				int[] params = { Integer.valueOf(textTEMPS_ZONE_OVERLAP_MIN.getText()),
-						Integer.valueOf(textTEMPS_MVT_PONT_MIN_JOB.getText()),
-						Integer.valueOf(textGAP_ZONE_NOOVERLAP.getText()),
-						Integer.valueOf(textTEMPS_MVT_PONT.getText()),
-						Integer.valueOf(textTEMPS_ANO_ENTRE_P1_P2.getText()),
-						Integer.valueOf(textTEMPS_MAX_SOLVEUR.getText()),
-						Integer.valueOf(textANODISATION_NUMZONE.getText()), Integer.valueOf(textNbAno.getText())
-
-				};
+				}	
+			
+				
+				TecalOrdoParams param=TecalOrdoParams.getInstance();
+				param.setTEMPS_ZONE_OVERLAP_MIN(Integer.valueOf(textTEMPS_ZONE_OVERLAP_MIN.getText()));
+				param.setTEMPS_MVT_PONT_MIN_JOB(Integer.valueOf(textTEMPS_MVT_PONT_MIN_JOB.getText()));
+				param.setGAP_ZONE_NOOVERLAP(Integer.valueOf(textGAP_ZONE_NOOVERLAP.getText()));
+				param.setTEMPS_MVT_PONT(Integer.valueOf(textTEMPS_MVT_PONT.getText()));
+				param.setTEMPS_ANO_ENTRE_P1_P2(Integer.valueOf(textTEMPS_ANO_ENTRE_P1_P2.getText()));
+				param.setTEMPS_MAX_SOLVEUR(Integer.valueOf(textTEMPS_MAX_SOLVEUR.getText()));
+				param.setNUMZONE_ANODISATION(Integer.valueOf(textANODISATION_NUMZONE.getText()));
+				param.setCAPACITE_ANODISATION(Integer.valueOf(textNbAno.getText()));
+			
 
 				SwingUtilities.invokeLater(() -> {
-					// mTecalOrdo.setBarres(gammes);
-					mCPO_IHM = new CPO_IHM(params);
-					//frmTecalOrdonnanceur.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+					
+					mCPO_IHM = new CPO_IHM();		
 
-					mCPO_IHM.setBarresSettingsFutures(barres);
-					//mCPO_IHM.run();
-					//frmTecalOrdonnanceur.setCursor(Cursor.getDefaultCursor());
+					mCPO_IHM.setBarresSettingsFutures(barres);					
 					mCPO_IHM.setVisible(true);
 					mCPO_IHM.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 

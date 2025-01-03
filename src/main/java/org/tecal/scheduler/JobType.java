@@ -20,6 +20,7 @@ import com.google.ortools.sat.LinearExpr;
 public class JobType {
 	
 	protected static final Logger logger = LogManager.getLogger(JobType.class);
+	protected  TecalOrdoParams mParams=TecalOrdoParams.getInstance();
 	List<Task> tasksJob;
 	List<TaskOrdo> mTaskOrdoList;	
 
@@ -56,6 +57,8 @@ public class JobType {
 		
 
 	JobType(int barreID, final Barre barre, String inname) {
+		
+		
 		mBarreId = barreID;
 		name = inname;
 		
@@ -126,7 +129,8 @@ public class JobType {
 				deb=(IntVar) mTaskOrdoList.get(taskID).getStart();
 				
 				if(indexAnod > 0 && taskID-1 == indexAnod) {
-					deb=TecalOrdo.getBackward(TecalOrdo.model,(IntVar) mTaskOrdoList.get(indexAnod).getEndBDD(),CST.TEMPS_ANO_ENTRE_P1_P2);
+					deb=TecalOrdo.getBackward(TecalOrdo.model,(IntVar) mTaskOrdoList.get(indexAnod).getEndBDD(),
+							mParams.getTEMPS_ANO_ENTRE_P1_P2());
 				}
 				
 				if(indexAnod > 0 && taskID+1 == indexAnod) {
@@ -145,7 +149,7 @@ public class JobType {
 				
 				if(taskID2>taskID+1) {
 					if(indexAnod > 0 && taskID2 == indexAnod) {
-						fin=TecalOrdo.getForeward(TecalOrdo.model,(IntVar) mTaskOrdoList.get(indexAnod).getStart(),CST.TEMPS_ANO_ENTRE_P1_P2);;
+						fin=TecalOrdo.getForeward(TecalOrdo.model,(IntVar) mTaskOrdoList.get(indexAnod).getStart(),mParams.getTEMPS_ANO_ENTRE_P1_P2());;
 						
 					}else {
 						fin=(IntVar) mTaskOrdoList.get(taskID2-1).getEndBDD();
@@ -187,33 +191,34 @@ public class JobType {
 				bridge=1;								
 			}
 			// si pas de zone d'ano
-			if(indexAnod < 0 && tasksJob.get(taskID).numzone >=TecalOrdo.mNUMZONE_ANODISATION) {
+			if(indexAnod < 0 && tasksJob.get(taskID).numzone >=mParams.getNUMZONE_ANODISATION()) {
 				bridge=1;								
 			}
 			ListeZone lBridgeMoves=bridgesMoves.get(bridge);
 			
 			if(taskID==0) {
-				deb=TecalOrdo.getBackward(TecalOrdo.model, (IntVar) taskOrdoNext.getStart(),taskOrdo.tempsDeplacement+CST.TEMPS_ANO_ENTRE_P1_P2);
+				deb=TecalOrdo.getBackward(TecalOrdo.model, (IntVar) taskOrdoNext.getStart(),
+						taskOrdo.tempsDeplacement+mParams.getTEMPS_ANO_ENTRE_P1_P2());
 				continue;
 			}
 			
 			
 			if(taskOrdo.isOverlapable || taskID ==indexAnod ||  taskID == mTaskOrdoList.size()-1 ) {
-				if(taskOrdo.getBloquePont()) {
+				if(taskOrdo.BloquePont()) {
 					logger.info("Coloration en "+SQL_DATA.getInstance().getZones().get(taskOrdo.mTask.numzone).codezone+ ", job: "+name);
 					fin=taskOrdo.getEndBDD();
 				}
 				else
-					fin=TecalOrdo.getForeward(TecalOrdo.model, (IntVar) taskOrdo.getStart(),CST.TEMPS_MVT_PONT);
+					fin=TecalOrdo.getForeward(TecalOrdo.model, (IntVar) taskOrdo.getStart(),mParams.getTEMPS_MVT_PONT());
 				
 				//System.out.println("deb:"+deb+", fin-deb="+ fin);
 				lBridgeMoves.add(TecalOrdo.model.newIntervalVar(deb, TecalOrdo.model.newIntVar(0, TecalOrdo.horizon, ""), fin ,""));
 				
 				if(taskID != mTaskOrdoList.size()-1) {
-					if(taskOrdo.getBloquePont())
+					if(taskOrdo.BloquePont())
 						deb=TecalOrdo.getBackward(TecalOrdo.model, (IntVar) taskOrdoNext.getStart(),taskOrdo.tempsDeplacement);
 					else
-						deb=TecalOrdo.getBackward(TecalOrdo.model, (IntVar) taskOrdoNext.getStart(),taskOrdo.tempsDeplacement+CST.TEMPS_ANO_ENTRE_P1_P2);
+						deb=TecalOrdo.getBackward(TecalOrdo.model, (IntVar) taskOrdoNext.getStart(),taskOrdo.tempsDeplacement+mParams.getTEMPS_ANO_ENTRE_P1_P2());
 				}					
 						
 			}			
@@ -382,7 +387,7 @@ public class JobType {
 			if(CST.PrintGroupementZones) 
 				System.out.println("debZone: "+gt.codezone+", gt.time="+gt.time);			
 			
-			if (gt.numzone == TecalOrdo.mNUMZONE_ANODISATION) {
+			if (gt.numzone == mParams.getNUMZONE_ANODISATION()) {
 				indexAnod=i;
 			
 			}
