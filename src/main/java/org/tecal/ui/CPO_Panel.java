@@ -156,18 +156,20 @@ public class CPO_Panel extends JPanel {
 	    mTxtTpsMaxSolver.setHorizontalAlignment(SwingConstants.RIGHT);
 	    mTxtTpsMaxSolver.setText(String.valueOf(TecalOrdoParams.getInstance().getTEMPS_MAX_SOLVEUR())); // Initialisation avec getTpsMaxSolver()
 
-	    // Listener pour mettre à jour mTecalOrdo
-	    mTxtTpsMaxSolver.addActionListener(e -> {
-	        try {
-	            int tps = Integer.parseInt(mTxtTpsMaxSolver.getText().trim());	           
-	            TecalOrdoParams.getInstance().setTEMPS_MAX_SOLVEUR(tps);
-	            logger.info("Temps maximum du solver mis à jour : " + tps);
-	            
-	        } catch (NumberFormatException ex) {
-	            JOptionPane.showMessageDialog(this, "Veuillez entrer un nombre entier valide.", "Erreur", JOptionPane.ERROR_MESSAGE);
-	        }
-	    });
+	       // Listener pour mettre à jour mTecalOrdo
+	       mTxtTpsMaxSolver.addActionListener(e -> {
+	           try {
+	               int tps = Integer.parseInt(mTxtTpsMaxSolver.getText().trim());     
+	               mCPO_IHM.getTecalOrdo().setTEMPS_MAX_SOLVEUR(tps);
+	               //logger.info("Temps maximum du solver mis à jour : " + tps);
+	               
+	           } catch (NumberFormatException ex) {
+	               JOptionPane.showMessageDialog(this, "Veuillez entrer un nombre entier valide.", "Erreur", JOptionPane.ERROR_MESSAGE);
+	           }
+	       });
 
+	    
+	    TecalGUI.applyColorChangingBehavior(mTxtTpsMaxSolver);
 		JButton btnDownButton = new JButton();
 		btnDownButton.setHorizontalAlignment(SwingConstants.CENTER);
 
@@ -482,7 +484,7 @@ public class CPO_Panel extends JPanel {
 	    public Barre getBarre(int rowIndex) {
 	        return barres.get(rowIndex);
 	       }
-	    
+
 	    public void insertRow(int rowIndex, Barre barre) {
 	        if (rowIndex < 0 || rowIndex > barres.size()) {
 	            throw new IndexOutOfBoundsException("Index hors limites : " + rowIndex);
@@ -491,7 +493,7 @@ public class CPO_Panel extends JPanel {
 	        fireTableRowsInserted(rowIndex, rowIndex); // Notifie la table de l'ajout
 	    }
 
-	    
+
 	    @Override
 	    public Object getValueAt(int rowIndex, int columnIndex) {
 	        Barre barre = barres.get(rowIndex);
@@ -619,7 +621,7 @@ public class CPO_Panel extends JPanel {
 	private void computeBarresFutures() {
 
 		LinkedHashMap<Integer, Barre> barres = new LinkedHashMap<>();
-	
+
 		try {
 
 			for (int count = 0; count < mTableBarres.getRowCount(); count++) {
@@ -635,7 +637,7 @@ public class CPO_Panel extends JPanel {
 				}
 
 				barres.put(b.getIdbarre(), b);
-				
+
 			}
 			mCPO_IHM.setBarresSettingsFutures( barres);
 		}
@@ -905,7 +907,7 @@ public class CPO_Panel extends JPanel {
 	private void moveRowBy(int by) {
 
 		SwingUtilities.invokeLater(() -> {
-			
+
 		    if (mModelBarres.getRowCount() > 0) {
 		    	int[] rows = mTableBarres.getSelectedRows();
 			    if (rows.length == 0) {
@@ -924,7 +926,7 @@ public class CPO_Panel extends JPanel {
 			    try {
 			        // Sauvegarde des données de la ligne
 			    	Barre data = mModelBarres.getBarre(row);
-			        
+
 			        // Modification du modèle
 			        SwingUtilities.invokeLater(() -> {
 			        	mModelBarres.removeBarre(row);

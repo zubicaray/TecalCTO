@@ -10,8 +10,6 @@ public class TecalOrdoParams {
 	// temps incompresible d'un mouvement de pont	
 	private int mTEMPS_MVT_PONT_MIN_JOB = CST.TEMPS_MVT_PONT_MIN_JOB;
 	
-	private int mGAP_ZONE_NOOVERLAP = CST.GAP_ZONE_NOOVERLAP;
-	
 	// temps autour d'un début de grosse zone		
 	private int mTEMPS_MVT_PONT = CST.TEMPS_MVT_PONT;
 	// temps de sécurité entre deux gammes différentes sur un même poste d'ano	
@@ -41,13 +39,7 @@ public class TecalOrdoParams {
 		this.mTEMPS_MVT_PONT_MIN_JOB = TEMPS_MVT_PONT_MIN_JOB;
 	}
 
-	public int getGAP_ZONE_NOOVERLAP() {
-		return mGAP_ZONE_NOOVERLAP;
-	}
 
-	public void setGAP_ZONE_NOOVERLAP(int GAP_ZONE_NOOVERLAP) {
-		this.mGAP_ZONE_NOOVERLAP = GAP_ZONE_NOOVERLAP;
-	}
 
 	public int getTEMPS_MVT_PONT() {
 		return mTEMPS_MVT_PONT;

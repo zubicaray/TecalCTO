@@ -11,6 +11,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -117,7 +119,7 @@ public class TecalGUI {
 	private SQL_DATA sqlCnx;
 
 	private JTextField textTEMPS_ZONE_OVERLAP_MIN;
-	private JTextField textGAP_ZONE_NOOVERLAP;
+	
 	private JTextField textTEMPS_MVT_PONT_MIN_JOB;
 	private JTextField textTEMPS_MVT_PONT;
 	private JTextField textTEMPS_ANO_ENTRE_P1_P2;
@@ -399,17 +401,7 @@ public class TecalGUI {
 				}	
 			
 				
-				TecalOrdoParams param=TecalOrdoParams.getInstance();
-				param.setTEMPS_ZONE_OVERLAP_MIN(Integer.valueOf(textTEMPS_ZONE_OVERLAP_MIN.getText()));
-				param.setTEMPS_MVT_PONT_MIN_JOB(Integer.valueOf(textTEMPS_MVT_PONT_MIN_JOB.getText()));
-				param.setGAP_ZONE_NOOVERLAP(Integer.valueOf(textGAP_ZONE_NOOVERLAP.getText()));
-				param.setTEMPS_MVT_PONT(Integer.valueOf(textTEMPS_MVT_PONT.getText()));
-				param.setTEMPS_ANO_ENTRE_P1_P2(Integer.valueOf(textTEMPS_ANO_ENTRE_P1_P2.getText()));
-				param.setTEMPS_MAX_SOLVEUR(Integer.valueOf(textTEMPS_MAX_SOLVEUR.getText()));
-				param.setNUMZONE_ANODISATION(Integer.valueOf(textANODISATION_NUMZONE.getText()));
-				param.setCAPACITE_ANODISATION(Integer.valueOf(textNbAno.getText()));
 			
-
 				SwingUtilities.invokeLater(() -> {
 					
 					mCPO_IHM = new CPO_IHM();		
@@ -424,9 +416,22 @@ public class TecalGUI {
 
 
 			}
+
+			
 		});
 
 	}
+
+	 public static void applyEnterKeyBehavior(JTextField[] textFields, Runnable setParamsAction) {
+	        for (JTextField textField : textFields) {
+	            textField.addActionListener(new ActionListener() {
+	                @Override
+	                public void actionPerformed(ActionEvent e) {
+	                    setParamsAction.run();
+	                }
+	            });
+	        }
+	    }
 
 	private void loadCalibrageData() {
 		try {
@@ -623,6 +628,34 @@ public class TecalGUI {
 
 		panelCalibrage.add(filterPanel, BorderLayout.NORTH);
 	}
+	
+	 public static void applyColorChangingBehavior(JTextField textField) {
+	        // Sauvegarder la couleur d'origine
+	        Color originalColor = textField.getBackground();
+
+	        // Ajout d'un écouteur de focus pour changer la couleur en orange lors de l'édition
+	        textField.addFocusListener(new FocusListener() {
+	            @Override
+	            public void focusGained(FocusEvent e) {
+	                textField.setBackground(Color.ORANGE);
+	            }
+
+	            @Override
+	            public void focusLost(FocusEvent e) {
+	                // Revenir à la couleur d'origine si le focus est perdu
+	                textField.setBackground(originalColor);
+	            }
+	        });
+
+	        // Ajout d'un écouteur d'action pour restaurer la couleur sur Entrée
+	        textField.addActionListener(new ActionListener() {
+	            @Override
+	            public void actionPerformed(ActionEvent e) {
+	                textField.setBackground(originalColor);
+	            }
+	        });
+	    }
+
 
 	private void buildParamsTab(JTabbedPane tabbedPane) {
 
@@ -641,20 +674,18 @@ public class TecalGUI {
 		textTEMPS_ZONE_OVERLAP_MIN.setHorizontalAlignment(SwingConstants.RIGHT);
 		textTEMPS_ZONE_OVERLAP_MIN.setColumns(10);
 		textTEMPS_ZONE_OVERLAP_MIN.setText(Integer.toString(CST.TEMPS_ZONE_OVERLAP_MIN));
+		
+		applyColorChangingBehavior(textTEMPS_ZONE_OVERLAP_MIN);
 
-		JLabel lblScuritEntreZones = new JLabel("GAP_ZONE_NOOVERLAP");
-
-		textGAP_ZONE_NOOVERLAP = new JTextField();
-		textGAP_ZONE_NOOVERLAP.setHorizontalAlignment(SwingConstants.RIGHT);
-		textGAP_ZONE_NOOVERLAP.setColumns(10);
-		textGAP_ZONE_NOOVERLAP.setText(Integer.toString(CST.GAP_ZONE_NOOVERLAP));
-
+	
+	
 		JLabel lblcartGroupes = new JLabel("TEMPS_MVT_PONT_MIN_JOB");
 
 		textTEMPS_MVT_PONT_MIN_JOB = new JTextField();
 		textTEMPS_MVT_PONT_MIN_JOB.setHorizontalAlignment(SwingConstants.RIGHT);
 		textTEMPS_MVT_PONT_MIN_JOB.setColumns(10);
 		textTEMPS_MVT_PONT_MIN_JOB.setText(Integer.toString(CST.TEMPS_MVT_PONT_MIN_JOB));
+		applyColorChangingBehavior(textTEMPS_MVT_PONT_MIN_JOB);
 
 		JLabel lblNewLabel = new JLabel("TEMPS_MVT_PONT");
 
@@ -664,11 +695,13 @@ public class TecalGUI {
 		textTEMPS_MVT_PONT.setHorizontalAlignment(SwingConstants.RIGHT);
 		textTEMPS_MVT_PONT.setColumns(10);
 		textTEMPS_MVT_PONT.setText(Integer.toString(CST.TEMPS_MVT_PONT));
+		applyColorChangingBehavior(textTEMPS_MVT_PONT);
 
 		textTEMPS_ANO_ENTRE_P1_P2 = new JTextField();
 		textTEMPS_ANO_ENTRE_P1_P2.setHorizontalAlignment(SwingConstants.RIGHT);
 		textTEMPS_ANO_ENTRE_P1_P2.setColumns(10);
 		textTEMPS_ANO_ENTRE_P1_P2.setText(Integer.toString(CST.TEMPS_ANO_ENTRE_P1_P2));
+		applyColorChangingBehavior(textTEMPS_ANO_ENTRE_P1_P2);
 
 		JLabel lblNewLabel_2 = new JLabel("NUMZONE ANODISATION");
 
@@ -676,6 +709,7 @@ public class TecalGUI {
 		textANODISATION_NUMZONE.setHorizontalAlignment(SwingConstants.RIGHT);
 		textANODISATION_NUMZONE.setColumns(10);
 		textANODISATION_NUMZONE.setText(Integer.toString(CST.ANODISATION_NUMZONE));
+		applyColorChangingBehavior(textANODISATION_NUMZONE);
 
 		JLabel lblNewLabel_2_1 = new JLabel("TEMPS MAX SOLVER");
 
@@ -683,6 +717,7 @@ public class TecalGUI {
 		textTEMPS_MAX_SOLVEUR.setText(Integer.toString(CST.TEMPS_MAX_SOLVEUR));
 		textTEMPS_MAX_SOLVEUR.setHorizontalAlignment(SwingConstants.RIGHT);
 		textTEMPS_MAX_SOLVEUR.setColumns(10);
+		applyColorChangingBehavior(textTEMPS_MAX_SOLVEUR);
 
 		JLabel lblPostesANo = new JLabel("NB POSTES ANO");
 
@@ -691,6 +726,27 @@ public class TecalGUI {
 		textNbAno.setHorizontalAlignment(SwingConstants.RIGHT);
 		textNbAno.setColumns(10);
 		textNbAno.setText(Integer.toString(CST.CAPACITE_ANODISATION));
+		applyColorChangingBehavior(textNbAno);
+		  // La méthode à exécuter sur Entrée
+        Runnable setParams = () -> {
+        	
+        		TecalOrdoParams param=TecalOrdoParams.getInstance();
+        		param.setTEMPS_ZONE_OVERLAP_MIN(Integer.valueOf(textTEMPS_ZONE_OVERLAP_MIN.getText()));
+        		param.setTEMPS_MVT_PONT_MIN_JOB(Integer.valueOf(textTEMPS_MVT_PONT_MIN_JOB.getText()));				
+        		param.setTEMPS_MVT_PONT(Integer.valueOf(textTEMPS_MVT_PONT.getText()));
+        		param.setTEMPS_ANO_ENTRE_P1_P2(Integer.valueOf(textTEMPS_ANO_ENTRE_P1_P2.getText()));
+        		param.setTEMPS_MAX_SOLVEUR(Integer.valueOf(textTEMPS_MAX_SOLVEUR.getText()));
+        		param.setNUMZONE_ANODISATION(Integer.valueOf(textANODISATION_NUMZONE.getText()));
+        		param.setCAPACITE_ANODISATION(Integer.valueOf(textNbAno.getText()));
+        	
+        };
+		
+		applyEnterKeyBehavior(new JTextField[]{textNbAno,
+				textTEMPS_ZONE_OVERLAP_MIN,
+				textTEMPS_MVT_PONT_MIN_JOB,textTEMPS_MVT_PONT, 
+				textTEMPS_MAX_SOLVEUR, textANODISATION_NUMZONE}, setParams);
+
+        // Ajouter les champs
 
 		GroupLayout gl_panel_param = new GroupLayout(panel_param);
 		gl_panel_param.setHorizontalGroup(
@@ -700,7 +756,7 @@ public class TecalGUI {
 					.addGroup(gl_panel_param.createParallelGroup(Alignment.LEADING)
 						.addGroup(gl_panel_param.createParallelGroup(Alignment.LEADING, false)
 							.addComponent(lblTailleZone, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-							.addComponent(lblScuritEntreZones, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+							)
 						.addComponent(lblNewLabel)
 						.addComponent(lblcartGroupes, GroupLayout.PREFERRED_SIZE, 175, GroupLayout.PREFERRED_SIZE)
 						.addComponent(lblNewLabel_1)
@@ -716,7 +772,7 @@ public class TecalGUI {
 							.addComponent(textTEMPS_ANO_ENTRE_P1_P2, 0, 0, Short.MAX_VALUE)
 							.addComponent(textTEMPS_MVT_PONT_MIN_JOB, 0, 0, Short.MAX_VALUE)
 							.addComponent(textTEMPS_MVT_PONT, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 45, Short.MAX_VALUE)
-							.addComponent(textGAP_ZONE_NOOVERLAP, Alignment.TRAILING, 0, 0, Short.MAX_VALUE)
+							
 							.addComponent(textTEMPS_ZONE_OVERLAP_MIN, Alignment.TRAILING, 0, 0, Short.MAX_VALUE)))
 					.addContainerGap(461, Short.MAX_VALUE))
 		);
@@ -728,10 +784,7 @@ public class TecalGUI {
 						.addComponent(lblTailleZone)
 						.addComponent(textTEMPS_ZONE_OVERLAP_MIN, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
 					.addGap(18)
-					.addGroup(gl_panel_param.createParallelGroup(Alignment.BASELINE)
-						.addComponent(lblScuritEntreZones)
-						.addComponent(textGAP_ZONE_NOOVERLAP, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-					.addGap(18)
+					
 					.addGroup(gl_panel_param.createParallelGroup(Alignment.BASELINE)
 						.addComponent(lblcartGroupes)
 						.addComponent(textTEMPS_MVT_PONT_MIN_JOB, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
@@ -757,8 +810,8 @@ public class TecalGUI {
 						.addComponent(textNbAno, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
 					.addContainerGap(333, Short.MAX_VALUE))
 		);
-		gl_panel_param.linkSize(SwingConstants.VERTICAL, new Component[] {lblTailleZone, lblScuritEntreZones, lblcartGroupes, lblNewLabel, lblNewLabel_1});
-		gl_panel_param.linkSize(SwingConstants.HORIZONTAL, new Component[] {lblTailleZone, lblScuritEntreZones, lblcartGroupes, lblNewLabel, lblNewLabel_1});
+		gl_panel_param.linkSize(SwingConstants.VERTICAL, new Component[] {lblTailleZone,  lblcartGroupes, lblNewLabel, lblNewLabel_1});
+		gl_panel_param.linkSize(SwingConstants.HORIZONTAL, new Component[] {lblTailleZone,  lblcartGroupes, lblNewLabel, lblNewLabel_1});
 		panel_param.setLayout(gl_panel_param);
 	}
 

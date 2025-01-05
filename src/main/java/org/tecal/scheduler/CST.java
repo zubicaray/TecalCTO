@@ -104,8 +104,7 @@ public class CST {
 	public final static int TEMPS_ZONE_OVERLAP_MIN=180;	
 	// temps incompresible d'un mouvement d epoint
 	public final static int TEMPS_MVT_PONT_MIN_JOB = 23;
-	//temps entre les différentes "zones regroupées"	
-	public final static int GAP_ZONE_NOOVERLAP =90;//TEMPS_MVT_PONT_MIN_JOB*5; //90
+	
 	// temps autour d'un début de grosse zone
 	public final static int TEMPS_MVT_PONT =40;		
 	// temps de sécurité entre deux gammes différentes sur un même poste d'ano
