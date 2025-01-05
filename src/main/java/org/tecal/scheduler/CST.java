@@ -24,6 +24,8 @@ public class CST {
 		return null;
 	}
 	
+	public final static boolean TEST_FIXED_JOBS=false;  
+	
 	public final static String[] mListeOf26janvier={"00079260","00079261","00079262","00079263","00079264","00079265","00079266"};		
 	public final static String gammesTest_PB_pont2[] ={"000022","000022","000467","000210","000246"};
 

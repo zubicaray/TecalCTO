@@ -108,7 +108,7 @@ class Task {
 public class TecalOrdo {
 	
 	private long mCurrentTime;
-	private TecalOrdoParams mParams;
+	private static TecalOrdoParams mParams;
 	private static final Logger logger = LogManager.getLogger(TecalOrdo.class);
 	// map de toutes les gammes
 	
@@ -708,7 +708,7 @@ public class TecalOrdo {
 		
 		for (JobType job : arrayAllJobs) {			
 			for (Task task : job.tasksJob) {	
-				horizon += task.duration+CST.TEMPS_MVT_PONT+task.derive;
+				horizon += task.duration+mParams.getTEMPS_MVT_PONT()+task.derive;
 			}
 		}
 		if(arrayAllJobs.size()>10) 	horizon/=2; 	
@@ -918,9 +918,9 @@ public class TecalOrdo {
 	static IntervalVar getNoOverlapZone(CpModel model, LinearExpr mvtPont) {
 
 		IntervalVar before = model.newIntervalVar(model.newIntVar(0, horizon, ""),
-				LinearExpr.constant(CST.TEMPS_MVT_PONT), mvtPont, "");
+				LinearExpr.constant(mParams.getTEMPS_MVT_PONT()), mvtPont, "");
 
-		IntervalVar after = model.newIntervalVar(mvtPont, LinearExpr.constant(CST.TEMPS_MVT_PONT),
+		IntervalVar after = model.newIntervalVar(mvtPont, LinearExpr.constant(mParams.getTEMPS_MVT_PONT()),
 				model.newIntVar(0, horizon, ""), "");
 
 		return model.newIntervalVar(before.getStartExpr(), model.newIntVar(0, horizon, ""), after.getEndExpr(), "");
@@ -942,9 +942,9 @@ public class TecalOrdo {
 	static IntervalVar getNoOverlapZone(CpModel model, IntVar mvtPont) {
 
 		IntervalVar before = model.newIntervalVar(model.newIntVar(0, horizon, ""),
-				LinearExpr.constant(CST.TEMPS_MVT_PONT), mvtPont, "");
+				LinearExpr.constant(mParams.getTEMPS_MVT_PONT()), mvtPont, "");
 
-		IntervalVar after = model.newIntervalVar(mvtPont, LinearExpr.constant(CST.TEMPS_MVT_PONT),
+		IntervalVar after = model.newIntervalVar(mvtPont, LinearExpr.constant(mParams.getTEMPS_MVT_PONT()),
 				model.newIntVar(0, horizon, ""), "");
 
 		return model.newIntervalVar(before.getStartExpr(), model.newIntVar(0, horizon, ""), after.getEndExpr(), "");
@@ -954,9 +954,9 @@ public class TecalOrdo {
 	static IntervalVar getNoOverlapZone(CpModel model, IntVar mvtPontStart, IntVar mvtPontEnd) {
 
 		IntervalVar before = model.newIntervalVar(model.newIntVar(0, horizon, ""),
-				LinearExpr.constant(CST.TEMPS_MVT_PONT), mvtPontStart, "");
+				LinearExpr.constant(mParams.getTEMPS_MVT_PONT()), mvtPontStart, "");
 
-		IntervalVar after = model.newIntervalVar(mvtPontEnd, LinearExpr.constant(CST.TEMPS_MVT_PONT),
+		IntervalVar after = model.newIntervalVar(mvtPontEnd, LinearExpr.constant(mParams.getTEMPS_MVT_PONT()),
 				model.newIntVar(0, horizon, ""), "");
 
 		return model.newIntervalVar(before.getStartExpr(), model.newIntVar(0, horizon, ""), after.getEndExpr(), "");
@@ -966,9 +966,9 @@ public class TecalOrdo {
 	static IntervalVar getNoOverlapZone(CpModel model, IntervalVar mvt) {
 
 		IntervalVar before = model.newIntervalVar(model.newIntVar(0, horizon, ""),
-				LinearExpr.constant(CST.TEMPS_MVT_PONT), mvt.getStartExpr(), "");
+				LinearExpr.constant(mParams.getTEMPS_MVT_PONT()), mvt.getStartExpr(), "");
 
-		IntervalVar after = model.newIntervalVar(mvt.getEndExpr(), LinearExpr.constant(CST.TEMPS_MVT_PONT),
+		IntervalVar after = model.newIntervalVar(mvt.getEndExpr(), LinearExpr.constant(mParams.getTEMPS_MVT_PONT()),
 				model.newIntVar(0, horizon, ""), "");
 
 		return model.newIntervalVar(before.getStartExpr(), model.newIntVar(0, horizon, ""), after.getEndExpr(), "");

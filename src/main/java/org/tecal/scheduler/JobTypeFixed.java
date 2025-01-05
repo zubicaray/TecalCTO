@@ -122,7 +122,7 @@ void makeSafetyBetweenBridges(long time) {
 			}	
 			
 			
-			
+			//si on est sur une zone "overlappable" ou sur l'ano  ou à la zone de fin 
 			boolean isOverlapable=taskOrdo.isOverlapable && (taskOrdo.getEndBDDValue()-time)>mParams.getTEMPS_ZONE_OVERLAP_MIN();
 			if(isOverlapable || taskID ==indexAnod ||  (taskID == mTaskOrdoList.size()-1 ) ) {
 				
@@ -130,7 +130,6 @@ void makeSafetyBetweenBridges(long time) {
 					fin=taskOrdo.getEndBDDValue();
 				}
 				else {
-					//int tpsSecu=Math.min(mParams.getTEMPS_ANO_ENTRE_P1_P2(), taskOrdo.getDuration());
 					fin=taskOrdo.getFixedStartBDD()+mParams.getTEMPS_ANO_ENTRE_P1_P2();
 				}
 					

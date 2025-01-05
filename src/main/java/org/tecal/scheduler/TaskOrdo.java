@@ -117,7 +117,7 @@ public class TaskOrdo {
 		mTask=task;
 		
 		tempsDeplacement=tps;
-		if(mTask.derive+mTask.duration>=CST.TEMPS_ZONE_OVERLAP_MIN){
+		if(mTask.duration>=TecalOrdoParams.getInstance().getTEMPS_ZONE_OVERLAP_MIN()){
 			isOverlapable=true;
 		}		
 		

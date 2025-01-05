@@ -196,9 +196,12 @@ public class CPO_IHM extends JFrame {
 
 	public void runTest() {
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-		//mBarresSettingsFutures = mTecalOrdo.runTest();
-		//mCPO_PANEL.setModelBarres(mBarresSettingsFutures);
-		//execute();
+		
+		mBarresSettingsFutures = mTecalOrdo.runTest();
+		mCPO_PANEL.setModelBarres(mBarresSettingsFutures);
+		execute();
+		
+		
 		setCursor(Cursor.getDefaultCursor());
 	}
 
@@ -254,8 +257,13 @@ public class CPO_IHM extends JFrame {
 		@Override
 		public void run() {
 			try {
+				if(CST.TEST_FIXED_JOBS) {
+					mGanttTecalOR.getTimeBar().setValue(7600);
+				}else {
+					mGanttTecalOR.getTimeBar().setValue(mGanttTecalOR.getTimeBar().getValue() + 1);
+				}
 				
-				//mGanttTecalOR.getTimeBar().setValue(mGanttTecalOR.getTimeBar().getValue() + 1);
+				
 				manageOngoingJobs();
 			} catch (Exception e) {
 				JOptionPane.showMessageDialog(null, "Erreur dans la tâche périodique : " + e.getMessage(), "Erreur",
@@ -343,9 +351,14 @@ public class CPO_IHM extends JFrame {
 				logger.info("barreid:" + barreid + " terminées ");
 			}
 		}
-		for (Integer barreId : barresTerminees) {				
-			mTecalOrdo.removeBarreFinie(barreId);	
+		
+		if(! CST.TEST_FIXED_JOBS) {
+			for (Integer barreId : barresTerminees) {				
+				mTecalOrdo.removeBarreFinie(barreId);	
+			}
 		}
+		
+		
 		
 	}
 

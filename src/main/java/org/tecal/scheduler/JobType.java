@@ -115,7 +115,7 @@ public class JobType {
 
 	void makeSafetyBetweenBridges(long time) {
 		
-		if(indexAnod==-1) return ;
+		//if(indexAnod==-1) return ;
 		
 		
 		IntVar deb = null;
@@ -209,7 +209,7 @@ public class JobType {
 					fin=taskOrdo.getEndBDD();
 				}
 				else
-					fin=TecalOrdo.getForeward(TecalOrdo.model, (IntVar) taskOrdo.getStart(),mParams.getTEMPS_MVT_PONT());
+					fin=TecalOrdo.getForeward(TecalOrdo.model, (IntVar) taskOrdo.getStart(),mParams.getTEMPS_ANO_ENTRE_P1_P2());
 				
 				//System.out.println("deb:"+deb+", fin-deb="+ fin);
 				lBridgeMoves.add(TecalOrdo.model.newIntervalVar(deb, TecalOrdo.model.newIntVar(0, TecalOrdo.horizon, ""), fin ,""));
