@@ -114,7 +114,7 @@ public class GanttChart extends JFrame {
 	        lastTimeAtPostes= new int[cumul];
 	       // for(int i=0;i<lastTimeAtPostes.length;i++)  lastTimeAtPostes[i]=0;
 	      }
-	      public int getPosteIdx(int starttime,int endtime,int derive) {
+	      public int getPosteIdx(int starttime,int derive) {
 
 	    	  boolean zonePrise=false;
 	    	  int idxPoste=0;
@@ -384,7 +384,7 @@ public class GanttChart extends JFrame {
 				ZoneCumul zc=zonesCumul.get(task.numzone);
 		    	int end=task.duration+(int)task.start;
 
-		    	task.IdPosteZoneCumul=zc.getPosteIdx((int)task.start, end,task.derive);
+		    	task.IdPosteZoneCumul=zc.getPosteIdx((int)task.start, task.derive);
 
 
 			 });

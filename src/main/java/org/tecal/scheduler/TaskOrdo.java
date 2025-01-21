@@ -120,7 +120,7 @@ public class TaskOrdo {
 		if(mTask.duration>=TecalOrdoParams.getInstance().getTEMPS_ZONE_OVERLAP_MIN()){
 			isOverlapable=true;
 		}		
-		
+	
 		int tempsIncompresible=mTask.egouttage+tempsDeplacement+mTask.duration;
 		startBDD 	= model.newIntVar(0, TecalOrdo.horizon, "start" + suffix); 
 		endBDD 		= model.newIntVar(0, TecalOrdo.horizon, "end"   + suffix);		

@@ -2,6 +2,7 @@ package org.tecal.scheduler;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -410,8 +411,6 @@ public class TecalOrdo {
 		HashMap<Integer,IntVar> endByBarreIdPrio	= new HashMap<> ();
 
 		for (JobType job: mJobsFuturs.values()) {
-
-			
 			
 			TaskOrdo taskFirst=job.mTaskOrdoList.get(0);
 			endsFutures.add(taskFirst.getFin());
@@ -447,11 +446,7 @@ public class TecalOrdo {
 
 		// Creates a solver and solves the model.
 		solver = new CpSolver();
-		// solver.getParameters().setNumWorkers(1);
-		// if(modeFast) {
-		//solver.getParameters().setStopAfterFirstSolution(true);
-		// }
-
+	
 		// PARAM MIRACLE
 		solver.getParameters().setMaxTimeInSeconds(mTEMPS_MAX_SOLVEUR);
 
@@ -467,8 +462,7 @@ public class TecalOrdo {
 		if (status == CpSolverStatus.OPTIMAL || status == CpSolverStatus.FEASIBLE) {
 
 			hasSolution = true;
-			
-			
+						
 			if(status == CpSolverStatus.OPTIMAL) {
 				mOutPutMsg.append("Solution OPTIMALE !");
 				logger.info("Solution OPTIMALE !");
@@ -478,9 +472,16 @@ public class TecalOrdo {
 			}
 
 			mOutPutMsg.append(System.getProperty("line.separator"));
-			// Create one list of assigned tasks per Zone.
-
+			int tpsAno=0;
 			createAssignedTasks();
+			for (AssignedTask assignedTask : mAssignedTasksByNumzone.get(CST.ANODISATION_NUMZONE)) {
+				
+				tpsAno+=assignedTask.duration;
+				
+			}
+			mOutPutMsg.append("Heures en anodisation: "+secondsToHours(tpsAno));
+			mOutPutMsg.append(System.getProperty("line.separator"));
+			mOutPutMsg.append(System.getProperty("line.separator"));
 
 			if (CST.PrintTaskTime) {
 				// Create per Zone output lines.
@@ -496,6 +497,7 @@ public class TecalOrdo {
 					String solLineTasks = "Zone " + numzone + ": ";
 					String solLine = "           ";
 
+						
 					for (AssignedTask assignedTask : mAssignedTasksByNumzone.get(numzone)) {
 						String name = "job_" + assignedTask.barreID + "_task_" + assignedTask.taskID;
 						// Add spaces to output to align columns.
@@ -538,6 +540,20 @@ public class TecalOrdo {
 		mOutPutMsg.append(String.format("  branches : %d%n", solver.numBranches()));
 		mOutPutMsg.append(String.format("  temps %f s%n", solver.wallTime()));
 	}
+	public static String secondsToHours(int seconds ) {
+     
+        // Convertit les secondes en durée
+        Duration duration = Duration.ofSeconds(seconds);
+
+        // Extrait heures, minutes, secondes
+        long hours = duration.toHours();
+        long minutes = duration.toMinutes() % 60;
+        long secs = duration.getSeconds() % 60;
+
+        // Formate en HH:mm:ss
+        String timeFormat = String.format("%02d:%02d:%02d", hours, minutes, secs);
+        return timeFormat;
+    }
 
 	private void printInfos() {
 		if(CST.PRINT_JOBS) {
@@ -841,7 +857,7 @@ public class TecalOrdo {
 				
 	
 				//TODO best solution to finish ?
-				//model.addGreaterOrEqual(next.getStart(), prev.getFin());
+				//model.addEquality(next.getStart(), prev.getFin());
 				
 				model.addLessOrEqual(next.getStart(), prev.getFin());        
 				model.addGreaterOrEqual(next.getStart(), prev.getDeriveNulle());

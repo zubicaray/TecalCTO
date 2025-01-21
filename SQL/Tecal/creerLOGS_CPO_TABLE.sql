@@ -12,7 +12,7 @@ ORDER BY idbarre
 select distinct numzone,codezone from zones order by numzone;
 
 ALTER TABLE ANODISATION.dbo.LOGS_CPO
-  ADD derive INT NOT NULL DEFAULT(1) ;
+  ADD derive INT NOT NULL DEFAULT(0) ;
 
   ALTER TABLE ANODISATION.dbo.LOGS_CPO
   ADD descente INT NOT NULL DEFAULT(1) ;

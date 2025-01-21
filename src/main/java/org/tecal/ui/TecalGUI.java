@@ -6,7 +6,10 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Image;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -40,13 +43,13 @@ import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JFormattedTextField.AbstractFormatter;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
@@ -80,6 +83,8 @@ import org.tecal.ui.stats.StatsWindow;
 import org.tecal.ui.stats.TauxAnodisationPanel;
 
 import com.formdev.flatlaf.FlatDarkLaf;
+
+
 
 class DateLabelFormatter extends AbstractFormatter {
 
@@ -119,7 +124,7 @@ public class TecalGUI {
 	private SQL_DATA sqlCnx;
 
 	private JTextField textTEMPS_ZONE_OVERLAP_MIN;
-	
+
 	private JTextField textTEMPS_MVT_PONT_MIN_JOB;
 	private JTextField textTEMPS_MVT_PONT;
 	private JTextField textTEMPS_ANO_ENTRE_P1_P2;
@@ -158,7 +163,9 @@ public class TecalGUI {
 			@Override
 			public void run() {
 				try {
+					String version=CPO_IHM.getManifestVersion();
 					TecalGUI window = new TecalGUI();
+					window.frmTecalOrdonnanceur.setTitle("Tecal GUI - " + version);
 					window.frmTecalOrdonnanceur.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -398,26 +405,23 @@ public class TecalGUI {
 							CST.VITESSE_NORMALE, false);
 
 					barres.put(b.getIdbarre(), b);
-				}	
-			
-				
-			
-				SwingUtilities.invokeLater(() -> {
-					
-					mCPO_IHM = new CPO_IHM();		
+				}
 
-					mCPO_IHM.setBarresSettingsFutures(barres);					
+
+
+				SwingUtilities.invokeLater(() -> {
+					mCPO_IHM = new CPO_IHM();
+					mCPO_IHM.setTitle(frmTecalOrdonnanceur.getTitle());
+					mCPO_IHM.setBarresSettingsFutures(barres);
 					mCPO_IHM.setVisible(true);
 					mCPO_IHM.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-
-
 				});
 
 
 
 			}
 
-			
+
 		});
 
 	}
@@ -628,7 +632,7 @@ public class TecalGUI {
 
 		panelCalibrage.add(filterPanel, BorderLayout.NORTH);
 	}
-	
+
 	 public static void applyColorChangingBehavior(JTextField textField) {
 	        // Sauvegarder la couleur d'origine
 	        Color originalColor = textField.getBackground();
@@ -674,11 +678,11 @@ public class TecalGUI {
 		textTEMPS_ZONE_OVERLAP_MIN.setHorizontalAlignment(SwingConstants.RIGHT);
 		textTEMPS_ZONE_OVERLAP_MIN.setColumns(10);
 		textTEMPS_ZONE_OVERLAP_MIN.setText(Integer.toString(CST.TEMPS_ZONE_OVERLAP_MIN));
-		
+
 		applyColorChangingBehavior(textTEMPS_ZONE_OVERLAP_MIN);
 
-	
-	
+
+
 		JLabel lblcartGroupes = new JLabel("TEMPS_MVT_PONT_MIN_JOB");
 
 		textTEMPS_MVT_PONT_MIN_JOB = new JTextField();
@@ -729,21 +733,21 @@ public class TecalGUI {
 		applyColorChangingBehavior(textNbAno);
 		  // La méthode à exécuter sur Entrée
         Runnable setParams = () -> {
-        	
+
         		TecalOrdoParams param=TecalOrdoParams.getInstance();
         		param.setTEMPS_ZONE_OVERLAP_MIN(Integer.valueOf(textTEMPS_ZONE_OVERLAP_MIN.getText()));
-        		param.setTEMPS_MVT_PONT_MIN_JOB(Integer.valueOf(textTEMPS_MVT_PONT_MIN_JOB.getText()));				
+        		param.setTEMPS_MVT_PONT_MIN_JOB(Integer.valueOf(textTEMPS_MVT_PONT_MIN_JOB.getText()));
         		param.setTEMPS_MVT_PONT(Integer.valueOf(textTEMPS_MVT_PONT.getText()));
         		param.setTEMPS_ANO_ENTRE_P1_P2(Integer.valueOf(textTEMPS_ANO_ENTRE_P1_P2.getText()));
         		param.setTEMPS_MAX_SOLVEUR(Integer.valueOf(textTEMPS_MAX_SOLVEUR.getText()));
         		param.setNUMZONE_ANODISATION(Integer.valueOf(textANODISATION_NUMZONE.getText()));
         		param.setCAPACITE_ANODISATION(Integer.valueOf(textNbAno.getText()));
-        	
+
         };
-		
+
 		applyEnterKeyBehavior(new JTextField[]{textNbAno,
 				textTEMPS_ZONE_OVERLAP_MIN,
-				textTEMPS_MVT_PONT_MIN_JOB,textTEMPS_MVT_PONT, 
+				textTEMPS_MVT_PONT_MIN_JOB,textTEMPS_MVT_PONT,
 				textTEMPS_MAX_SOLVEUR, textANODISATION_NUMZONE}, setParams);
 
         // Ajouter les champs
@@ -772,7 +776,7 @@ public class TecalGUI {
 							.addComponent(textTEMPS_ANO_ENTRE_P1_P2, 0, 0, Short.MAX_VALUE)
 							.addComponent(textTEMPS_MVT_PONT_MIN_JOB, 0, 0, Short.MAX_VALUE)
 							.addComponent(textTEMPS_MVT_PONT, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 45, Short.MAX_VALUE)
-							
+
 							.addComponent(textTEMPS_ZONE_OVERLAP_MIN, Alignment.TRAILING, 0, 0, Short.MAX_VALUE)))
 					.addContainerGap(461, Short.MAX_VALUE))
 		);
@@ -784,7 +788,7 @@ public class TecalGUI {
 						.addComponent(lblTailleZone)
 						.addComponent(textTEMPS_ZONE_OVERLAP_MIN, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
 					.addGap(18)
-					
+
 					.addGroup(gl_panel_param.createParallelGroup(Alignment.BASELINE)
 						.addComponent(lblcartGroupes)
 						.addComponent(textTEMPS_MVT_PONT_MIN_JOB, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
@@ -1115,63 +1119,184 @@ public class TecalGUI {
 
 		});
 
-		final JPopupMenu popupMenu = new JPopupMenu();
-		JMenuItem item = new JMenuItem("Calibrage des mouvements de la gamme");
-		item.addActionListener(new ActionListener() {
 
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				int row = tableOF.getSelectedRow();
 
-				if (row >= 0) {
-					String of = tableOF.getModel().getValueAt(row, 0).toString();
-					String gamme = tableOF.getModel().getValueAt(row, 1).toString();
 
-					int resultGammeChanged = 0;
-					if (SQL_DATA.getInstance().gammeChangedAfterOF(of, gamme)) {
-						resultGammeChanged = JOptionPane.showConfirmDialog((Component) null,
-								"La gamme a changé depuis que cet OF est passé en prod. Des mouvements peuvent manquer ... continuer?",
-								"alert", JOptionPane.YES_NO_OPTION);
 
-					}
+		tableOF.addMouseListener(new MouseAdapter() {
+		    @Override
+		    public void mouseReleased(MouseEvent e) {
+		        if (SwingUtilities.isRightMouseButton(e)) { // Vérifie si c'est un clic droit
+		            int row = tableOF.rowAtPoint(e.getPoint());
+		            if (row != -1) { // Vérifie que la ligne cliquée est valide
+		                // Sélectionner la ligne sur laquelle on a cliqué
+		                tableOF.setRowSelectionInterval(row, row);
 
-					if (resultGammeChanged == 0) {
+		                // Afficher la fenêtre modale
+		                openCalibrageDialog(frmTecalOrdonnanceur, tableOF, row);
+		            }
+		        }
+		    }
+		});
 
-						// JOptionPane.showMessageDialog(frmTecalOrdonnanceur, "Right-click
-						// gamme="+tableOF.getModel().getValueAt(row, 1).toString());
-						int result = JOptionPane.showConfirmDialog((Component) null,
-								"OF choisi: " + of + ". Voulez-vous aussi écraser les valeurs non nulles?", "alert",
-								JOptionPane.YES_NO_CANCEL_OPTION);
 
-						if (result != 2) {
-							boolean b = (result == 0);
-							if (!SQL_DATA.getInstance().updateTpsMvts(of, b)) {
-								// MAJ des gammes
-								SQL_DATA.getInstance().setMissingTimeMovesGammes();
-							}
-						}
-						java.util.Date d = (java.util.Date) datePicker.getModel().getValue();
 
-						if (SQL_DATA.getInstance().gammeCalibrageExists(gamme)) {
-							result = JOptionPane.showConfirmDialog((Component) null,
-									"La gamme a déjà un OF de calibré, MAJ ?", "alert", JOptionPane.YES_NO_OPTION);
 
-							if (result == 0) {
-								SQL_DATA.getInstance().updateCalibrageGamme(gamme, of, d);
-							}
-						} else {
-							SQL_DATA.getInstance().insertCalibrageGamme(gamme, of, d);
-						}
 
-					}
 
-				} else {
-					JOptionPane.showMessageDialog(frmTecalOrdonnanceur, "Sélectionner une ligne.");
+
+
+
+	}
+	 /**
+     * Affiche une fenêtre modale avec deux JComboBox et un bouton "Valider".
+     */
+    private  void openCalibrageDialog(JFrame parent, JTable table, int selectedRow) {
+    	String of = tableOF.getModel().getValueAt(selectedRow, 0).toString();
+		String gamme = tableOF.getModel().getValueAt(selectedRow, 1).toString();
+        JDialog dialog = new JDialog(parent, "Calibrage de la gamme "+gamme, true);
+        dialog.setSize(400, 200);
+        dialog.setLayout(new GridBagLayout());
+        dialog.setLocationRelativeTo(parent);
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        // Label et ComboBox pour la première vitesse
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        dialog.add(new JLabel("descente :"), gbc);
+
+        JComboBox<String> comboBox1 = new JComboBox<>(CST.VITESSES);
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        dialog.add(comboBox1, gbc);
+
+        // Label et ComboBox pour la deuxième vitesse
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        dialog.add(new JLabel("montée :"), gbc);
+
+        JComboBox<String> comboBox2 = new JComboBox<>(CST.VITESSES);
+        gbc.gridx = 1;
+        gbc.gridy = 1;
+        dialog.add(comboBox2, gbc);
+
+        comboBox1.setSelectedIndex(CST.VITESSE_NORMALE);
+        comboBox2.setSelectedIndex(CST.VITESSE_NORMALE);
+
+        // Bouton "Valider"
+        JButton validateButton = new JButton("Valider");
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.CENTER;
+        dialog.add(validateButton, gbc);
+
+        // Action du bouton "Valider"
+        validateButton.addActionListener(e -> {
+            String choix1 = (String) comboBox1.getSelectedItem();
+            String choix2 = (String) comboBox2.getSelectedItem();
+            String rowName = (String) table.getValueAt(selectedRow, 0);
+            if (selectedRow >= 0) {
+    			
+    			calibrage( of, gamme,comboBox1.getSelectedIndex(),comboBox2.getSelectedIndex());
+            } else {
+    			JOptionPane.showMessageDialog(frmTecalOrdonnanceur, "Sélectionner une ligne.");
+    		}
+
+            JOptionPane.showMessageDialog(dialog,
+                    "Ligne sélectionnée : " + rowName + "\n" +
+                            "Vitesse descente : " + choix1 + "\n" +
+                            "Vitesse montée : " + choix2,
+                    "Validation",
+                    JOptionPane.INFORMATION_MESSAGE);
+
+            dialog.dispose(); // Fermer la fenêtre modale
+        });
+
+        dialog.setVisible(true);
+    }
+
+
+	private int gestionVitesseManutention(int vitesseLente,int  vitesseMontee) {
+		int tpsAdjust=0;
+
+		switch(vitesseLente){
+
+		   case CST.VITESSE_LENTE:
+			   tpsAdjust-=CST.VITESSE_LENTE_DESCENTE;
+		       break;
+		   case CST.VITESSE_NORMALE:
+		      break;
+		   case CST.VITESSE_RAPIDE:
+			   tpsAdjust+=CST.VITESSE_RAPIDE_DESCENTE;
+		       break;
+		   default:
+		       System.out.println("ERREUR gestionVitesseManutention descente");
+		       break;
+		}
+
+		switch(vitesseMontee){
+
+		   case CST.VITESSE_LENTE:
+			   tpsAdjust-=CST.VITESSE_LENTE_MONTEE;
+		       break;
+		   case CST.VITESSE_NORMALE:
+		       break;
+		   case CST.VITESSE_RAPIDE:
+			   tpsAdjust+=CST.VITESSE_RAPIDE_MONTEE;
+		       break;
+		   default:
+		       System.out.println("ERREUR gestionVitesseManutention montée");
+		       break;
+		}
+
+
+		return tpsAdjust;
+	}
+    private void calibrage(String of, String gamme,int descente,int monte) {
+
+
+		int resultGammeChanged = 0;
+		if (SQL_DATA.getInstance().gammeChangedAfterOF(of, gamme)) {
+			resultGammeChanged = JOptionPane.showConfirmDialog((Component) null,
+					"La gamme a changé depuis que cet OF est passé en prod. Des mouvements peuvent manquer ... continuer?",
+					"alert", JOptionPane.YES_NO_OPTION);
+
+		}
+
+		if (resultGammeChanged == 0) {
+
+			// JOptionPane.showMessageDialog(frmTecalOrdonnanceur, "Right-click
+			// gamme="+tableOF.getModel().getValueAt(row, 1).toString());
+			int result = JOptionPane.showConfirmDialog((Component) null,
+					"OF choisi: " + of + ". Voulez-vous aussi écraser les valeurs non nulles?", "alert",
+					JOptionPane.YES_NO_CANCEL_OPTION);
+
+			if (result != 2) {
+				boolean updateNull = (result == 0);
+				int tpsAdjust=gestionVitesseManutention(descente, monte);
+				if (!SQL_DATA.getInstance().updateTpsMvts(of, updateNull,tpsAdjust)) {
+					// MAJ des gammes
+					SQL_DATA.getInstance().setMissingTimeMovesGammes();
 				}
 			}
-		});
-		popupMenu.add(item);
-		tableOF.setComponentPopupMenu(popupMenu);
+			java.util.Date d = (java.util.Date) datePicker.getModel().getValue();
+
+			if (SQL_DATA.getInstance().gammeCalibrageExists(gamme)) {
+				result = JOptionPane.showConfirmDialog((Component) null,
+						"La gamme a déjà un OF de calibré, MAJ ?", "alert", JOptionPane.YES_NO_OPTION);
+
+				if (result == 0) {
+					SQL_DATA.getInstance().updateCalibrageGamme(gamme, of, d,descente, monte);
+				}
+			} else {
+				SQL_DATA.getInstance().insertCalibrageGamme(gamme, of, d,descente, monte);
+			}
+
+		}
 
 	}
 

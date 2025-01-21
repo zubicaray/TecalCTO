@@ -389,7 +389,7 @@ public  ResultSet getStatsAnodisation(String[] listeOF) {
             )
             SELECT
                 P.NomPoste,
-                SUM(DureeOccupation) AS 'duree totale',
+                CONVERT(VARCHAR(8), DATEADD(SECOND, SUM(DureeOccupation), '1900-01-01'), 108) AS durée,
                 --DATEDIFF(SECOND, @DateDebut, @DateFin) AS DureeTotalePeriode,
                 CAST(SUM(DureeOccupation) * 100.0 / NULLIF(DATEDIFF(SECOND, @DateDebut, @DateFin), 0) AS DECIMAL(10, 2)) AS 'taux occupation'
             FROM CTE_Durees,Postes P
@@ -579,12 +579,14 @@ public boolean gammeCalibrageExists(String gamme) {
 
 }
 
-public boolean updateCalibrageGamme(String gamme,String of,java.util.Date d) {
+public boolean updateCalibrageGamme(String gamme,String of,java.util.Date d,int descente,int monte) {
 	boolean res= false;
 	String date=toSQLServerFormat(d); 
 	String req="update \r\n"
 			+ "	CalibrageTempsGammes \r\n"
-			+" set NumFicheProduction='"+of+"' , date='"+date+"'"
+			+" set NumFicheProduction='"+of+"' , date='"+date+"',"
+			+" vit_descente="+descente
+			+" ,vit_montee="+monte
 			+ "	Where NumGamme='"+gamme+"' ;";
 	
 
@@ -604,14 +606,14 @@ public boolean updateCalibrageGamme(String gamme,String of,java.util.Date d) {
 
 }
 
-public boolean insertCalibrageGamme(String gamme,String of,java.util.Date d) {
+public boolean insertCalibrageGamme(String gamme,String of,java.util.Date d,int descente,int montee) {
 	boolean res= false;
 	
 	String date=toSQLServerFormat(d); 
 	
 	String req="insert into  \r\n"
-			+ "	CalibrageTempsGammes (NumGamme,NumFicheProduction,date) values \r\n"
-			+"( '"+gamme+"','"+of+"','"+date+"' )";
+			+ "	CalibrageTempsGammes (NumGamme,NumFicheProduction,date,vit_descente,vit_montee) values \r\n"
+			+"( '"+gamme+"','"+of+"','"+date+"',"+descente+","+montee+" )";
 	
 
 
@@ -634,11 +636,11 @@ public boolean insertCalibrageGamme(String gamme,String of,java.util.Date d) {
 
 
 
-public boolean updateTpsMvts(String of,boolean updateNoNull) {
+public boolean updateTpsMvts(String of,boolean updateNoNull,int tpsAdjust) {
 	boolean res= false;
 
 	String req="Update  [TempsDeplacements] \r\n"
-			+ "SET normal=T.tps\r\n"
+			+ "SET normal=T.tps + "+tpsAdjust+"\r\n"
 			+ "FROM \r\n"
 			+ "	[dbo].[TempsDeplacements] TPS\r\n"
 			+ "	INNER JOIN (\r\n"

@@ -120,7 +120,7 @@ public class CPO_IHM extends JFrame {
 		return mCPO_PANEL;
 	}
 
-	private static String getManifestVersion() {
+	static String getManifestVersion() {
 		try {
 			// Lire le MANIFEST.MF depuis le classpath
 			InputStream manifestStream = CPO_Panel.class.getResourceAsStream("/META-INF/MANIFEST.MF");

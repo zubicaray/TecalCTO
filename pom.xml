@@ -7,7 +7,7 @@
 
 	<groupId>zdev.tecal</groupId>
 	<artifactId>TecalCPO</artifactId>
-	<version>2.2.1</version>
+	<version>2.2.2</version>
 	<packaging>jar</packaging>
 
 
@@ -320,91 +320,7 @@
 
 				</executions>
 			</plugin>
-			<!--
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>mavenassemblyplugin</artifactId>
-				<version>3.6.0</version>
-				<executions>
-						<execution>
-								<id>makeassembly</id>
-								<phase>package</phase>
-								<goals>
-										<goal>single</goal>
-								</goals>
-								<configuration>
-										<descriptorRefs>
-												<descriptorRef>jarwithdependencies</descriptorRef>
-										</descriptorRefs>
-										<archive>
-												<manifest>
-														<mainClass>org.tecal.ui.TecalGUI</mainClass> 
-														Classe principale 
-												</manifest>
-												<manifestEntries>
-														
-														<Permissions>allpermissions</Permissions>
-												</manifestEntries>
-										</archive>
-								</configuration>
-						</execution>
-				</executions>
-			</plugin>
-
-			<plugin>
-			    <groupId>org.apache.maven.plugins</groupId>
-			    <artifactId>maven-dependency-plugin</artifactId>
-			    <version>3.6.0</version>
-			    <executions>
-			        <execution>
-			            <id>copy-dependencies</id>
-			            <phase>install</phase>
-			            <goals>
-			                <goal>copy-dependencies</goal>
-			            </goals>
-			            <configuration>
-			                <outputDirectory>${project.build.directory}/lib</outputDirectory> 
-							<overWriteReleases>false</overWriteReleases>
-			                <overWriteSnapshots>false</overWriteSnapshots>
-			                <overWriteIfNewer>true</overWriteIfNewer>
-			            </configuration>
-			        </execution>
-			    </executions>
-			</plugin>
-			
-			<plugin>
-			    <groupId>org.codehaus.mojo</groupId>
-			    <artifactId>exec-maven-plugin</artifactId>
-			    <version>3.1.0</version>
-			    <executions>
-			        <execution>
-			            <id>sign-exe</id>
-			            <phase>install</phase>
-			            <goals>
-			                <goal>exec</goal>
-			            </goals>
-			            <configuration>
-			                <executable>osslsigncode</executable>
-			                <arguments>
-			                    
-			                    <argument>-pkcs12</argument>
-			                    <argument>mycertificate.pfx</argument>
-			                    <argument>-pass</argument>
-			                    <argument>poil_69!DEN789456*</argument>
-			                    <argument>-n</argument>
-			                    <argument>"Tecal CPO"</argument>
-			                    <argument>-i</argument>
-			                    <argument>https://zdev.tecal.com</argument>
-			                    <argument>-in</argument>
-			                    <argument>TecalCPO-${project.version}.exe</argument>
-			                    <argument>-out</argument>
-			                    <argument>TecalCPO-${project.version}-signed.exe</argument>
-			                </arguments>
-			            </configuration>
-			        </execution>
-			    </executions>
-			</plugin>
-			-->
+		
 		</plugins>
 	</build>
 </project>
