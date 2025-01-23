@@ -18,13 +18,12 @@ public class TaskOrdo {
 		
 	//réel , qui intègre les contraintes du pont
 	//IntVar deb;
-	private IntVar fin;
+	private IntVar endReel;
 	private IntVar deriveNulle;
 
 	IntervalVar intervalReel;
-	IntervalVar intervalMax;
-	IntervalVar minimumDerive;
-	IntervalVar maximumDerive;
+
+
 	int tempsDeplacement;
 
 	boolean zoneSecu=false;
@@ -35,7 +34,7 @@ public class TaskOrdo {
 	private long fixedEndBDD;
 	private long fixedDeriveNulle;	
 	private long fixedDeriveMax;
-	private  long fixedFin;
+	private  long fixedFinReel;
 	
 	
 
@@ -51,8 +50,8 @@ public class TaskOrdo {
 	public long getFixedEndBDD() {
 		return fixedEndBDD;
 	}
-	public long getFixedFin() {
-		return fixedFin;
+	public long getFixedFinReel() {
+		return fixedFinReel;
 	}
 	public long getFixedDeriveNulle() {
 		return fixedDeriveNulle;
@@ -61,10 +60,10 @@ public class TaskOrdo {
 	public boolean BloquePont() {
 		return mTask.BloquePont;
 	}
-	public IntVar getStart() {
+	public IntVar getStartBDD() {
 		return startBDD;
 	}
-	public long getStartValue() {
+	public long getStartBDDValue() {
 		return TecalOrdo.solver.value(intervalBDD.getStartExpr());
 	}
 	
@@ -72,7 +71,7 @@ public class TaskOrdo {
 		return TecalOrdo.solver.value(intervalBDD.getEndExpr());
 	}
 	
-	public long getFinValue() {
+	public long getFinReelValue() {
 		return TecalOrdo.solver.value(intervalReel.getEndExpr());
 	}
 	
@@ -83,9 +82,13 @@ public class TaskOrdo {
 	public IntVar getEndBDD() {
 		return endBDD;
 	}
-	public IntVar getFin() {
-		return fin;
+	public IntVar getFinReel() {
+		return endReel;
 	}
+	public IntVar getFinBDD() {
+		return endBDD;
+	}
+	
 	
 	
 	
@@ -97,7 +100,7 @@ public class TaskOrdo {
 		
 		fixedEndBDD=task.end;
 				
-		fixedFin=task.derive+tempsDeplacement+mTask.egouttage;
+		fixedFinReel=task.derive+tempsDeplacement+mTask.egouttage;
 		
 	
 	}
@@ -108,39 +111,48 @@ public class TaskOrdo {
 			
 		intervalReel=TecalOrdo.model.newFixedInterval(
 					fixedStartBDD,
-					fixedFin-fixedStartBDD,
+					fixedFinReel-fixedStartBDD,
 					"intervalReel fixe");
 	}
 
 	TaskOrdo(CpModel model,Task task,int tps,String suffix){
 	
 		mTask=task;
+		if( mTask.duration>70)
+			mTask.duration-=40;
 		
-		tempsDeplacement=tps;
+		tempsDeplacement=mTask.egouttage+tempsDeplacement+tps;
 		if(mTask.duration>=TecalOrdoParams.getInstance().getTEMPS_ZONE_OVERLAP_MIN()){
 			isOverlapable=true;
 		}		
 	
-		int tempsIncompresible=mTask.egouttage+tempsDeplacement+mTask.duration;
+		//int tempsIncompresible=mTask.egouttage+tempsDeplacement+mTask.duration;
 		startBDD 	= model.newIntVar(0, TecalOrdo.horizon, "start" + suffix); 
 		endBDD 		= model.newIntVar(0, TecalOrdo.horizon, "end"   + suffix);		
-		fin			= model.newIntVar(0, TecalOrdo.horizon, "fin_nooverlap");
+		endReel			= model.newIntVar(0, TecalOrdo.horizon, "fin_nooverlap");
 		deriveNulle= model.newIntVar(0, TecalOrdo.horizon, "deriveNulle");
 		//deriveVar	= model.newIntVar(tempsIncompresible,tempsIncompresible+inderive, "deriveVar");
 		
-		intervalBDD = model.newIntervalVar(startBDD, LinearExpr.constant(mTask.duration),endBDD, "interval" + suffix);
+		//intervalBDD2 = model.newIntervalVar(startBDD, LinearExpr.constant(mTask.duration),endBDD, "interval" + suffix);
 		  
-		intervalReel=model.newIntervalVar(
+		intervalBDD=model.newIntervalVar(
 				startBDD,
-				LinearExpr.constant(mTask.duration+mTask.egouttage+mTask.derive+tempsDeplacement),
+				LinearExpr.constant(mTask.duration),
 				//TODO best solution to finish ?
 				//deriveVar,
-				fin,"");
+				endBDD,"");
+		intervalReel=model.newIntervalVar(
+				startBDD,
+				//+1 car que ce soit strictement supérieur dans jobConstraints
+				LinearExpr.constant(mTask.duration+tps+1),
+				//TODO best solution to finish ?
+				//deriveVar,
+				endReel,"");
 		
 	
 		
 	
-		minimumDerive=model.newIntervalVar(	startBDD,LinearExpr.constant(tempsIncompresible),deriveNulle,"");
+		//minimumDerive=model.newIntervalVar(	startBDD,LinearExpr.constant(tempsIncompresible),deriveNulle,"");
 		
 
 	}

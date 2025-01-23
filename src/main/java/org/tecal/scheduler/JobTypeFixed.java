@@ -76,7 +76,7 @@ void makeSafetyBetweenBridges(long time) {
 		for (int taskID = 0; taskID < mTaskOrdoList.size(); ++taskID) {
 						
 			TaskOrdo taskOrdo = mTaskOrdoList.get(taskID);		
-			if(taskOrdo.getFixedFin()<time) {
+			if(taskOrdo.getFixedFinReel()<time) {
 				//on garde le temps de déplacement pour aller à la prochaine zone "futures"
 				previousTpsDep=taskOrdo.tempsDeplacement;
 				continue;
@@ -90,7 +90,7 @@ void makeSafetyBetweenBridges(long time) {
 				bridge=1;								
 			}
 			
-			ListeZone lBridgeMoves=bridgesMoves.get(bridge);
+			ListeZone lBridgeMoves=mBridgeMoves.get(bridge);
 			if(taskID != mTaskOrdoList.size()-1) 
 				taskOrdoNext = mTaskOrdoList.get(taskID+1);
 			else {

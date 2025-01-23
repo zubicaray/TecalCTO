@@ -199,8 +199,7 @@ public class CPO_IHM extends JFrame {
 		
 		mBarresSettingsFutures = mTecalOrdo.runTest();
 		mCPO_PANEL.setModelBarres(mBarresSettingsFutures);
-		execute();
-		
+		execute();		
 		
 		setCursor(Cursor.getDefaultCursor());
 	}

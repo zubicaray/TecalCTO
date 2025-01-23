@@ -25,3 +25,8 @@ select Numzone,codezone from ANODISATION.dbo.ZONES where Numzone in (13,6,4)
 
 --code ?
 --*6565/sdA
+
+select NumFicheProduction,NumGammeAnodisation  from  [ANODISATION].dbo.DetailsChargesProduction where NumFicheProduction in(
+'00085171','00085172','00085173','00085174','00085175',
+'00085176','00085177','00085178','00085179','00085180')
+

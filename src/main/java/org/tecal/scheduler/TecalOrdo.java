@@ -169,9 +169,9 @@ public class TecalOrdo {
 	}
 
 	private Map<List<Integer>, TaskOrdo> 	allTasks 			= new HashMap<>();
-	private Map<Integer, List<IntervalVar>> zoneToIntervals 	= new HashMap<>();
+	private Map<Integer, List<IntervalVar>> mZoneToIntervals 	= new HashMap<>();
 	private Map<Integer, List<IntervalVar>> multiZoneIntervals 	= new HashMap<>();
-	private Map<Integer, List<IntervalVar>> cumulDemands 		= new HashMap<>();
+	private Map<Integer, List<IntervalVar>> mCumulDemands 		= new HashMap<>();
 
 	private Map<Integer, List<AssignedTask>> 			mAssignedTasksByNumzone;
 	private LinkedHashMap<Integer, List<AssignedTask>> 	mAssignedTasksByBarreId;
@@ -273,15 +273,18 @@ public class TecalOrdo {
 		numzoneArr = zonesBDD.keySet().toArray(new Integer[0]);
 
 	}
-
-	public LinkedHashMap<Integer, Barre> setBarresTest() {
+	public LinkedHashMap<Integer, Barre> setBarresTest2() {
 
 		HashMap<String, String> testMap = CST.transformStringToMap("{1=N4-000747, 2=22-000097, 3=55-000747, 4=25-000020, 5=26-000485, " +
 	            "6=11-000097, 7=23-000105, 8=N2-000601, 9=32-000778, 10=29-000024, " +
 	            "11=20-000747, 12=39-000811, 13=24-000747, 14=14-000152, " +
 	            "15=15-000152, 16=16-000152, 17=17-000152, 18=18-000152, 19=19-000152}");
 		
-		//testMap = CST.transformStringToMap("{1=1-000001, 2=2-000002, 3=3-000003, 4=4-000004, 5=5-000152, 6=6-000152, 7=7-000152, 8=8-000152, 10=10-000152}");
+		//testMap = CST.transformStringToMap("{1=N4-000747, 2=22-000097, 3=55-000747, 4=25-000020, 5=26-000485, 6=11-000097}");
+		
+		
+		testMap = CST.transformStringToMap("{"+
+				"1=1-00085171,2=2-00085172,3=3-00085173,00085174,00085175,00085176,00085177,00085178,00085179,00085180 }");
 		LinkedHashMap<Integer, Barre> res= new LinkedHashMap<>();
 		int i = 0;
 		for (Map.Entry<String, String> e : testMap.entrySet()) {
@@ -290,6 +293,22 @@ public class TecalOrdo {
 			mBarreFutures.put(i, b.getGammeArray());
 			mBarresAll.put(i, b.getGammeArray());
 			mBarreLabels.put(i, e.getKey()+" - "+e.getValue());
+			res.put(i,b);
+		}
+
+		return res;
+	}
+	public LinkedHashMap<Integer, Barre> setBarresTest() {
+
+		
+		LinkedHashMap<Integer, Barre> res= new LinkedHashMap<>();
+		int i = 0;
+		for (String gamme: CST.gammesTest) {
+			i++;
+			Barre b=new Barre(i,i+"",gamme,CST.VITESSE_NORMALE,CST.VITESSE_NORMALE,false);
+			mBarreFutures.put(i, b.getGammeArray());
+			mBarresAll.put(i, b.getGammeArray());
+			mBarreLabels.put(i, i+" - "+gamme);
 			res.put(i,b);
 		}
 
@@ -413,15 +432,15 @@ public class TecalOrdo {
 		for (JobType job: mJobsFuturs.values()) {
 			
 			TaskOrdo taskFirst=job.mTaskOrdoList.get(0);
-			endsFutures.add(taskFirst.getFin());
-			startsFutures.add(taskFirst.getStart());
+			endsFutures.add(taskFirst.getFinReel());
+			startsFutures.add(taskFirst.getStartBDD());
 			
 			if(mBarresPrioritaires.contains(job.mBarreId))
 			{
-				endByBarreIdPrio.put(job.mBarreId,taskFirst.getFin());
+				endByBarreIdPrio.put(job.mBarreId,taskFirst.getFinReel());
 			}
 			else {
-				endByBarreIdNonPrio.put(job.mBarreId,taskFirst.getFin());
+				endByBarreIdNonPrio.put(job.mBarreId,taskFirst.getFinReel());
 			}
 			
 			
@@ -597,7 +616,7 @@ public class TecalOrdo {
 				Task task = tasks.get(taskID);
 				List<Integer> key = Arrays.asList(barre, taskID);
 
-				long debut = allTasks.get(key).getStartValue();
+				long debut = allTasks.get(key).getStartBDDValue();
 				long finBDD =  allTasks.get(key).getEndBDDValue();
 				
 
@@ -611,7 +630,7 @@ public class TecalOrdo {
 				}else {
 					List<Integer> keySuivante = Arrays.asList(barre, taskID + 1);
 					//todo bug
-					derive = allTasks.get(keySuivante).getStartValue()
+					derive = allTasks.get(keySuivante).getStartBDDValue()
 							- allTasks.get(key).tempsDeplacement - allTasks.get(key).mTask.egouttage;
 				}
 				
@@ -652,7 +671,7 @@ public class TecalOrdo {
 			SwingUtilities.invokeLater(() -> {
 
 				final GanttChart ganttTecal = new GanttChart("Gantt Chart prod du 02/11/2023");
-				ganttTecal.prod_diag(CST.mListeOf26janvier, CST.getDate("20240126"));
+					//ganttTecal.prod_diag(CST.mListeOf26janvier, CST.getDate("20240126"));
 				ganttTecal.pack();
 				ganttTecal.setSize(new java.awt.Dimension(1500, 870));
 				RefineryUtilities.centerFrameOnScreen(ganttTecal);
@@ -669,9 +688,9 @@ public class TecalOrdo {
 
 		mJobsFuturs.clear();
 		allTasks.clear();
-		zoneToIntervals.clear();
+		mZoneToIntervals.clear();
 		multiZoneIntervals.clear();
-		cumulDemands.clear();
+		mCumulDemands.clear();
 		
 		for (Map.Entry<Integer, List<ElementGamme>> entry : mBarreFutures.entrySet()) {
 
@@ -718,12 +737,14 @@ public class TecalOrdo {
 		
 		for (JobType job : arrayAllJobs) {
 			// on créé les zones avec leut temps de déplacement, égouttage, etc ...
-			job.addIntervalForModel(allTasks, zoneToIntervals, multiZoneIntervals, cumulDemands);
+			job.addIntervalForModel(allTasks, mZoneToIntervals, multiZoneIntervals, mCumulDemands);
 			// on créé les zones corespondant a mouvement des ponts
 			job.simulateBridgesMoves(mCurrentTime);
 			// regroupement des zones qui pourraient être trop proches de zones d'autre jobs
 			// sur pont adverses
-			job.makeSafetyBetweenBridges(mCurrentTime);
+			//TODO
+			// a remettre !!!!!
+			//job.makeSafetyBetweenBridges(mCurrentTime);
 			
 		}
 
@@ -757,15 +778,14 @@ public class TecalOrdo {
 	 */
 	private void jobConstraints() {
 
-		HashMap<Integer, CumulativeConstraint> cumulConstr = new HashMap<>();
-
 		// Create and add disjunctive constraints.
 		for (int numzone : numzoneArr) {
 
-			if (zoneToIntervals.containsKey(numzone)) {
-				List<IntervalVar> intervalParZone = zoneToIntervals.get(numzone);
+			if (mZoneToIntervals.containsKey(numzone)) {
+				List<IntervalVar> intervalParZone = mZoneToIntervals.get(numzone);
 				model.addNoOverlap(intervalParZone);
 			}
+			else
 			if (multiZoneIntervals.containsKey(numzone) ) {
 				List<IntervalVar> listCumul = multiZoneIntervals.get(numzone);
 				ZoneType zt = zonesBDD.get(numzone);
@@ -785,54 +805,36 @@ public class TecalOrdo {
 				long[] zoneUsage = new long[listCumul.size()];
 				Arrays.fill(zoneUsage, 1);
 				cumul.addDemands(listCumul.toArray(new IntervalVar[0]), zoneUsage);
-				cumulConstr.put(numzone, cumul);
+				//cumulConstr.put(numzone, cumul);
 
 			}
 
 		}
 		// parse the intervals of single task machine that belongs to the "cumulative"
 		// machines (multi tasks machine)
-		for (Entry<Integer, List<IntervalVar>> entry : cumulDemands.entrySet()) {
+		for (Entry<Integer, List<IntervalVar>> entry : mCumulDemands.entrySet()) {
 			int idCumulZone = entry.getKey();
 			// get the constraint on the current "cumulative" machine
-			if (cumulConstr.containsKey(idCumulZone)) {
-				CumulativeConstraint cumul = cumulConstr.get(idCumulZone);
+			if (false) {//cumulConstr.containsKey(idCumulZone)) {
+				CumulativeConstraint cumul ;//= cumulConstr.get(idCumulZone);
 				List<IntervalVar> inters = entry.getValue();
+				
+				long[] zoneUsage = new long[inters.size()];
+				Arrays.fill(zoneUsage, 1);
+				//cumul.addDemands(inters.toArray(new IntervalVar[0]), zoneUsage);
+				
 				for (IntervalVar iv : inters) {
-					cumul.addDemand(iv, 1);
+					//cumul.addDemand(iv, 1);
+				}
+				if (mZoneToIntervals.containsKey(idCumulZone)) {
+					List<IntervalVar> intervalParZone = mZoneToIntervals.get(idCumulZone);
+					model.addNoOverlap(intervalParZone);
 				}
 			}
 		}
 
 	}
 
-	// on impose du temps entre la fin du zone et le début d'une autre
-	@SuppressWarnings("unused")
-	private void zoneCumulConstraints() {
-
-		if (CST.CSTR_ECART_ZONES_CUMULS) {
-
-			for (List<IntervalVar> intervalParZone : multiZoneIntervals.values()) {
-				List<IntervalVar> nooverlapAno = new ArrayList<>();
-				for (int i = 0; i < intervalParZone.size(); i++) {
-
-					IntervalVar interval = intervalParZone.get(i);
-					LinearExpr debInter = interval.getStartExpr();
-					LinearExpr finInter = interval.getEndExpr();
-
-					
-					IntervalVar deb = getNoOverlapZone(model, debInter, mParams.getTEMPS_ANO_ENTRE_P1_P2(), mParams.getTEMPS_ANO_ENTRE_P1_P2());
-					IntervalVar fin = getNoOverlapZone(model, finInter, mParams.getTEMPS_ANO_ENTRE_P1_P2(), mParams.getTEMPS_ANO_ENTRE_P1_P2());
-
-					nooverlapAno.add(deb);
-					nooverlapAno.add(fin);
-
-				}
-				model.addNoOverlap(nooverlapAno);
-			}
-		}
-
-	}
 
 	private void jobsPrecedence() {
 
@@ -850,6 +852,8 @@ public class TecalOrdo {
 				
 				TaskOrdo prev=job.mTaskOrdoList.get(taskID);
 				TaskOrdo next=job.mTaskOrdoList.get(taskID+1);
+				
+				//LinearExpr xPlus5 = LinearExpr.sum({next.getStartBDD(), tps});
 
 				// last OK
 				// le debut de la zone suivante doit etre compris
@@ -857,10 +861,10 @@ public class TecalOrdo {
 				
 	
 				//TODO best solution to finish ?
-				//model.addEquality(next.getStart(), prev.getFin());
+				model.addEquality(next.getStartBDD(), prev.getFinReel());
 				
-				model.addLessOrEqual(next.getStart(), prev.getFin());        
-				model.addGreaterOrEqual(next.getStart(), prev.getDeriveNulle());
+				//model.addLessOrEqual(next.getStartBDD(), prev.getFinReel());        
+				//model.addGreaterOrEqual(next.getStartBDD(), prev.getDeriveNulle());
 
 				
 
@@ -897,7 +901,7 @@ public class TecalOrdo {
 			listZonesNoOverlapParPont.add(new ZonesIntervalVar()); // add zones pont 2
 			for (JobType j : mAllJobs.values()) {
 				int p = 0;
-				for (ListeZone bridgeMoveP : j.bridgesMoves) {
+				for (ListeZone bridgeMoveP : j.mBridgeMoves) {
 					listZonesNoOverlapParPont.get(p).addAll(bridgeMoveP);
 					p++;
 				}
@@ -909,8 +913,23 @@ public class TecalOrdo {
 			}
 		}
 	}
+	static IntervalVar getBackwardZone(IntVar mvtPont, int decay) {
 
-	static IntVar getBackward(CpModel model, IntVar mvtPont, int decay) {
+		IntVar decayed = model.newIntVar(0, horizon, "");
+		return model.newIntervalVar(decayed, LinearExpr.constant(decay), mvtPont, "");
+
+		 
+
+	}
+	static IntervalVar getForewardZone(IntVar mvtPont, int decay) {
+
+		IntVar decayed = model.newIntVar(0, horizon, "");
+		return model.newIntervalVar(mvtPont, LinearExpr.constant(decay),decayed , "");
+
+		 
+
+	}
+	static IntVar getBackward(IntVar mvtPont, int decay) {
 
 		IntVar decayed = model.newIntVar(0, horizon, "");
 		model.newIntervalVar(decayed, LinearExpr.constant(decay), mvtPont, "");
@@ -919,7 +938,7 @@ public class TecalOrdo {
 
 	}
 
-	static IntVar getForeward(CpModel model, IntVar mvtPont, int decay) {
+	static IntVar getForeward( IntVar mvtPont, int decay) {
 
 		IntVar decayed = model.newIntVar(0, horizon, "");
 		model.newIntervalVar(mvtPont, LinearExpr.constant(decay), decayed, "");
@@ -929,7 +948,7 @@ public class TecalOrdo {
 	}
 
 
-	static IntervalVar getNoOverlapZone(CpModel model, IntVar mvtPont, int left, int right) {
+	static IntervalVar getNoOverlapZone( IntVar mvtPont, int left, int right) {
 
 		IntervalVar before = model.newIntervalVar(model.newIntVar(0, horizon, ""), LinearExpr.constant(left), mvtPont,
 				"");
@@ -941,7 +960,7 @@ public class TecalOrdo {
 
 	}
 
-	static IntervalVar getNoOverlapZone(CpModel model, LinearExpr mvtPont) {
+	static IntervalVar getNoOverlapZone(LinearExpr mvtPont) {
 
 		IntervalVar before = model.newIntervalVar(model.newIntVar(0, horizon, ""),
 				LinearExpr.constant(TecalOrdoParams.getInstance().getTEMPS_MVT_PONT()), mvtPont, "");
@@ -953,7 +972,7 @@ public class TecalOrdo {
 
 	}
 
-	static IntervalVar getNoOverlapZone(CpModel model, LinearExpr mvtPont, int left, int right) {
+	static IntervalVar getNoOverlapZone(LinearExpr mvtPont, int left, int right) {
 
 		IntervalVar before = model.newIntervalVar(model.newIntVar(0, horizon, ""), LinearExpr.constant(left), mvtPont,
 				"");
@@ -965,7 +984,7 @@ public class TecalOrdo {
 
 	}
 
-	static IntervalVar getNoOverlapZone(CpModel model, IntVar mvtPont) {
+	static IntervalVar getNoOverlapZone( IntVar mvtPont) {
 
 		IntervalVar before = model.newIntervalVar(model.newIntVar(0, horizon, ""),
 				LinearExpr.constant(TecalOrdoParams.getInstance().getTEMPS_MVT_PONT()), mvtPont, "");
@@ -977,7 +996,7 @@ public class TecalOrdo {
 
 	}
 
-	static IntervalVar getNoOverlapZone(CpModel model, IntVar mvtPontStart, IntVar mvtPontEnd) {
+	static IntervalVar getNoOverlapZone( IntVar mvtPontStart, IntVar mvtPontEnd) {
 
 		IntervalVar before = model.newIntervalVar(model.newIntVar(0, horizon, ""),
 				LinearExpr.constant(TecalOrdoParams.getInstance().getTEMPS_MVT_PONT()), mvtPontStart, "");
@@ -989,7 +1008,7 @@ public class TecalOrdo {
 
 	}
 
-	static IntervalVar getNoOverlapZone(CpModel model, IntervalVar mvt) {
+	static IntervalVar getNoOverlapZone(IntervalVar mvt) {
 
 		IntervalVar before = model.newIntervalVar(model.newIntVar(0, horizon, ""),
 				LinearExpr.constant(TecalOrdoParams.getInstance().getTEMPS_MVT_PONT()), mvt.getStartExpr(), "");

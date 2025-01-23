@@ -15,7 +15,7 @@ import org.tecal.scheduler.types.ZoneType;
 
 import com.google.ortools.sat.IntVar;
 import com.google.ortools.sat.IntervalVar;
-import com.google.ortools.sat.LinearExpr;
+
 
 public class JobType {
 	
@@ -24,7 +24,7 @@ public class JobType {
 	List<Task> tasksJob;
 	List<TaskOrdo> mTaskOrdoList;	
 
-	ArrayListeZonePonts bridgesMoves;
+	ArrayListeZonePonts mBridgeMoves;
 	ListeZone mNoOverlapP1P2;
 	
 	TaskOrdo taskAnod;
@@ -66,7 +66,7 @@ public class JobType {
 		
 		tasksJob = new ArrayList<Task>();
 		mTaskOrdoList= new ArrayList<TaskOrdo>();
-		bridgesMoves = new ArrayListeZonePonts();
+		mBridgeMoves = new ArrayListeZonePonts();
 			
 		mNoOverlapP1P2 = new ListeZone();
 		
@@ -75,7 +75,7 @@ public class JobType {
 		for(int pont=0;pont< CST.NB_PONTS;pont++){
 			
 			ListeZone bridgeMove= new ListeZone();
-			bridgesMoves.add(bridgeMove);	
+			mBridgeMoves.add(bridgeMove);	
 	
 		}
 
@@ -89,7 +89,7 @@ public class JobType {
 		
 		tasksJob = new ArrayList<Task>();
 		mTaskOrdoList= new ArrayList<TaskOrdo>();
-		bridgesMoves = new ArrayListeZonePonts();
+		mBridgeMoves = new ArrayListeZonePonts();
 			
 		mNoOverlapP1P2 = new ListeZone();
 		
@@ -98,7 +98,7 @@ public class JobType {
 		for(int pont=0;pont< CST.NB_PONTS;pont++){
 			
 			ListeZone bridgeMove= new ListeZone();
-			bridgesMoves.add(bridgeMove);	
+			mBridgeMoves.add(bridgeMove);	
 	
 		}
 
@@ -113,122 +113,72 @@ public class JobType {
 
 	}
 
-	void makeSafetyBetweenBridges(long time) {
-		
-		//if(indexAnod==-1) return ;
-		
-		
-		IntVar deb = null;
-		IntVar fin= null;
-		
-	
-		//System.out.println("Job "+name);
-		for (int taskID = 0; taskID < mTaskOrdoList.size(); ++taskID) {
-						
-			if(mTaskOrdoList.get(taskID).zoneSecu) {
-				deb=(IntVar) mTaskOrdoList.get(taskID).getStart();
-				
-				if(indexAnod > 0 && taskID-1 == indexAnod) {
-					deb=TecalOrdo.getBackward(TecalOrdo.model,(IntVar) mTaskOrdoList.get(indexAnod).getEndBDD(),
-							mParams.getTEMPS_ANO_ENTRE_P1_P2());
-				}
-				
-				if(indexAnod > 0 && taskID+1 == indexAnod) {
-					fin=(IntVar) mTaskOrdoList.get(indexAnod).getStart();
-					
-				}else {
-					fin=(IntVar) mTaskOrdoList.get(taskID).getEndBDD();
-				}
-				
-				int taskID2 = taskID+1;
-				
-				while(taskID2 < mTaskOrdoList.size() && mTaskOrdoList.get(taskID2).zoneSecu )
-				{
-					taskID2++;
-				}
-				
-				if(taskID2>taskID+1) {
-					if(indexAnod > 0 && taskID2 == indexAnod) {
-						fin=TecalOrdo.getForeward(TecalOrdo.model,(IntVar) mTaskOrdoList.get(indexAnod).getStart(),mParams.getTEMPS_ANO_ENTRE_P1_P2());;
-						
-					}else {
-						fin=(IntVar) mTaskOrdoList.get(taskID2-1).getEndBDD();
-					}
-					
-					taskID=taskID2;
-				}
-				mNoOverlapP1P2.add(TecalOrdo.model.newIntervalVar( deb,TecalOrdo.model.newIntVar(0,TecalOrdo.horizon, "") ,fin, ""));
-								
-				
-			}
-			
-						
-		}
-		
-	}
 
 	void clear() {
 		mNoOverlapP1P2.clear();
-		for(ListeZone t :bridgesMoves) {
+		for(ListeZone t :mBridgeMoves) {
 			t.clear();
 		}
 	}
+
 	void simulateBridgesMoves(long time) {
 
-		
-		IntVar deb = null;
-		IntVar fin= null;
+	
 		int bridge=0;
 		
 		for (int taskID = 0; taskID < mTaskOrdoList.size(); ++taskID) {
 			
-			TaskOrdo taskOrdo = mTaskOrdoList.get(taskID);		
-			TaskOrdo taskOrdoNext =null;
-			if(taskID != mTaskOrdoList.size()-1) 
-				taskOrdoNext = mTaskOrdoList.get(taskID+1);
+			TaskOrdo taskOrdo = mTaskOrdoList.get(taskID);			
 		
 			if(indexAnod > 0 && taskID >indexAnod) {
 				bridge=1;								
 			}
 			// si pas de zone d'ano
-			if(indexAnod < 0 && tasksJob.get(taskID).numzone >=mParams.getNUMZONE_ANODISATION()) {
+			if(tasksJob.get(taskID).numzone >=mParams.getNUMZONE_ANODISATION()) {
 				bridge=1;								
 			}
-			ListeZone lBridgeMoves=bridgesMoves.get(bridge);
+			ListeZone lBridgeMoves=mBridgeMoves.get(bridge);
+
 			
-			if(taskID==0) {
-				deb=TecalOrdo.getBackward(TecalOrdo.model, (IntVar) taskOrdoNext.getStart(),
-						taskOrdo.tempsDeplacement+mParams.getTEMPS_ANO_ENTRE_P1_P2());
-				continue;
+			
+			List<Integer> listeSecuP1P2 = Arrays.asList(12, 13, 14, 16, 17);
+			
+			if(listeSecuP1P2.contains(taskOrdo.mTask.numzone) ) {
+				mNoOverlapP1P2.add(taskOrdo.intervalBDD);
 			}
 			
-			
-			if(taskOrdo.isOverlapable || taskID ==indexAnod ||  taskID == mTaskOrdoList.size()-1 ) {
-				if(taskOrdo.BloquePont()) {
-					logger.info("Coloration en "+SQL_DATA.getInstance().getZones().get(taskOrdo.mTask.numzone).codezone+ ", job: "+name);
-					fin=taskOrdo.getEndBDD();
+			List<Integer> liste = Arrays.asList(1,35);
+			if(! taskOrdo.isOverlapable || taskOrdo.BloquePont() || liste.contains(taskOrdo.mTask.numzone) ) {
+			//if( taskOrdo.mTask.duration<180) {
+				lBridgeMoves.add(taskOrdo.intervalBDD);
+			}
+			else
+			{
+				IntervalVar interval_var_deb = TecalOrdo.getForewardZone( (IntVar) taskOrdo.getStartBDD(),40);
+				IntervalVar interval_var_fin = TecalOrdo.getBackwardZone( (IntVar) taskOrdo.getFinBDD(),40);
+				
+				if(taskID ==indexAnod ) {
+					//mNoOverlapP1P2.add(interval_var_deb);
+					//mNoOverlapP1P2.add(interval_var_fin);
+					mBridgeMoves.get(0).add(interval_var_deb);
+					mBridgeMoves.get(1).add(interval_var_fin);
 				}
-				else
-					fin=TecalOrdo.getForeward(TecalOrdo.model, (IntVar) taskOrdo.getStart(),mParams.getTEMPS_ANO_ENTRE_P1_P2());
-				
-				//System.out.println("deb:"+deb+", fin-deb="+ fin);
-				lBridgeMoves.add(TecalOrdo.model.newIntervalVar(deb, TecalOrdo.model.newIntVar(0, TecalOrdo.horizon, ""), fin ,""));
-				
-				if(taskID != mTaskOrdoList.size()-1) {
-					if(taskOrdo.BloquePont())
-						deb=TecalOrdo.getBackward(TecalOrdo.model, (IntVar) taskOrdoNext.getStart(),taskOrdo.tempsDeplacement);
-					else
-						deb=TecalOrdo.getBackward(TecalOrdo.model, (IntVar) taskOrdoNext.getStart(),taskOrdo.tempsDeplacement+mParams.getTEMPS_ANO_ENTRE_P1_P2());
-				}					
-						
-			}			
+				else {
+					lBridgeMoves.add(interval_var_deb);
+					lBridgeMoves.add(interval_var_fin);
+				}
+			}
+					
+			
 			
 		}
 	}
 
-	void addIntervalForModel (Map<List<Integer>, TaskOrdo> inAllTasks,Map<Integer, List<IntervalVar>> zoneToIntervals,
+	
+
+	void addIntervalForModel (Map<List<Integer>, TaskOrdo> inAllTasks,Map<Integer, List<IntervalVar>> mZoneToIntervals,
 			Map<Integer,List<IntervalVar>> multiZoneIntervals,
-			Map<Integer, List<IntervalVar>> cumulDemands) {
+			Map<Integer, List<IntervalVar>> mCumulDemands) {
 
 		//System.out.println("Job "+name);
 		for (int taskID = 0; taskID < tasksJob.size(); ++taskID) {
@@ -242,33 +192,24 @@ public class JobType {
 			Task task = tasksJob.get(taskID);
 			ZoneType  zt=SQL_DATA.getInstance().getZones().get(task.numzone);
 			
-			LinearExpr deb=mTaskOrdoList.get(taskID).intervalReel.getStartExpr();
-			LinearExpr end;
-			if(taskID == tasksJob.size()-1 ) {
-				//if( mTaskOrdoList.get(taskID).mTask.numzone!=CST.CHARGEMENT_NUMZONE)
-					end=mTaskOrdoList.get(taskID).intervalReel.getEndExpr();				
-					
-			}
-			else
-				end=mTaskOrdoList.get(taskID+1).intervalReel.getStartExpr();
-			
-			IntervalVar inter=TecalOrdo.model.newIntervalVar(deb,TecalOrdo.model.newIntVar(0, TecalOrdo.horizon, "") ,end,"");
+				
+		
 			//todo check cas chargement
 			if(zt.cumul>1) {
 				multiZoneIntervals.computeIfAbsent(task.numzone, (Integer k) -> new ArrayList<>());   
-				multiZoneIntervals.get(task.numzone).add(inter);
+				multiZoneIntervals.get(task.numzone).add(mTaskOrdoList.get(taskID).intervalBDD);
 			}
 			else {
-				zoneToIntervals.computeIfAbsent(task.numzone, (Integer k) -> new ArrayList<>());              
-				zoneToIntervals.get(task.numzone).add(inter);
+				mZoneToIntervals.computeIfAbsent(task.numzone, (Integer k) -> new ArrayList<>());              
+				mZoneToIntervals.get(task.numzone).add(mTaskOrdoList.get(taskID).intervalBDD);
 				
 				if(SQL_DATA.getInstance().getRelatedZones().containsKey(task.numzone)) {
 					int zoneToAdd=SQL_DATA.getInstance().getRelatedZones().get(task.numzone);
-					//cumulDemands.add
-					if(!cumulDemands.containsKey(zoneToAdd)) {
-						cumulDemands.put(zoneToAdd,new ArrayList<IntervalVar>());
+					//mCumulDemands.add
+					if(!mCumulDemands.containsKey(zoneToAdd)) {
+						//mCumulDemands.put(zoneToAdd,new ArrayList<IntervalVar>());
 					}
-					cumulDemands.get(zoneToAdd).add(inter);
+					//mCumulDemands.get(zoneToAdd).add(inter);
 				}
 
 			}

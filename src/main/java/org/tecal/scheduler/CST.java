@@ -26,24 +26,12 @@ public class CST {
 	
 	public final static boolean TEST_FIXED_JOBS=false;  
 	
-	public final static String[] mListeOf26janvier={"00079260","00079261","00079262","00079263","00079264","00079265","00079266"};		
-	public final static String gammesTest_PB_pont2[] ={"000022","000022","000467","000210","000246"};
-
-
-	public final static String test26janvier[] ={"000020","000021","000164","000601","000467","000347","000169"};
-
-	// pb chevauchage colmatage
-	public final static String test2[] ={"000601","000347","000601"};
-
-	public final static String testBig[] ={"000054","000601","000485","000024","000601","000818","000812","000717","000002","000169",
-			"000020","000021","000164","000601","000467","000347","000169",
-			"000686","000212","000818","000818","000812","000811","000022","000601","000109","000818"};
-	public final static String testPbNoSolu[] ={"000794","000794","000794"};
 	
 	
-	public final static String gammesTest[] ={"000601", "000097", "000097", "000020", "000485", 
-			"000097", "000105", "000601", "000778", "000024", "000097", "000811", "000097", "000152",
-			"000152", "000152", "000152", "000152", "000152"};
+	public final static String gammesTest[] = {
+			"000776","000735","000020","000601","000776",
+			"000020","000818","000243","000024","000811"
+	};
 	
 	public static HashMap<String, String> transformStringToMap(String input) {
         HashMap<String, String> map = new HashMap<>();
@@ -97,7 +85,7 @@ public class CST {
 	//------------------  TEMPS ----------------------------------
 	//------------------------------------------------------------
 	// pour affichage dans Gantt, peu importe le temps
-	public final static int TEMPS_DECHARGEMENT =60;	
+	public final static int TEMPS_DECHARGEMENT =100;	
 	public final static int TEMPS_CHARGEMENT =100;	
 	// temps min du zone pour qu'on la considere overlapable
 	// ie qu'elle autorise d'aller d'autre mvt pendant son traitement
@@ -127,7 +115,7 @@ public class CST {
 	
 	
 	//------------------------------------------------------------
-	public final static int TEMPS_MAX_SOLVEUR		=40;
+	public final static int TEMPS_MAX_SOLVEUR		=10;
 	public final static int TEMPS_MAX_JOURNEE		=86400;
 	public final static int CAPACITE_ANODISATION 	=3;
 	public final static int ANODISATION_NUMZONE 	=15;

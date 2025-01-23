@@ -135,11 +135,8 @@ public class GanttChart extends JFrame {
 
 	    	    			  idxPoste=i;
 	    				  }
-
 	    			  }
-
 	    		  }
-
 	    	  }
 	    	  return idxPoste;
 
