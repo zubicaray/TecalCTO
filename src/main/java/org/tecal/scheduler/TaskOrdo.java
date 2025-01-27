@@ -117,22 +117,35 @@ public class TaskOrdo {
 		mTask=task;
 		
 		tempsDeplacement=tps;
-		if(mTask.duration>=TecalOrdoParams.getInstance().getTEMPS_ZONE_OVERLAP_MIN()){
+		int duree=mTask.duration;
+		int derive=mTask.derive;
+		derive=1; 
+		int overlap=TecalOrdoParams.getInstance().getTEMPS_ZONE_OVERLAP_MIN();
+		/*
+		if(duree<overlap  && duree+derive>=overlap) {
+			derive-=TecalOrdoParams.getInstance().getTEMPS_ZONE_OVERLAP_MIN()-duree;
+			duree=TecalOrdoParams.getInstance().getTEMPS_ZONE_OVERLAP_MIN();
+		}
+		*/
+		if(mTask.duration+mTask.derive>=TecalOrdoParams.getInstance().getTEMPS_ZONE_OVERLAP_MIN()){
 			isOverlapable=true;
 		}		
 	
-		int tempsIncompresible=mTask.egouttage+tempsDeplacement+mTask.duration;
+		
 		startBDD 	= model.newIntVar(0, TecalOrdo.horizon, "start" + suffix); 
 		endBDD 		= model.newIntVar(0, TecalOrdo.horizon, "end"   + suffix);		
 		fin			= model.newIntVar(0, TecalOrdo.horizon, "fin_nooverlap");
 		deriveNulle= model.newIntVar(0, TecalOrdo.horizon, "deriveNulle");
 		//deriveVar	= model.newIntVar(tempsIncompresible,tempsIncompresible+inderive, "deriveVar");
 		
+		
+		int tempsIncompresible=mTask.egouttage+tempsDeplacement+duree;
+		
 		intervalBDD = model.newIntervalVar(startBDD, LinearExpr.constant(mTask.duration),endBDD, "interval" + suffix);
 		  
 		intervalReel=model.newIntervalVar(
 				startBDD,
-				LinearExpr.constant(mTask.duration+mTask.egouttage+mTask.derive+tempsDeplacement),
+				LinearExpr.constant(duree+mTask.egouttage+derive+tempsDeplacement),
 				//TODO best solution to finish ?
 				//deriveVar,
 				fin,"");

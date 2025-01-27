@@ -615,7 +615,8 @@ public class CPO_Panel extends JPanel {
 
 	}
 	public void execute() {
-		mCPO_IHM.run();
+		int tps = Integer.parseInt(mTxtTpsMaxSolver.getText().trim());     
+		mCPO_IHM.run(tps);
 	}
 
 	private void computeBarresFutures() {

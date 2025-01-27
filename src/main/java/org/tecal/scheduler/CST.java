@@ -41,9 +41,10 @@ public class CST {
 	public final static String testPbNoSolu[] ={"000794","000794","000794"};
 	
 	
-	public final static String gammesTest[] ={"000601", "000097", "000097", "000020", "000485", 
+	public final static String gammesAvecDecap[] ={"000601", "000097", "000097", "000020", "000485", 
 			"000097", "000105", "000601", "000778", "000024", "000097", "000811", "000097", "000152",
 			"000152", "000152", "000152", "000152", "000152"};
+	public final static String gammesTest[] =testBig;
 	
 	public static HashMap<String, String> transformStringToMap(String input) {
         HashMap<String, String> map = new HashMap<>();

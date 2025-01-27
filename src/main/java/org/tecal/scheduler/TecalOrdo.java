@@ -396,12 +396,9 @@ public class TecalOrdo {
 		// CONSTRAINTES SUR CHAQUE POSTE
 		// --------------------------------------------------------------------------------------------		
 		bridgesConstraints();
-		brigesSecurity();		
+		//brigesSecurity();		
 		// --------------------------------------------------------------------------------------------
 		// --------------------------------------------------------------------------------------------
-		// sur les postes d'oxy, faire en sorte que le pont 2 ne puisse pas croiser le
-		// pont et réciproquement
-		//zoneCumulConstraints();
 
 		// Makespan objective.
 		IntVar objVar = model.newIntVar(0, horizon, "makespan");
@@ -712,9 +709,7 @@ public class TecalOrdo {
 		// Computes horizon dynamically as the sum of all durations.
 		computeHorizon();		
 
-		//model.clearAssumptions();
-		//model.clearObjective();
-		//model.clearHints();		
+	
 		
 		for (JobType job : arrayAllJobs) {
 			// on créé les zones avec leut temps de déplacement, égouttage, etc ...
@@ -806,33 +801,6 @@ public class TecalOrdo {
 
 	}
 
-	// on impose du temps entre la fin du zone et le début d'une autre
-	@SuppressWarnings("unused")
-	private void zoneCumulConstraints() {
-
-		if (CST.CSTR_ECART_ZONES_CUMULS) {
-
-			for (List<IntervalVar> intervalParZone : multiZoneIntervals.values()) {
-				List<IntervalVar> nooverlapAno = new ArrayList<>();
-				for (int i = 0; i < intervalParZone.size(); i++) {
-
-					IntervalVar interval = intervalParZone.get(i);
-					LinearExpr debInter = interval.getStartExpr();
-					LinearExpr finInter = interval.getEndExpr();
-
-					
-					IntervalVar deb = getNoOverlapZone(model, debInter, mParams.getTEMPS_ANO_ENTRE_P1_P2(), mParams.getTEMPS_ANO_ENTRE_P1_P2());
-					IntervalVar fin = getNoOverlapZone(model, finInter, mParams.getTEMPS_ANO_ENTRE_P1_P2(), mParams.getTEMPS_ANO_ENTRE_P1_P2());
-
-					nooverlapAno.add(deb);
-					nooverlapAno.add(fin);
-
-				}
-				model.addNoOverlap(nooverlapAno);
-			}
-		}
-
-	}
 
 	private void jobsPrecedence() {
 
@@ -857,10 +825,10 @@ public class TecalOrdo {
 				
 	
 				//TODO best solution to finish ?
-				//model.addEquality(next.getStart(), prev.getFin());
+				model.addEquality(next.getStart(), prev.getFin());
 				
-				model.addLessOrEqual(next.getStart(), prev.getFin());        
-				model.addGreaterOrEqual(next.getStart(), prev.getDeriveNulle());
+				//model.addLessOrEqual(next.getStart(), prev.getFin());        
+				//model.addGreaterOrEqual(next.getStart(), prev.getDeriveNulle());
 
 				
 

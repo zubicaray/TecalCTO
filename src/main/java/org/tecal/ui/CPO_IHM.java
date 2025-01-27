@@ -205,11 +205,11 @@ public class CPO_IHM extends JFrame {
 		setCursor(Cursor.getDefaultCursor());
 	}
 
-	public void run() {
+	public void run(int tps) {
 
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
-		ModalProgressBar progressBar = new ModalProgressBar(TecalOrdoParams.getInstance().getTEMPS_MAX_SOLVEUR());
+		ModalProgressBar progressBar = new ModalProgressBar(tps);
 
 		SwingUtilities.invokeLater(() -> {
 			progressBar.createAndShowDialog();

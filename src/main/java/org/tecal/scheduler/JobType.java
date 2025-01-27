@@ -27,6 +27,8 @@ public class JobType {
 	ArrayListeZonePonts bridgesMoves;
 	ListeZone mNoOverlapP1P2;
 	
+	ListeZone mOverlapZones;
+	
 	TaskOrdo taskAnod;
 	
 	private Barre mBarre;
@@ -69,7 +71,7 @@ public class JobType {
 		bridgesMoves = new ArrayListeZonePonts();
 			
 		mNoOverlapP1P2 = new ListeZone();
-		
+		mOverlapZones = new ListeZone();
 	
 		
 		for(int pont=0;pont< CST.NB_PONTS;pont++){
@@ -92,7 +94,7 @@ public class JobType {
 		bridgesMoves = new ArrayListeZonePonts();
 			
 		mNoOverlapP1P2 = new ListeZone();
-		
+		mOverlapZones= new ListeZone();
 	
 		
 		for(int pont=0;pont< CST.NB_PONTS;pont++){
@@ -218,7 +220,8 @@ public class JobType {
 					if(taskOrdo.BloquePont())
 						deb=TecalOrdo.getBackward(TecalOrdo.model, (IntVar) taskOrdoNext.getStart(),taskOrdo.tempsDeplacement);
 					else
-						deb=TecalOrdo.getBackward(TecalOrdo.model, (IntVar) taskOrdoNext.getStart(),taskOrdo.tempsDeplacement+mParams.getTEMPS_ANO_ENTRE_P1_P2());
+						deb=TecalOrdo.getBackward(TecalOrdo.model, (IntVar) taskOrdoNext.getStart(),taskOrdo.tempsDeplacement
+								+mParams.getTEMPS_ANO_ENTRE_P1_P2());
 				}					
 						
 			}			
@@ -241,13 +244,17 @@ public class JobType {
 		for (int taskID = 0; taskID < tasksJob.size(); ++taskID) {
 			Task task = tasksJob.get(taskID);
 			ZoneType  zt=SQL_DATA.getInstance().getZones().get(task.numzone);
+			TaskOrdo taskOrdo=mTaskOrdoList.get(taskID);
 			
-			LinearExpr deb=mTaskOrdoList.get(taskID).intervalReel.getStartExpr();
+			LinearExpr deb=taskOrdo.intervalReel.getStartExpr();
 			LinearExpr end;
+			
+			if(taskOrdo.isOverlapable) {
+				mOverlapZones.add(taskOrdo.intervalReel);
+			}
+			
 			if(taskID == tasksJob.size()-1 ) {
-				//if( mTaskOrdoList.get(taskID).mTask.numzone!=CST.CHARGEMENT_NUMZONE)
-					end=mTaskOrdoList.get(taskID).intervalReel.getEndExpr();				
-					
+				end=taskOrdo.intervalReel.getEndExpr();					
 			}
 			else
 				end=mTaskOrdoList.get(taskID+1).intervalReel.getStartExpr();
@@ -270,9 +277,7 @@ public class JobType {
 					}
 					cumulDemands.get(zoneToAdd).add(inter);
 				}
-
 			}
-
 		}
 	}
 
