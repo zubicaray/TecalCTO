@@ -126,8 +126,11 @@ public class TaskOrdo {
 			derive-=TecalOrdoParams.getInstance().getTEMPS_ZONE_OVERLAP_MIN()-duree;
 			duree=TecalOrdoParams.getInstance().getTEMPS_ZONE_OVERLAP_MIN();
 		}
-		*/
 		if(mTask.duration+mTask.derive>=TecalOrdoParams.getInstance().getTEMPS_ZONE_OVERLAP_MIN()){
+			isOverlapable=true;
+		}	
+		*/
+		if(mTask.duration>=TecalOrdoParams.getInstance().getTEMPS_ZONE_OVERLAP_MIN()){
 			isOverlapable=true;
 		}		
 	

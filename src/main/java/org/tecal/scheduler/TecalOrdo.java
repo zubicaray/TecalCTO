@@ -395,7 +395,7 @@ public class TecalOrdo {
 		// --------------------------------------------------------------------------------------------
 		// CONSTRAINTES SUR CHAQUE POSTE
 		// --------------------------------------------------------------------------------------------		
-		bridgesConstraints();
+		//bridgesConstraints();
 		//brigesSecurity();		
 		// --------------------------------------------------------------------------------------------
 		// --------------------------------------------------------------------------------------------
@@ -765,14 +765,14 @@ public class TecalOrdo {
 				List<IntervalVar> listCumul = multiZoneIntervals.get(numzone);
 				ZoneType zt = zonesBDD.get(numzone);
 				// zone autorisant le "chevauchement" => zone contenant plus de 1 postes
-				IntVar capacity ;
+				int capacity ;
 				
 				if(numzone== mParams.getNUMZONE_ANODISATION() && mParams.getCAPACITE_ANODISATION() >0) {
 		        	//TODO changer: code lu qu au lancement
-					capacity=model.newIntVar(0, mParams.getCAPACITE_ANODISATION(), "capacity_of_" + numzone);
+					capacity=mParams.getCAPACITE_ANODISATION();
 				}
 				else 
-					capacity = model.newIntVar(0, zt.cumul, "capacity_of_" + numzone);
+					capacity = zt.cumul;
 					
 
 				CumulativeConstraint cumul = model.addCumulative(capacity);
@@ -785,19 +785,7 @@ public class TecalOrdo {
 			}
 
 		}
-		// parse the intervals of single task machine that belongs to the "cumulative"
-		// machines (multi tasks machine)
-		for (Entry<Integer, List<IntervalVar>> entry : cumulDemands.entrySet()) {
-			int idCumulZone = entry.getKey();
-			// get the constraint on the current "cumulative" machine
-			if (cumulConstr.containsKey(idCumulZone)) {
-				CumulativeConstraint cumul = cumulConstr.get(idCumulZone);
-				List<IntervalVar> inters = entry.getValue();
-				for (IntervalVar iv : inters) {
-					cumul.addDemand(iv, 1);
-				}
-			}
-		}
+		
 
 	}
 

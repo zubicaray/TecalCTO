@@ -261,7 +261,7 @@ public class JobType {
 			
 			IntervalVar inter=TecalOrdo.model.newIntervalVar(deb,TecalOrdo.model.newIntVar(0, TecalOrdo.horizon, "") ,end,"");
 			//todo check cas chargement
-			if(zt.cumul>1) {
+			if(zt.cumul>1 && zt.numzone!=1 && zt.numzone!=35) {
 				multiZoneIntervals.computeIfAbsent(task.numzone, (Integer k) -> new ArrayList<>());   
 				multiZoneIntervals.get(task.numzone).add(inter);
 			}
