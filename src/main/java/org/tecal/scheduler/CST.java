@@ -29,8 +29,9 @@ public class CST {
 	
 	
 	public final static String gammesTest[] = {
-			"000776","000735","000020","000601","000776",
-			"000020","000818","000243","000024","000811"
+			"000776","000735","000020"
+			//,"000601","000776",
+			//"000020","000818","000243","000024","000811"
 	};
 	
 	public static HashMap<String, String> transformStringToMap(String input) {

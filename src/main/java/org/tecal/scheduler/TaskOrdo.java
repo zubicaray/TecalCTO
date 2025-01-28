@@ -118,12 +118,15 @@ public class TaskOrdo {
 	TaskOrdo(CpModel model,Task task,int tps,String suffix){
 	
 		mTask=task;
-		if( mTask.duration>70)
-			mTask.duration-=40;
 		
-		tempsDeplacement=mTask.egouttage+tempsDeplacement+tps;
-		if(mTask.duration>=TecalOrdoParams.getInstance().getTEMPS_ZONE_OVERLAP_MIN()){
+		
+		tempsDeplacement=mTask.egouttage+tps;
+		if(mTask.duration+mTask.derive>=TecalOrdoParams.getInstance().getTEMPS_ZONE_OVERLAP_MIN()){
 			isOverlapable=true;
+			if(mTask.duration<TecalOrdoParams.getInstance().getTEMPS_ZONE_OVERLAP_MIN()){
+				mTask.derive-=TecalOrdoParams.getInstance().getTEMPS_ZONE_OVERLAP_MIN()-mTask.duration;
+				mTask.duration=TecalOrdoParams.getInstance().getTEMPS_ZONE_OVERLAP_MIN();
+			}
 		}		
 	
 		//int tempsIncompresible=mTask.egouttage+tempsDeplacement+mTask.duration;
@@ -134,7 +137,7 @@ public class TaskOrdo {
 		//deriveVar	= model.newIntVar(tempsIncompresible,tempsIncompresible+inderive, "deriveVar");
 		
 		//intervalBDD2 = model.newIntervalVar(startBDD, LinearExpr.constant(mTask.duration),endBDD, "interval" + suffix);
-		  
+		
 		intervalBDD=model.newIntervalVar(
 				startBDD,
 				LinearExpr.constant(mTask.duration),
@@ -144,7 +147,7 @@ public class TaskOrdo {
 		intervalReel=model.newIntervalVar(
 				startBDD,
 				//+1 car que ce soit strictement supérieur dans jobConstraints
-				LinearExpr.constant(mTask.duration+tps+1),
+				LinearExpr.constant(mTask.duration+tempsDeplacement+mTask.derive),
 				//TODO best solution to finish ?
 				//deriveVar,
 				endReel,"");
@@ -152,7 +155,7 @@ public class TaskOrdo {
 	
 		
 	
-		//minimumDerive=model.newIntervalVar(	startBDD,LinearExpr.constant(tempsIncompresible),deriveNulle,"");
+		model.newIntervalVar(	startBDD,LinearExpr.constant(mTask.duration+tempsDeplacement),deriveNulle,"");
 		
 
 	}

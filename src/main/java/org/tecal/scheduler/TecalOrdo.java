@@ -476,6 +476,7 @@ public class TecalOrdo {
 		mOngoingWork=false;
 		printInfos();
 		hasSolution = false;
+		
 		mOutPutMsg.append("-----------------------------------------------------------------");
 		mOutPutMsg.append(System.getProperty("line.separator"));
 		if (status == CpSolverStatus.OPTIMAL || status == CpSolverStatus.FEASIBLE) {
@@ -790,48 +791,28 @@ public class TecalOrdo {
 				List<IntervalVar> listCumul = multiZoneIntervals.get(numzone);
 				ZoneType zt = zonesBDD.get(numzone);
 				// zone autorisant le "chevauchement" => zone contenant plus de 1 postes
-				IntVar capacity ;
+				int capacity ;
 				
 				if(numzone== mParams.getNUMZONE_ANODISATION() && mParams.getCAPACITE_ANODISATION() >0) {
 		        	//TODO changer: code lu qu au lancement
-					capacity=model.newIntVar(0, mParams.getCAPACITE_ANODISATION(), "capacity_of_" + numzone);
+					capacity= mParams.getCAPACITE_ANODISATION();
 				}
 				else 
-					capacity = model.newIntVar(0, zt.cumul, "capacity_of_" + numzone);
+					capacity =zt.cumul;
 					
-
+				
 				CumulativeConstraint cumul = model.addCumulative(capacity);
 
 				long[] zoneUsage = new long[listCumul.size()];
 				Arrays.fill(zoneUsage, 1);
 				cumul.addDemands(listCumul.toArray(new IntervalVar[0]), zoneUsage);
-				//cumulConstr.put(numzone, cumul);
+				
+				
 
 			}
 
 		}
-		// parse the intervals of single task machine that belongs to the "cumulative"
-		// machines (multi tasks machine)
-		for (Entry<Integer, List<IntervalVar>> entry : mCumulDemands.entrySet()) {
-			int idCumulZone = entry.getKey();
-			// get the constraint on the current "cumulative" machine
-			if (false) {//cumulConstr.containsKey(idCumulZone)) {
-				CumulativeConstraint cumul ;//= cumulConstr.get(idCumulZone);
-				List<IntervalVar> inters = entry.getValue();
-				
-				long[] zoneUsage = new long[inters.size()];
-				Arrays.fill(zoneUsage, 1);
-				//cumul.addDemands(inters.toArray(new IntervalVar[0]), zoneUsage);
-				
-				for (IntervalVar iv : inters) {
-					//cumul.addDemand(iv, 1);
-				}
-				if (mZoneToIntervals.containsKey(idCumulZone)) {
-					List<IntervalVar> intervalParZone = mZoneToIntervals.get(idCumulZone);
-					model.addNoOverlap(intervalParZone);
-				}
-			}
-		}
+		
 
 	}
 
@@ -861,10 +842,10 @@ public class TecalOrdo {
 				
 	
 				//TODO best solution to finish ?
-				model.addEquality(next.getStartBDD(), prev.getFinReel());
+				//model.addEquality(next.getStartBDD(), prev.getFinReel());
 				
-				//model.addLessOrEqual(next.getStartBDD(), prev.getFinReel());        
-				//model.addGreaterOrEqual(next.getStartBDD(), prev.getDeriveNulle());
+				model.addGreaterOrEqual(next.getStartBDD(), prev.getFinReel());        
+//				/model.addGreaterOrEqual(next.getStartBDD(), prev.getDeriveNulle());
 
 				
 
@@ -909,6 +890,7 @@ public class TecalOrdo {
 			}
 
 			for (ArrayList<IntervalVar> listZonesNoOverlap : listZonesNoOverlapParPont) {
+				System.out.println("size:"+listZonesNoOverlap.size());
 				model.addNoOverlap(listZonesNoOverlap);
 			}
 		}
@@ -948,77 +930,7 @@ public class TecalOrdo {
 	}
 
 
-	static IntervalVar getNoOverlapZone( IntVar mvtPont, int left, int right) {
-
-		IntervalVar before = model.newIntervalVar(model.newIntVar(0, horizon, ""), LinearExpr.constant(left), mvtPont,
-				"");
-
-		IntervalVar after = model.newIntervalVar(mvtPont, LinearExpr.constant(right), model.newIntVar(0, horizon, ""),
-				"");
-
-		return model.newIntervalVar(before.getStartExpr(), model.newIntVar(0, horizon, ""), after.getEndExpr(), "");
-
-	}
-
-	static IntervalVar getNoOverlapZone(LinearExpr mvtPont) {
-
-		IntervalVar before = model.newIntervalVar(model.newIntVar(0, horizon, ""),
-				LinearExpr.constant(TecalOrdoParams.getInstance().getTEMPS_MVT_PONT()), mvtPont, "");
-
-		IntervalVar after = model.newIntervalVar(mvtPont, LinearExpr.constant(TecalOrdoParams.getInstance().getTEMPS_MVT_PONT()),
-				model.newIntVar(0, horizon, ""), "");
-
-		return model.newIntervalVar(before.getStartExpr(), model.newIntVar(0, horizon, ""), after.getEndExpr(), "");
-
-	}
-
-	static IntervalVar getNoOverlapZone(LinearExpr mvtPont, int left, int right) {
-
-		IntervalVar before = model.newIntervalVar(model.newIntVar(0, horizon, ""), LinearExpr.constant(left), mvtPont,
-				"");
-
-		IntervalVar after = model.newIntervalVar(mvtPont, LinearExpr.constant(right), model.newIntVar(0, horizon, ""),
-				"");
-
-		return model.newIntervalVar(before.getStartExpr(), model.newIntVar(0, horizon, ""), after.getEndExpr(), "");
-
-	}
-
-	static IntervalVar getNoOverlapZone( IntVar mvtPont) {
-
-		IntervalVar before = model.newIntervalVar(model.newIntVar(0, horizon, ""),
-				LinearExpr.constant(TecalOrdoParams.getInstance().getTEMPS_MVT_PONT()), mvtPont, "");
-
-		IntervalVar after = model.newIntervalVar(mvtPont, LinearExpr.constant(TecalOrdoParams.getInstance().getTEMPS_MVT_PONT()),
-				model.newIntVar(0, horizon, ""), "");
-
-		return model.newIntervalVar(before.getStartExpr(), model.newIntVar(0, horizon, ""), after.getEndExpr(), "");
-
-	}
-
-	static IntervalVar getNoOverlapZone( IntVar mvtPontStart, IntVar mvtPontEnd) {
-
-		IntervalVar before = model.newIntervalVar(model.newIntVar(0, horizon, ""),
-				LinearExpr.constant(TecalOrdoParams.getInstance().getTEMPS_MVT_PONT()), mvtPontStart, "");
-
-		IntervalVar after = model.newIntervalVar(mvtPontEnd, LinearExpr.constant(TecalOrdoParams.getInstance().getTEMPS_MVT_PONT()),
-				model.newIntVar(0, horizon, ""), "");
-
-		return model.newIntervalVar(before.getStartExpr(), model.newIntVar(0, horizon, ""), after.getEndExpr(), "");
-
-	}
-
-	static IntervalVar getNoOverlapZone(IntervalVar mvt) {
-
-		IntervalVar before = model.newIntervalVar(model.newIntVar(0, horizon, ""),
-				LinearExpr.constant(TecalOrdoParams.getInstance().getTEMPS_MVT_PONT()), mvt.getStartExpr(), "");
-
-		IntervalVar after = model.newIntervalVar(mvt.getEndExpr(), LinearExpr.constant(TecalOrdoParams.getInstance().getTEMPS_MVT_PONT()),
-				model.newIntVar(0, horizon, ""), "");
-
-		return model.newIntervalVar(before.getStartExpr(), model.newIntVar(0, horizon, ""), after.getEndExpr(), "");
-
-	}
+	
 
 	public int getSource() {
 		return mSource;

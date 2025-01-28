@@ -140,17 +140,17 @@ public class JobType {
 			ListeZone lBridgeMoves=mBridgeMoves.get(bridge);
 
 			
-			
-			List<Integer> listeSecuP1P2 = Arrays.asList(12, 13, 14, 16, 17);
+			//todo fixe hard
+			List<Integer> listeSecuP1P2 = Arrays.asList(14, 16, 17);
 			
 			if(listeSecuP1P2.contains(taskOrdo.mTask.numzone) ) {
-				mNoOverlapP1P2.add(taskOrdo.intervalBDD);
+				mNoOverlapP1P2.add(taskOrdo.intervalReel);
 			}
 			
 			List<Integer> liste = Arrays.asList(1,35);
-			if(! taskOrdo.isOverlapable || taskOrdo.BloquePont() || liste.contains(taskOrdo.mTask.numzone) ) {
+			if(! taskOrdo.isOverlapable || taskOrdo.BloquePont() ) {
 			//if( taskOrdo.mTask.duration<180) {
-				lBridgeMoves.add(taskOrdo.intervalBDD);
+				lBridgeMoves.add(taskOrdo.intervalReel);
 			}
 			else
 			{
@@ -176,7 +176,7 @@ public class JobType {
 
 	
 
-	void addIntervalForModel (Map<List<Integer>, TaskOrdo> inAllTasks,Map<Integer, List<IntervalVar>> mZoneToIntervals,
+	void   addIntervalForModel(Map<List<Integer>, TaskOrdo> inAllTasks,Map<Integer, List<IntervalVar>> mZoneToIntervals,
 			Map<Integer,List<IntervalVar>> multiZoneIntervals,
 			Map<Integer, List<IntervalVar>> mCumulDemands) {
 
@@ -192,24 +192,22 @@ public class JobType {
 			Task task = tasksJob.get(taskID);
 			ZoneType  zt=SQL_DATA.getInstance().getZones().get(task.numzone);
 			
-				
+			TaskOrdo taskOrdo=mTaskOrdoList.get(taskID);	
 		
 			//todo check cas chargement
-			if(zt.cumul>1) {
+			if(zt.cumul>1 && task.numzone!=1 && task.numzone !=35) {
 				multiZoneIntervals.computeIfAbsent(task.numzone, (Integer k) -> new ArrayList<>());   
-				multiZoneIntervals.get(task.numzone).add(mTaskOrdoList.get(taskID).intervalBDD);
+				multiZoneIntervals.get(task.numzone).add(taskOrdo.intervalBDD);
 			}
 			else {
 				mZoneToIntervals.computeIfAbsent(task.numzone, (Integer k) -> new ArrayList<>());              
-				mZoneToIntervals.get(task.numzone).add(mTaskOrdoList.get(taskID).intervalBDD);
+				mZoneToIntervals.get(task.numzone).add(taskOrdo.intervalBDD);
 				
 				if(SQL_DATA.getInstance().getRelatedZones().containsKey(task.numzone)) {
 					int zoneToAdd=SQL_DATA.getInstance().getRelatedZones().get(task.numzone);
-					//mCumulDemands.add
-					if(!mCumulDemands.containsKey(zoneToAdd)) {
-						//mCumulDemands.put(zoneToAdd,new ArrayList<IntervalVar>());
-					}
-					//mCumulDemands.get(zoneToAdd).add(inter);
+					multiZoneIntervals.computeIfAbsent(zoneToAdd, (Integer k) -> new ArrayList<>());   
+					multiZoneIntervals.get(zoneToAdd).add(taskOrdo.intervalBDD);
+					
 				}
 
 			}
