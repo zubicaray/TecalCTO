@@ -395,8 +395,8 @@ public class TecalOrdo {
 		// --------------------------------------------------------------------------------------------
 		// CONSTRAINTES SUR CHAQUE POSTE
 		// --------------------------------------------------------------------------------------------		
-		//bridgesConstraints();
-		//brigesSecurity();		
+		bridgesConstraints();
+		brigesSecurity();		
 		// --------------------------------------------------------------------------------------------
 		// --------------------------------------------------------------------------------------------
 
@@ -813,10 +813,10 @@ public class TecalOrdo {
 				
 	
 				//TODO best solution to finish ?
-				model.addEquality(next.getStart(), prev.getFin());
+				//model.addEquality(next.getStart(), prev.getFin());
 				
-				//model.addLessOrEqual(next.getStart(), prev.getFin());        
-				//model.addGreaterOrEqual(next.getStart(), prev.getDeriveNulle());
+				model.addLessOrEqual(next.getStart(), prev.getFin());        
+				model.addGreaterOrEqual(next.getStart(), prev.getDeriveNulle());
 
 				
 

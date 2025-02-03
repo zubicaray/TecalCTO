@@ -208,7 +208,7 @@ public class JobType {
 			if(taskOrdo.isOverlapable || taskID ==indexAnod ||  taskID == mTaskOrdoList.size()-1 ) {
 				if(taskOrdo.BloquePont()) {
 					logger.info("Coloration en "+SQL_DATA.getInstance().getZones().get(taskOrdo.mTask.numzone).codezone+ ", job: "+name);
-					fin=taskOrdo.getEndBDD();
+					fin=taskOrdoNext.getStart();
 				}
 				else
 					fin=TecalOrdo.getForeward(TecalOrdo.model, (IntVar) taskOrdo.getStart(),mParams.getTEMPS_ANO_ENTRE_P1_P2());
@@ -261,7 +261,7 @@ public class JobType {
 			
 			IntervalVar inter=TecalOrdo.model.newIntervalVar(deb,TecalOrdo.model.newIntVar(0, TecalOrdo.horizon, "") ,end,"");
 			//todo check cas chargement
-			if(zt.cumul>1 && zt.numzone!=1 && zt.numzone!=35) {
+			if(zt.cumul>1 &&  zt.numzone!=35) {
 				multiZoneIntervals.computeIfAbsent(task.numzone, (Integer k) -> new ArrayList<>());   
 				multiZoneIntervals.get(task.numzone).add(inter);
 			}
