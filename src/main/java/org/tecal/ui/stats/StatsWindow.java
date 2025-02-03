@@ -60,7 +60,7 @@ public class StatsWindow extends JFrame {
 	            // Appliquer le modèle à la JTable
 	            table.setModel(tableModel);
 			} catch (SQLException e) {
-				// TODO Auto-generated catch block
+			
 				e.printStackTrace();
 			}
            

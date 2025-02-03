@@ -146,8 +146,6 @@ public class TaskOrdo {
 		intervalReel=model.newIntervalVar(
 				startBDD,
 				LinearExpr.constant(mTask.derive+mTask.egouttage+mTask.duration+tempsDeplacement),
-				//TODO best solution to finish ?
-				//deriveVar,
 				fin,"");
 		
 	

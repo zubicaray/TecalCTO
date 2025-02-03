@@ -13,3 +13,4 @@ histoSFTP
 deploy.sh
 dependency-reduced-pom.xml
 logs
+SCRIPTS/*jar

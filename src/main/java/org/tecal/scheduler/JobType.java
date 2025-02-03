@@ -303,8 +303,7 @@ public class JobType {
 			}
 			
 			if(task.numzone == CST.DECHARGEMENT_NUMZONE  || taskID==  tasksJob.size()-1) {
-				//TODO !! CHECk pourquoi 0 par defaut juste avant s
-				//new TaskOrdo(TecalOrdo.model,task.duration,derive, 0,task.egouttage,suffix);   
+
 				taskOrdo = new TaskOrdo(TecalOrdo.model,task,0,suffix);   
 			}
 			else {

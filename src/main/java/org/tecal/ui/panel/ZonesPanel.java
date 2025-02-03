@@ -74,7 +74,7 @@ import java.awt.*;
 				    tableModel.addRow(row);
 				}
 			} catch (SQLException e) {
-				// TODO Auto-generated catch block
+				
 				e.printStackTrace();
 			}
 
