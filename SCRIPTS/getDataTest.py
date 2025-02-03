@@ -12,18 +12,30 @@ conn = pyodbc.connect(
 # Exécution de la requête SQL
 query = """
 select 
-    DF.numficheproduction,DG.NumZone,DG.TempsAuPosteSecondes ,Z.derive
+    DF.numficheproduction,DG.NumZone,DG.TempsAuPosteSecondes ,TM.normal+DG.TempsEgouttageSecondes as dep
+    
+    ,Z.derive
 from   
     [DetailsGammesProduction]  DG 
     RIGHT OUTER JOIN   [DetailsFichesProduction] DF 
-    on   	DG.numficheproduction=DF.numficheproduction  
+    on   	DG.numficheproduction=DF.numficheproduction      
     COLLATE FRENCH_CI_AS  and 	DG.numligne=DF.NumLigne and DG.NumPosteReel=DF.NumPoste  
     INNER JOIN ZONES  Z on DG.Numzone=Z.Numzone  
+    LEFT OUTER JOIN [DetailsGammesProduction]  DG2
+         on   	DG.numficheproduction=DG2.numficheproduction and
+            DG.numligne+1=DG2.numligne
+    LEFT OUTER JOIN ZONES Z2
+         on DG2.Numzone=Z2.Numzone  
+    LEFT OUTER JOIN TempsDeplacements TM
+        on TM.depart=Z.NumZone and TM.arrivee=Z2.NumZone
   
     where DF.numficheproduction in 
-    ('00085171','00085172','00085173')
-    --,'00085174','00085175','00085176','00085177',    '00085178','00085179','00085180',
-    --'00085181','00085182','00085183','00085184',    '00085185','00085186','00085187','00085188','00085189','00085190','00085191',    '00085192','00085193','00085194','00085195','00085196','00085197','00085198',    '00085199','00085200','00085201','00085202','00085203','00085204','00085205',    '00085206','00085207','00085208','00085209','00085210','00085211','00085212',    '00085213','00085214','00085215','00085216')    
+        ('00085171')--,'00085172','00085173')--,
+        --'00085174','00085175','00085176','00085177','00085178','00085179','00085180',
+        --'00085181','00085182','00085183','00085184','00085185','00085186','00085187','00085188','00085189',
+        --'00085191','00085192','00085193','00085194','00085195','00085196','00085197','00085198','00085190',    
+        --'00085199','00085200','00085201','00085202','00085203','00085204','00085205','00085206','00085207',
+        --'00085208','00085209','00085210','00085211','00085212','00085213','00085214','00085215','00085216')    
     order by DF.numficheproduction, DG.NumLigne
 """
 cursor = conn.cursor()
@@ -43,11 +55,14 @@ for row in results:
     else:
         temps = row.TempsAuPosteSecondes 
     derive = row.derive
-    
+    if row.dep==None:
+        de=0
+    else:
+        dep=row.dep
     # Ajout des données par job
     if numficheproduction not in jobs_data:
         jobs_data[numficheproduction] = []
-    jobs_data[numficheproduction].append((num_zone, temps,derive))
+    jobs_data[numficheproduction].append((num_zone, temps,dep,derive))
 
 # Convertir le dictionnaire en liste imbriquée
 jobs_data_list = [jobs_data[job] for job in sorted(jobs_data)]

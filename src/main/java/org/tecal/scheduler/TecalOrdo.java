@@ -311,6 +311,8 @@ public class TecalOrdo {
 			mBarreLabels.put(i, i+" - "+gamme);
 			res.put(i,b);
 		}
+		
+		System.out.println("nb jobs: "+CST.gammesTest.length);
 
 		return res;
 	}
@@ -415,7 +417,7 @@ public class TecalOrdo {
 		// CONSTRAINTES SUR CHAQUE POSTE
 		// --------------------------------------------------------------------------------------------		
 		bridgesConstraints();
-		brigesSecurity();		
+		//brigesSecurity();		
 		// --------------------------------------------------------------------------------------------
 		// --------------------------------------------------------------------------------------------
 		// sur les postes d'oxy, faire en sorte que le pont 2 ne puisse pas croiser le
@@ -786,7 +788,7 @@ public class TecalOrdo {
 				List<IntervalVar> intervalParZone = mZoneToIntervals.get(numzone);
 				model.addNoOverlap(intervalParZone);
 			}
-			else
+			
 			if (multiZoneIntervals.containsKey(numzone) ) {
 				List<IntervalVar> listCumul = multiZoneIntervals.get(numzone);
 				ZoneType zt = zonesBDD.get(numzone);
@@ -807,7 +809,7 @@ public class TecalOrdo {
 				Arrays.fill(zoneUsage, 1);
 				cumul.addDemands(listCumul.toArray(new IntervalVar[0]), zoneUsage);
 				
-				
+				System.out.println("numzone: "+numzone+" , size:"+multiZoneIntervals.get(numzone).size());
 
 			}
 
@@ -842,10 +844,10 @@ public class TecalOrdo {
 				
 	
 				//TODO best solution to finish ?
-				//model.addEquality(next.getStartBDD(), prev.getFinReel());
+				model.addEquality(next.getStartBDD(), prev.getFinReel());
 				
-				model.addGreaterOrEqual(next.getStartBDD(), prev.getFinReel());        
-//				/model.addGreaterOrEqual(next.getStartBDD(), prev.getDeriveNulle());
+				//model.addLessOrEqual(next.getStartBDD(), prev.getFinReel());        
+				//model.addGreaterOrEqual(next.getStartBDD(), prev.getDeriveNulle());
 
 				
 

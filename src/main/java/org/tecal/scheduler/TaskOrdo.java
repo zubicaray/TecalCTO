@@ -22,6 +22,7 @@ public class TaskOrdo {
 	private IntVar deriveNulle;
 
 	IntervalVar intervalReel;
+	IntervalVar intervalDerive;
 
 
 	int tempsDeplacement;
@@ -121,14 +122,18 @@ public class TaskOrdo {
 		
 		
 		tempsDeplacement=mTask.egouttage+tps;
-		if(mTask.duration+mTask.derive>=TecalOrdoParams.getInstance().getTEMPS_ZONE_OVERLAP_MIN()){
+		if(mTask.derive>0 && mTask.duration+mTask.derive>=TecalOrdoParams.getInstance().getTEMPS_ZONE_OVERLAP_MIN()){
 			isOverlapable=true;
+			mTask.derive=0;
 			if(mTask.duration<TecalOrdoParams.getInstance().getTEMPS_ZONE_OVERLAP_MIN()){
-				mTask.derive-=TecalOrdoParams.getInstance().getTEMPS_ZONE_OVERLAP_MIN()-mTask.duration;
+				//mTask.derive=TecalOrdoParams.getInstance().getTEMPS_ZONE_OVERLAP_MIN()-mTask.duration;
+				
+				System.out.println("dérive:"+mTask.derive);
 				mTask.duration=TecalOrdoParams.getInstance().getTEMPS_ZONE_OVERLAP_MIN();
 			}
 		}		
 	
+		//
 		//int tempsIncompresible=mTask.egouttage+tempsDeplacement+mTask.duration;
 		startBDD 	= model.newIntVar(0, TecalOrdo.horizon, "start" + suffix); 
 		endBDD 		= model.newIntVar(0, TecalOrdo.horizon, "end"   + suffix);		
@@ -147,15 +152,15 @@ public class TaskOrdo {
 		intervalReel=model.newIntervalVar(
 				startBDD,
 				//+1 car que ce soit strictement supérieur dans jobConstraints
-				LinearExpr.constant(mTask.duration+tempsDeplacement+mTask.derive),
-				//TODO best solution to finish ?
+				LinearExpr.constant(mTask.duration+tempsDeplacement),
+				//TODO best solution to finish ?	
 				//deriveVar,
 				endReel,"");
 		
 	
 		
 	
-		model.newIntervalVar(	startBDD,LinearExpr.constant(mTask.duration+tempsDeplacement),deriveNulle,"");
+		//intervalDerive=model.newIntervalVar(	startBDD,LinearExpr.constant(mTask.duration+tempsDeplacement),deriveNulle,"");
 		
 
 	}

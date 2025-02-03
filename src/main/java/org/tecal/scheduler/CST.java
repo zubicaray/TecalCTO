@@ -26,13 +26,19 @@ public class CST {
 	
 	public final static boolean TEST_FIXED_JOBS=false;  
 	
+	public final static String big_test[] = {
+			"000001","000020","000020","000020","000020","000020","000024","000024","000024","000024","000047","000054","000116","000117","000117","000117","000119","000127","000146","000169","000200","000243","000352","000601","000601","000601","000601","000735","000770","000773","000775","000776","000776","000776","000776","000776","000776","000776","000776","000776","000811","000811","000818","000818","000818","000818"	
+	};
 	
-	
-	public final static String gammesTest[] = {
+	public final static String small_test_3[] = {
 			"000776","000735","000020"
 			//,"000601","000776",
 			//"000020","000818","000243","000024","000811"
 	};
+	public final static String small_test_1[] = {
+			"000776"
+	};
+	public final static String gammesTest[] =big_test;
 	
 	public static HashMap<String, String> transformStringToMap(String input) {
         HashMap<String, String> map = new HashMap<>();
@@ -116,11 +122,10 @@ public class CST {
 	
 	
 	//------------------------------------------------------------
-	public final static int TEMPS_MAX_SOLVEUR		=10;
+	public final static int TEMPS_MAX_SOLVEUR		=20;
 	public final static int TEMPS_MAX_JOURNEE		=86400;
 	public final static int CAPACITE_ANODISATION 	=3;
 	public final static int ANODISATION_NUMZONE 	=15;
-	public final static int COLMATAGE_NUMZONE 		=32;
 	public final static int DECHARGEMENT_NUMZONE 	=35;
 	public final static int CHARGEMENT_NUMZONE 		=1;
 	public final static int NB_PONTS 				=2;

@@ -148,16 +148,17 @@ public class JobType {
 			}
 			
 			List<Integer> liste = Arrays.asList(1,35);
-			if(! taskOrdo.isOverlapable || taskOrdo.BloquePont() ) {
+			if(taskOrdo.mTask.numzone !=15 && (! taskOrdo.isOverlapable || taskOrdo.BloquePont()) ) {
 			//if( taskOrdo.mTask.duration<180) {
 				lBridgeMoves.add(taskOrdo.intervalReel);
 			}
 			else
 			{
-				IntervalVar interval_var_deb = TecalOrdo.getForewardZone( (IntVar) taskOrdo.getStartBDD(),40);
-				IntervalVar interval_var_fin = TecalOrdo.getBackwardZone( (IntVar) taskOrdo.getFinBDD(),40);
+				IntervalVar interval_var_deb = TecalOrdo.getForewardZone( (IntVar) taskOrdo.getStartBDD(),30);
+				IntervalVar interval_var_fin = TecalOrdo.getBackwardZone( (IntVar) taskOrdo.getFinReel(),
+						taskOrdo.tempsDeplacement+30);
 				
-				if(taskID ==indexAnod ) {
+				if(taskOrdo.mTask.numzone ==15 ) {
 					//mNoOverlapP1P2.add(interval_var_deb);
 					//mNoOverlapP1P2.add(interval_var_fin);
 					mBridgeMoves.get(0).add(interval_var_deb);
@@ -195,18 +196,18 @@ public class JobType {
 			TaskOrdo taskOrdo=mTaskOrdoList.get(taskID);	
 		
 			//todo check cas chargement
-			if(zt.cumul>1 && task.numzone!=1 && task.numzone !=35) {
+			if(zt.cumul>1  && task.numzone !=35) {
 				multiZoneIntervals.computeIfAbsent(task.numzone, (Integer k) -> new ArrayList<>());   
-				multiZoneIntervals.get(task.numzone).add(taskOrdo.intervalBDD);
+				multiZoneIntervals.get(task.numzone).add(taskOrdo.intervalReel);
 			}
 			else {
 				mZoneToIntervals.computeIfAbsent(task.numzone, (Integer k) -> new ArrayList<>());              
-				mZoneToIntervals.get(task.numzone).add(taskOrdo.intervalBDD);
+				mZoneToIntervals.get(task.numzone).add(taskOrdo.intervalReel);
 				
 				if(SQL_DATA.getInstance().getRelatedZones().containsKey(task.numzone)) {
 					int zoneToAdd=SQL_DATA.getInstance().getRelatedZones().get(task.numzone);
 					multiZoneIntervals.computeIfAbsent(zoneToAdd, (Integer k) -> new ArrayList<>());   
-					multiZoneIntervals.get(zoneToAdd).add(taskOrdo.intervalBDD);
+					multiZoneIntervals.get(zoneToAdd).add(taskOrdo.intervalReel);
 					
 				}
 
@@ -253,7 +254,8 @@ public class JobType {
 					logger.info("TPS NUL !!!!  entre idzone: "+task.numzone+" et "+taskSuivante.numzone+"  -------------------");
 				}
 				else {					
-					tps = gestionVitesseManutention(tps);										
+					tps = gestionVitesseManutention(tps);		
+					System.out.println("task "+taskID+" tps= "+(task.egouttage+tps));
 				}
 				taskOrdo = new TaskOrdo(TecalOrdo.model,task,tps,suffix);   
 				

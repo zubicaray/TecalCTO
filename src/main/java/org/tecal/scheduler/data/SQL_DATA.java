@@ -807,14 +807,15 @@ public ResultSet getVisuProd(java.util.Date inDate) {
 	String fin=toSQLServerFormat(dt);
 
     // Create and execute a SELECT SQL statement.
-    String selectSql = "select distinct  DG.numficheproduction as [N° OF], 	DC.NumGammeANodisation as [gamme ],DC.NumBarre as  [barre] \r\n"
+    String selectSql = "select distinct  DG.numficheproduction as [N° OF], 	DC.NumGammeAnodisation as [gamme ],DC.NumBarre as  [barre] \r\n"
     		+ "from   	[DetailsGammesProduction]  DG 	\r\n"
     		+ "LEFT OUTER JOIN   [DetailsFichesProduction] DF 	on   		\r\n"
     		+ "DG.numficheproduction=DF.numficheproduction COLLATE FRENCH_CI_AS and 		\r\n"
     		+ "DG.numligne=DF.NumLigne  and DF.NumLigne=1 	\r\n"
-    		+ "INNER JOIN ( select distinct numficheproduction,NumGammeANodisation,NumBarre from [DetailsChargesProduction] where numligne=1\r\n"
+    		+ "INNER JOIN ( select distinct numficheproduction,NumGammeANodisation,NumBarre "
+    		+ "from [DetailsChargesProduction] where numligne=1 \r\n"
     		+ ") DC 	\r\n"
-    		+ "on   		DC.numficheproduction=DF.numficheproduction  COLLATE FRENCH_CI_AS \r\n"
+    		+ "on   DC.numficheproduction=DF.numficheproduction  COLLATE FRENCH_CI_AS \r\n"
     		+ "WHERE		DF.DateEntreePoste >=  '"+deb+"'  and DF.DateEntreePoste < '"+fin+"'      "
     		+ "order by DG.numficheproduction ,DC.NumBarre"
 
@@ -850,7 +851,7 @@ public HashMap<String, String>  getFicheGamme(String[] listeOF) {
         		+ "from  [DetailsChargesProduction] DC"
         		+ " INNER JOIN   [DetailsFichesProduction] DF "
         		+ "on   "
-        		+ "	DC.numficheproduction=DF.numficheproduction   COLLATE FRENCH_CI_AS "
+        		+ "	DC.NumLigne=1 and DC.numficheproduction=DF.numficheproduction   COLLATE FRENCH_CI_AS "
 
         		+" and DF.numficheproduction in ("+toClause(listeOF)+")  order by DateEntreePoste " ;
         try {
