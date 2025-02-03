@@ -518,9 +518,7 @@ public class TecalOrdo {
 			mOutPutMsg.append("Pas de solution trouvée.");
 			logger.info("Pas de solution trouvée.");
 			mOutPutMsg.append(System.getProperty("line.separator"));
-			
-			//TODO: garder les job en cours !!!
-			
+	
 		
 			//
 			arrayAllJobs.clear();
@@ -649,7 +647,7 @@ public class TecalOrdo {
 			SwingUtilities.invokeLater(() -> {
 
 				final GanttChart ganttTecal = new GanttChart("Gantt Chart prod du 02/11/2023");
-				ganttTecal.prod_diag(CST.mListeOf26janvier, CST.getDate("20240126"));
+				//ganttTecal.prod_diag(CST.mListeOf26janvier, CST.getDate("20240126"));
 				ganttTecal.pack();
 				ganttTecal.setSize(new java.awt.Dimension(1500, 870));
 				RefineryUtilities.centerFrameOnScreen(ganttTecal);
@@ -768,7 +766,6 @@ public class TecalOrdo {
 				int capacity ;
 				
 				if(numzone== mParams.getNUMZONE_ANODISATION() && mParams.getCAPACITE_ANODISATION() >0) {
-		        	//TODO changer: code lu qu au lancement
 					capacity=mParams.getCAPACITE_ANODISATION();
 				}
 				else 
@@ -807,13 +804,7 @@ public class TecalOrdo {
 				TaskOrdo prev=job.mTaskOrdoList.get(taskID);
 				TaskOrdo next=job.mTaskOrdoList.get(taskID+1);
 
-				// last OK
-				// le debut de la zone suivante doit etre compris
-				// entre le début et la fin de la dérive
-				
-	
-				//TODO best solution to finish ?
-				//model.addEquality(next.getStart(), prev.getFin());
+
 				
 				model.addLessOrEqual(next.getStart(), prev.getFin());        
 				model.addGreaterOrEqual(next.getStart(), prev.getDeriveNulle());
@@ -1008,7 +999,7 @@ public class TecalOrdo {
 	}
 
 	public boolean isWorking() {
-		// TODO Auto-generated method stub
+		
 		return mOngoingWork;
 	}
 
