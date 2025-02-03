@@ -45,9 +45,9 @@ public class StatsMensuel extends JPanel {
 
         // Créer le graphique
         chart = ChartFactory.createTimeSeriesChart(
-                "temps anodisation par semaine", // Titre du graphique
+                "qualité de la production par semaine", // Titre du graphique
                 "Date",                           // Axe des X
-                "heures",                         // Axe des Y
+                "taux de dépassement en cuves",                         // Axe des Y
                 dataset,                          // Dataset
                 true,                             // Inclure une légende
                 true,                             // Info tooltips
@@ -114,8 +114,8 @@ public class StatsMensuel extends JPanel {
 
    
     private void createDataset() {
-        TimeSeries rawSeries = new TimeSeries("Temps en anodisation ");
-        TimeSeries smoothedSeries = new TimeSeries("Durée lissée");
+        TimeSeries rawSeries = new TimeSeries("taux de dépassement des temps");
+        TimeSeries smoothedSeries = new TimeSeries("taux lissé");
 
         // Récupérer les nouvelles dates
         Date startDate = startDateChooser.getDate();
@@ -129,20 +129,51 @@ public class StatsMensuel extends JPanel {
         // Initialiser la requête SQL
         String query = String.format("""
                 DECLARE @DateDebut DATE = '%s'; 
-                DECLARE @DateFin DATE = '%s';
+				DECLARE @DateFin DATE = '%s';
+				
+				SELECT
+				    DATEPART(YEAR, F1.DateEntreePoste) AS Year,
+				    DATEPART(WEEK, F1.DateEntreePoste) AS WeekNumber,
+				        SUM(CASE
+				            WHEN   DATEDIFF(SECOND, F1.DateEntreePoste, F1.DateSortiePoste)-G1.TempsAuPosteSecondes <0
+				            THEN 2*(G1.TempsAuPosteSecondes-DATEDIFF(SECOND, F1.DateEntreePoste, F1.DateSortiePoste))
+				            ELSE DATEDIFF(SECOND, F1.DateEntreePoste, F1.DateSortiePoste)-Z.derive- G1.TempsAuPosteSecondes
+				        END )* 100.0
+				        / SUM(G1.TempsAuPosteSecondes)   as TX_ERREUR
+				
+				
+				from
+				    [DetailsGammesProduction]  G1
+				    LEFT OUTER JOIN [DetailsGammesProduction]  G2
+				        on G1.numficheproduction=G2.numficheproduction
+				        and G1.NumLigne+1=G2.NumLigne
+				        and G1.TempsAuPosteSecondes >0
+				    RIGHT OUTER JOIN [DetailsFichesProduction] F1
+				        on  G1.numficheproduction=F1.numficheproduction
+				    LEFT OUTER JOIN   [DetailsFichesProduction] F2
+				        on G1.numficheproduction=F2.numficheproduction
+				        and F1.NumLigne+1=F2.NumLigne
+				    INNER JOIN ZONES  Z on G1.Numzone=Z.Numzone
+				    WHERE 	G1.NumPosteReel=F1.NumPoste and G2.NumPosteReel=F2.NumPoste
+				        AND
+				        Z.NumZone not in (1,35)
+				        AND
+				        (
+				            DATEDIFF(SECOND, F1.DateEntreePoste, F1.DateSortiePoste)>
+				            (G1.TempsAuPosteSecondes +Z.derive+20)
+				            OR
+				            DATEDIFF(SECOND, F1.DateEntreePoste, F1.DateSortiePoste)<(G1.TempsAuPosteSecondes -20)
+				        )
+				         AND F1.NumFicheProduction in (
+				            select distinct NumFicheProduction from DetailsFichesProduction
+				            where DateEntreePoste >= @DateDebut    AND DateSortiePoste < @DateFin
+				        )
+				        
+				GROUP BY
+				    DATEPART(YEAR, F1.DateEntreePoste),
+				    DATEPART(WEEK, F1.DateEntreePoste)
+				ORDER BY Year, WeekNumber;
 
-                SELECT 
-                    DATEPART(YEAR, DateEntreePoste) AS Year,
-                    DATEPART(WEEK, DateEntreePoste) AS WeekNumber,
-                    SUM(DATEDIFF(HOUR, DateEntreePoste, DateSortiePoste)) AS DureeOccupation
-                FROM DetailsFichesProduction
-                WHERE NumPoste IN (18, 19, 20)
-                    AND DateEntreePoste >= @DateDebut
-                    AND DateSortiePoste < @DateFin
-                GROUP BY 
-                    DATEPART(YEAR, DateEntreePoste), 
-                    DATEPART(WEEK, DateEntreePoste)
-                ORDER BY Year, WeekNumber;
                 """, dateDebut, dateFin);
 
         // Listes pour stocker les données brutes
@@ -157,7 +188,7 @@ public class StatsMensuel extends JPanel {
             while (resultSet.next()) {
                 int year = resultSet.getInt("Year");
                 int week = resultSet.getInt("WeekNumber");
-                int duration = resultSet.getInt("DureeOccupation");
+                int duration = resultSet.getInt("TX_ERREUR");
 
                 Week w = new Week(week, year);
                 rawSeries.add(w, duration);
