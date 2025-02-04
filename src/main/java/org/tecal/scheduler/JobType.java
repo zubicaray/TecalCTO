@@ -117,21 +117,19 @@ public class JobType {
 
 	void makeSafetyBetweenBridges(long time) {
 		
-		//if(indexAnod==-1) return ;
-		
+
 		
 		IntVar deb = null;
 		IntVar fin= null;
 		
-	
-		//System.out.println("Job "+name);
+
 		for (int taskID = 0; taskID < mTaskOrdoList.size(); ++taskID) {
 						
 			if(mTaskOrdoList.get(taskID).zoneSecu) {
 				deb=(IntVar) mTaskOrdoList.get(taskID).getStart();
 				
 				if(indexAnod > 0 && taskID-1 == indexAnod) {
-					deb=TecalOrdo.getBackward(TecalOrdo.model,(IntVar) mTaskOrdoList.get(indexAnod).getEndBDD(),
+					deb=TecalOrdo.getBackward((IntVar) mTaskOrdoList.get(indexAnod).getEndBDD(),
 							mParams.getTEMPS_ANO_ENTRE_P1_P2());
 				}
 				
@@ -144,19 +142,18 @@ public class JobType {
 				
 				int taskID2 = taskID+1;
 				
-				while(taskID2 < mTaskOrdoList.size() && mTaskOrdoList.get(taskID2).zoneSecu )
+				while(taskID2 < mTaskOrdoList.size() && mTaskOrdoList.get(taskID2).zoneSecu)
 				{
 					taskID2++;
 				}
 				
 				if(taskID2>taskID+1) {
 					if(indexAnod > 0 && taskID2 == indexAnod) {
-						fin=TecalOrdo.getForeward(TecalOrdo.model,(IntVar) mTaskOrdoList.get(indexAnod).getStart(),mParams.getTEMPS_ANO_ENTRE_P1_P2());;
-						
+						fin=TecalOrdo.getForeward((IntVar) mTaskOrdoList.get(indexAnod).getStart(),mParams.getTEMPS_ANO_ENTRE_P1_P2());
 					}else {
 						fin=(IntVar) mTaskOrdoList.get(taskID2-1).getEndBDD();
 					}
-					
+					//on recommence après avec taskID=taskID2 ( +1 par la boucle )
 					taskID=taskID2;
 				}
 				mNoOverlapP1P2.add(TecalOrdo.model.newIntervalVar( deb,TecalOrdo.model.newIntVar(0,TecalOrdo.horizon, "") ,fin, ""));
@@ -199,7 +196,7 @@ public class JobType {
 			ListeZone lBridgeMoves=bridgesMoves.get(bridge);
 			
 			if(taskID==0) {
-				deb=TecalOrdo.getBackward(TecalOrdo.model, (IntVar) taskOrdoNext.getStart(),
+				deb=TecalOrdo.getBackward((IntVar) taskOrdoNext.getStart(),
 						taskOrdo.tempsDeplacement+mParams.getTEMPS_ANO_ENTRE_P1_P2());
 				continue;
 			}
@@ -211,16 +208,16 @@ public class JobType {
 					fin=taskOrdoNext.getStart();
 				}
 				else
-					fin=TecalOrdo.getForeward(TecalOrdo.model, (IntVar) taskOrdo.getStart(),mParams.getTEMPS_ANO_ENTRE_P1_P2());
+					fin=TecalOrdo.getForeward( (IntVar) taskOrdo.getStart(),mParams.getTEMPS_ANO_ENTRE_P1_P2());
 				
 				//System.out.println("deb:"+deb+", fin-deb="+ fin);
 				lBridgeMoves.add(TecalOrdo.model.newIntervalVar(deb, TecalOrdo.model.newIntVar(0, TecalOrdo.horizon, ""), fin ,""));
 				
 				if(taskID != mTaskOrdoList.size()-1) {
 					if(taskOrdo.BloquePont())
-						deb=TecalOrdo.getBackward(TecalOrdo.model, (IntVar) taskOrdoNext.getStart(),taskOrdo.tempsDeplacement);
+						deb=TecalOrdo.getBackward( (IntVar) taskOrdoNext.getStart(),taskOrdo.tempsDeplacement);
 					else
-						deb=TecalOrdo.getBackward(TecalOrdo.model, (IntVar) taskOrdoNext.getStart(),taskOrdo.tempsDeplacement
+						deb=TecalOrdo.getBackward((IntVar) taskOrdoNext.getStart(),taskOrdo.tempsDeplacement
 								+mParams.getTEMPS_ANO_ENTRE_P1_P2());
 				}					
 						

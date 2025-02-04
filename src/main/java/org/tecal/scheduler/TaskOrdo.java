@@ -26,6 +26,7 @@ public class TaskOrdo {
 	IntervalVar minimumDerive;
 	IntervalVar maximumDerive;
 	int tempsDeplacement;
+	int tempsIncompresible;
 
 	boolean zoneSecu=false;
 	Task mTask;
@@ -139,7 +140,7 @@ public class TaskOrdo {
 		//deriveVar	= model.newIntVar(tempsIncompresible,tempsIncompresible+inderive, "deriveVar");
 		
 		
-		int tempsIncompresible=mTask.egouttage+tempsDeplacement+mTask.duration;
+		tempsIncompresible=mTask.egouttage+tempsDeplacement+mTask.duration;
 		
 		intervalBDD = model.newIntervalVar(startBDD, LinearExpr.constant(mTask.duration),endBDD, "interval" + suffix);
 		  

@@ -150,8 +150,15 @@
 				<artifactId>exec-maven-plugin</artifactId>
 				<version>3.0.0</version>
 				<configuration>
-					<mainClass>com.example.Main</mainClass>
-					<arguments></arguments>
+					<executable>java</executable>
+	                <arguments>
+	                    <argument>-XX:+UseG1GC</argument>
+	                    <argument>-Xms512m</argument>
+	                    <argument>-Xmx4g</argument>
+	                    <argument>-cp</argument>
+	                    <classpath/>
+	                    <argument>com.exemple.MainClass</argument>
+	                </arguments>
 					<systemProperties>
 						<systemProperty>
 							<key>com.sun.management.jmxremote</key>

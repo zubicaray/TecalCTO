@@ -37,13 +37,13 @@ from
             OR
             DATEDIFF(SECOND, F1.DateEntreePoste, F1.DateSortiePoste)<(G1.TempsAuPosteSecondes -20)
         )
-        AND F1.DateEntreePoste >= '2024-07-18'    AND F1.DateSortiePoste <='2024-07-19' 
+        AND F1.DateEntreePoste >= '20240718'    AND F1.DateSortiePoste <='20240719' 
         order by F1.numficheproduction, F1.NumLigne
 
 
 
-DECLARE @DateDebut DATE = '20230204';
-DECLARE @DateFin DATE = '20240203';
+DECLARE @DateDebut DATE = '2024-02-04';
+DECLARE @DateFin DATE = '2025-02-15';
 
 SELECT
     DATEPART(YEAR, F1.DateEntreePoste) AS Year,
@@ -77,7 +77,11 @@ from
             OR
             DATEDIFF(SECOND, F1.DateEntreePoste, F1.DateSortiePoste)<(G1.TempsAuPosteSecondes -20)
         )
-        --AND F1.DateEntreePoste >= @DateDebut    AND F1.DateSortiePoste < @DateFin
+         AND F1.NumFicheProduction in (
+            select distinct NumFicheProduction from DetailsFichesProduction
+            where DateEntreePoste >= @DateDebut    AND DateSortiePoste < @DateFin
+        )
+        
 GROUP BY
     DATEPART(YEAR, F1.DateEntreePoste),
     DATEPART(WEEK, F1.DateEntreePoste)
