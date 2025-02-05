@@ -44,7 +44,7 @@ public class CST {
 	public final static String testSmall[] ={"000601","000485","000024"};
 		
 	
-	public final static String gammesTest[] =big_test;
+	public final static String gammesTest[] =testSmall;
 	
 	public static HashMap<String, String> transformStringToMap(String input) {
         HashMap<String, String> map = new HashMap<>();

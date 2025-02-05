@@ -15,7 +15,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -183,13 +182,11 @@ public class TecalOrdo {
 	
 	private boolean mOngoingWork=false;
 
-
-
 	public static CpModel model;
 	public static CpSolver solver;
 
 	static public int horizon = 0;
-
+	static public boolean extra_overlap = true;
 	private StringBuilder mOutPutMsg;
 
 	public StringBuilder getOutputMsg() {
@@ -218,8 +215,7 @@ public class TecalOrdo {
 
 		arrayAllJobs=new ArrayList<>();
 
-		Loader.loadNativeLibraries();
-		
+		Loader.loadNativeLibraries();		
 
 		mOutPutMsg = new StringBuilder();
 		model = new CpModel();
@@ -637,7 +633,8 @@ public class TecalOrdo {
 				//System.out.println("debut next:-> "+(allTasks.get(key).tempsDeplacement+finBDD+allTasks.get(key).egouttage));
 
 
-				AssignedTask assignedTask = new AssignedTask(barre, taskID, task.numzone, debut, (int) (finBDD - debut),(int) derive);
+				AssignedTask assignedTask = new AssignedTask(barre, taskID, task.numzone, debut, 
+						(int) (finBDD - debut),(int) derive);
 				mAssignedTasksByNumzone.computeIfAbsent(task.numzone, (Integer k) -> new ArrayList<>());
 				mAssignedTasksByNumzone.get(task.numzone).add(assignedTask);
 

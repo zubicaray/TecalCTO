@@ -27,6 +27,8 @@ public class TaskOrdo {
 	IntervalVar maximumDerive;
 	int tempsDeplacement;
 	int tempsIncompresible;
+	int deriveIncompresible;
+	int durationReel;
 
 	boolean zoneSecu=false;
 	Task mTask;
@@ -121,12 +123,17 @@ public class TaskOrdo {
 		
 		
 		int overlap=TecalOrdoParams.getInstance().getTEMPS_ZONE_OVERLAP_MIN();
-		
-		if(mTask.duration<overlap  && mTask.duration+mTask.derive>=overlap) {
-			mTask.derive-=TecalOrdoParams.getInstance().getTEMPS_ZONE_OVERLAP_MIN()-mTask.duration;
-			mTask.duration=TecalOrdoParams.getInstance().getTEMPS_ZONE_OVERLAP_MIN();
+		int durationReel=mTask.duration;
+		if(TecalOrdo.extra_overlap && mTask.duration<overlap  && mTask.duration+mTask.derive>=overlap) {
+			//on peut créer une nouvelle zone chevauchable
+			deriveIncompresible=TecalOrdoParams.getInstance().getTEMPS_ZONE_OVERLAP_MIN()-mTask.duration;
+			mTask.derive-=deriveIncompresible;
+			//System.out.println("mTask.numzone:"+mTask.numzone);
+			//System.out.println("before:"+durationReel);
+			durationReel=TecalOrdoParams.getInstance().getTEMPS_ZONE_OVERLAP_MIN();
+			//System.out.println("after:"+durationReel);
 		}
-		if(mTask.duration>=overlap){
+		if(durationReel>=overlap){
 			isOverlapable=true;
 		}	
 		
@@ -140,13 +147,13 @@ public class TaskOrdo {
 		//deriveVar	= model.newIntVar(tempsIncompresible,tempsIncompresible+inderive, "deriveVar");
 		
 		
-		tempsIncompresible=mTask.egouttage+tempsDeplacement+mTask.duration;
+		tempsIncompresible=mTask.egouttage+tempsDeplacement+durationReel;
 		
 		intervalBDD = model.newIntervalVar(startBDD, LinearExpr.constant(mTask.duration),endBDD, "interval" + suffix);
 		  
 		intervalReel=model.newIntervalVar(
 				startBDD,
-				LinearExpr.constant(mTask.derive+mTask.egouttage+mTask.duration+tempsDeplacement),
+				LinearExpr.constant(mTask.derive+mTask.egouttage+durationReel+tempsDeplacement),
 				fin,"");
 		
 	

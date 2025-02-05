@@ -282,7 +282,7 @@ public class JobType {
 	private void buildTaskOrdo(Map<List<Integer>, TaskOrdo> allTasks,  int taskID, Task task,
 			String suffix, ZoneType zt) {
 		
-	
+		//System.out.println("taskID:"+taskID);
 		if(!isFixed) {
 
 			if(task.numzone == CST.DECHARGEMENT_NUMZONE )
