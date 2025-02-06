@@ -1,59 +1,16 @@
 use ANODISATION;
 
-select 
-    F1.DateEntreePoste,F1.numficheproduction,F1.NumLigne,Z.CodeZone,
-    DATEDIFF(SECOND, F1.DateEntreePoste, F1.DateSortiePoste),Z.derive,
-    G1.TempsAuPosteSecondes ,
-    CASE 
-        WHEN   DATEDIFF(SECOND, F1.DateEntreePoste, F1.DateSortiePoste)-G1.TempsAuPosteSecondes <0 
-        THEN 2*(G1.TempsAuPosteSecondes-DATEDIFF(SECOND, F1.DateEntreePoste, F1.DateSortiePoste))
-        ELSE DATEDIFF(SECOND, F1.DateEntreePoste, F1.DateSortiePoste)-Z.derive- G1.TempsAuPosteSecondes 
-    END AS TPS_ECART
-from   
-    [DetailsGammesProduction]  G1 
-    LEFT OUTER JOIN [DetailsGammesProduction]  G2
-        on G1.numficheproduction=G2.numficheproduction 
-        and G1.NumLigne+1=G2.NumLigne
-    RIGHT OUTER JOIN [DetailsFichesProduction] F1 
-        on  G1.numficheproduction=F1.numficheproduction 
-    LEFT OUTER JOIN   [DetailsFichesProduction] F2 
-        on G1.numficheproduction=F2.numficheproduction 
-        and F1.NumLigne+1=F2.NumLigne 
-    INNER JOIN ZONES  Z on G1.Numzone=Z.Numzone
-    WHERE 	G1.NumPosteReel=F1.NumPoste and G2.NumPosteReel=F2.NumPoste  
-        AND
-        Z.NumZone not in (1,35) AND
-        F1.numficheproduction in 
-        ('00085171','00085172','00085173',
-        '00085174','00085175','00085176','00085177','00085178','00085179','00085180',
-        '00085181','00085182','00085183','00085184','00085185','00085186','00085187','00085188','00085189',
-        '00085191','00085192','00085193','00085194','00085195','00085196','00085197','00085198','00085190',    
-        '00085199','00085200','00085201','00085202','00085203','00085204','00085205','00085206','00085207',
-        '00085208','00085209','00085210','00085211','00085212','00085213','00085214','00085215','00085216')   
-        AND
-        (
-            DATEDIFF(SECOND, F1.DateEntreePoste, F1.DateSortiePoste)>
-            (G1.TempsAuPosteSecondes +Z.derive+20) 
-            OR
-            DATEDIFF(SECOND, F1.DateEntreePoste, F1.DateSortiePoste)<(G1.TempsAuPosteSecondes -20)
-        )
-        AND F1.DateEntreePoste >= '20240718'    AND F1.DateSortiePoste <='20240719' 
-        order by F1.numficheproduction, F1.NumLigne
 
-
-
-DECLARE @DateDebut DATE = '2024-02-04';
-DECLARE @DateFin DATE = '2025-02-15';
 
 SELECT
-    DATEPART(YEAR, F1.DateEntreePoste) AS Year,
-    DATEPART(WEEK, F1.DateEntreePoste) AS WeekNumber,
-        SUM(CASE
-            WHEN   DATEDIFF(SECOND, F1.DateEntreePoste, F1.DateSortiePoste)-G1.TempsAuPosteSecondes <0
-            THEN 1*(G1.TempsAuPosteSecondes-DATEDIFF(SECOND, F1.DateEntreePoste, F1.DateSortiePoste))
-            ELSE DATEDIFF(SECOND, F1.DateEntreePoste, F1.DateSortiePoste)-Z.derive- G1.TempsAuPosteSecondes
-        END )* 100.0
-        / SUM(G1.TempsAuPosteSecondes)   as TX_ERREUR
+    G1.numficheproduction,
+    Z.CodeZone,
+    CASE
+        WHEN   DATEDIFF(SECOND, F1.DateEntreePoste, F1.DateSortiePoste)-G1.TempsAuPosteSecondes <0
+        THEN 1*(G1.TempsAuPosteSecondes-DATEDIFF(SECOND, F1.DateEntreePoste, F1.DateSortiePoste))
+        ELSE DATEDIFF(SECOND, F1.DateEntreePoste, F1.DateSortiePoste)-Z.derive- G1.TempsAuPosteSecondes
+    END,
+    G1.TempsAuPosteSecondes
 
 
 from
@@ -69,7 +26,9 @@ from
     INNER JOIN ZONES  Z on G1.Numzone=Z.Numzone
     WHERE 	G1.NumPosteReel=F1.NumPoste and G2.NumPosteReel=F2.NumPoste
         AND
-        Z.NumZone not in (1,35)
+        Z.NumZone in (3,4,9,13,14,16)
+        AND 
+        G1.TempsAuPosteSecondes>0
         AND
         (
             DATEDIFF(SECOND, F1.DateEntreePoste, F1.DateSortiePoste)>
@@ -79,10 +38,52 @@ from
         )
          AND F1.NumFicheProduction in (
             select distinct NumFicheProduction from DetailsFichesProduction
-            where DateEntreePoste >= @DateDebut    AND DateSortiePoste < @DateFin
+            where DateEntreePoste >= '20240204'    AND DateSortiePoste < '20250215'
         )
         
+
+ORDER BY G1.NumFicheProduction
+
+select * from DetailsGammesProduction where numficheproduction='00081439'
+select * from DetailsFichesProduction where numficheproduction='00081346'
+
+DECLARE @DateDebut DATE = '2024-02-04';
+DECLARE @DateFin DATE = '2025-02-15';
+
+SELECT
+
+    CONVERT(DATE, F1.DateEntreePoste) AS Day,
+    SUM(CASE
+        WHEN DATEDIFF(SECOND, F1.DateEntreePoste, F1.DateSortiePoste) - G1.TempsAuPosteSecondes < 0
+        THEN 1 * (G1.TempsAuPosteSecondes - DATEDIFF(SECOND, F1.DateEntreePoste, F1.DateSortiePoste))
+        ELSE DATEDIFF(SECOND, F1.DateEntreePoste, F1.DateSortiePoste) - Z.derive - G1.TempsAuPosteSecondes
+    END) * 100.0 / SUM(G1.TempsAuPosteSecondes) AS TX_ERREUR
+FROM
+    [DetailsGammesProduction] G1
+    LEFT OUTER JOIN [DetailsGammesProduction] G2
+        ON G1.numficheproduction = G2.numficheproduction
+        AND G1.NumLigne + 1 = G2.NumLigne
+    RIGHT OUTER JOIN [DetailsFichesProduction] F1
+        ON G1.numficheproduction = F1.numficheproduction
+    LEFT OUTER JOIN [DetailsFichesProduction] F2
+        ON G1.numficheproduction = F2.numficheproduction
+        AND F1.NumLigne + 1 = F2.NumLigne
+    INNER JOIN ZONES Z
+        ON G1.Numzone = Z.Numzone
+WHERE  
+    G1.NumPosteReel = F1.NumPoste 
+    AND G2.NumPosteReel = F2.NumPoste
+    AND Z.NumZone IN (3, 4, 9, 13, 14, 16)
+    AND G1.TempsAuPosteSecondes > 0
+    AND (
+        DATEDIFF(SECOND, F1.DateEntreePoste, F1.DateSortiePoste) > (G1.TempsAuPosteSecondes + Z.derive + 20)
+        OR DATEDIFF(SECOND, F1.DateEntreePoste, F1.DateSortiePoste) < (G1.TempsAuPosteSecondes - 20)
+    )
+    AND F1.NumFicheProduction IN (
+        SELECT DISTINCT NumFicheProduction 
+        FROM DetailsFichesProduction
+        WHERE DateEntreePoste >= @DateDebut AND DateSortiePoste < @DateFin
+    )
 GROUP BY
-    DATEPART(YEAR, F1.DateEntreePoste),
-    DATEPART(WEEK, F1.DateEntreePoste)
-ORDER BY Year, WeekNumber;
+    CONVERT(DATE, F1.DateEntreePoste)
+ORDER BY  Day;

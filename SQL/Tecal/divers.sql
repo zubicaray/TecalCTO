@@ -70,9 +70,9 @@ select Numzone,codezone,derive ,securitePonts
 from ANODISATION.dbo.ZONES  where derive >0 --where Numzone in (13,6,4)
 
 
-select * from ANODISATION.dbo.TempsDeplacements  where depart=1 and arrivee=3
+select * from ANODISATION.dbo.TempsDeplacements  where depart=13 and arrivee=11
 
-select * from ANODISATION.dbo.TempsDeplacements  where depart=3 and arrivee=1
+select * from ANODISATION.dbo.TempsDeplacements  where depart=6 and arrivee=1
 
 
 select AVG(normal) from ANODISATION.dbo.TempsDeplacements  where

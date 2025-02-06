@@ -78,7 +78,7 @@ import org.tecal.scheduler.data.SQL_DATA;
 import org.tecal.scheduler.types.Barre;
 import org.tecal.ui.frame.CPO_LOGS_GANT;
 import org.tecal.ui.panel.ZonesPanel;
-import org.tecal.ui.stats.StatsMensuel;
+import org.tecal.ui.stats.StatsQualite;
 import org.tecal.ui.stats.StatsWindow;
 import org.tecal.ui.stats.TauxAnodisationPanel;
 
@@ -240,13 +240,13 @@ public class TecalGUI {
 		buildParamsTab(tabbedPaneMain);
 
 		TauxAnodisationPanel  taux= new TauxAnodisationPanel();
-		StatsMensuel mens=new StatsMensuel();
+		StatsQualite mens=new StatsQualite();
 		JTabbedPane statTabbedPaneMain = new JTabbedPane(SwingConstants.LEFT);
 		ImageIcon iconStat = new ImageIcon(this.getClass().getResource("/icons8-statistic-16.png"));
 
 		tabbedPaneMain.addTab("Statistiques",iconStat,statTabbedPaneMain);
-		statTabbedPaneMain.addTab("Taux anodisation", null, taux, null);
-		statTabbedPaneMain.addTab("production", null, mens, null);
+		statTabbedPaneMain.addTab("Production", null, taux, null);
+		statTabbedPaneMain.addTab("Qualité", null, mens, null);
 
 		frmTecalOrdonnanceur.getContentPane().setLayout(groupLayout);
 	}
