@@ -45,6 +45,7 @@ public class CST {
 		
 	
 	public final static String gammesTest[] =testSmall;
+	public final static String TEST_PROD="{1=45-000152, 2=7-000152, 3=31-000152, 4=S3-000776, 5=S1-000776, 6=S4-000776, 7=2-000169, 8=55-000020, 9=N3-000601, 10=D3-000008, 11=20-000686, 12=32-000161, 13=36-000164, 14=18-000024, 15=26-000485}";
 	
 	public static HashMap<String, String> transformStringToMap(String input) {
         HashMap<String, String> map = new HashMap<>();
@@ -111,6 +112,10 @@ public class CST {
 	// temps de sécurité entre deux gammes différentes sur un même poste d'ano
 	public final static int TEMPS_ANO_ENTRE_P1_P2 = 30;		
 	public final static int TEMPS_MINIMAL_AVANT_DEMARRAGE = 240;	
+	
+	public final static int TEMPS_PONT_MEME_CUVE = 34;	
+	public final static int TEMPS_PONT_PAR_CUVE = 3;	
+	public final static int TEMPS_PONT_BASE = 42;	
 	
 	
 	

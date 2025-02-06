@@ -67,8 +67,32 @@ select
    
 
 select Numzone,codezone,derive ,securitePonts
-from ANODISATION.dbo.ZONES  where derive >0
-where Numzone in (13,6,4)
+from ANODISATION.dbo.ZONES  where derive >0 --where Numzone in (13,6,4)
+
+
+select * from ANODISATION.dbo.TempsDeplacements  where depart=1 and arrivee=3
+
+select * from ANODISATION.dbo.TempsDeplacements  where depart=3 and arrivee=1
+
+
+select AVG(normal) from ANODISATION.dbo.TempsDeplacements  where
+normal !=0  and (depart=arrivee or depart=arrivee )
+--42
+select AVG(normal) from ANODISATION.dbo.TempsDeplacements  where
+normal !=0  and (depart=arrivee+1 or depart+1=arrivee )
+
+--45
+select AVG(normal) from ANODISATION.dbo.TempsDeplacements  where
+normal !=0  and (depart=arrivee+2 or depart+2=arrivee )
+--46
+select AVG(normal) from ANODISATION.dbo.TempsDeplacements  where
+normal !=0  and (depart=arrivee+3 or depart+3=arrivee )
+--49
+select AVG(normal) from ANODISATION.dbo.TempsDeplacements  where
+normal !=0  and (depart=arrivee+4 or depart+4=arrivee )
+--53
+select AVG(normal) from ANODISATION.dbo.TempsDeplacements  where
+normal !=0  and (depart=arrivee+5 or depart+5=arrivee )
 
 --code ?
 --*6565/sdA

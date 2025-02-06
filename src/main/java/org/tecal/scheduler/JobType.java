@@ -312,7 +312,17 @@ public class JobType {
 					//System.out.println("---------TPS NUL !!!!---------------");
 					//System.out.println("task.numzone "+task.numzone);
 					//System.out.println("task.numzone "+taskSuivante.numzone);
-					logger.info("TPS NUL !!!!  entre idzone: "+task.numzone+" et "+taskSuivante.numzone+"  -------------------");
+					String zone1=SQL_DATA.getInstance().getZones().get(task.numzone).codezone;
+					String zone2=SQL_DATA.getInstance().getZones().get(taskSuivante.numzone).codezone;
+					if(task.numzone==taskSuivante.numzone)
+						tps=CST.TEMPS_PONT_MEME_CUVE;
+					else {
+						int ecart=Math.abs(task.numzone-taskSuivante.numzone);
+						tps=CST.TEMPS_PONT_BASE+CST.TEMPS_PONT_PAR_CUVE*ecart;
+					}					
+					logger.info("------------------------------------------------------------");	
+					logger.info("TPS NUL !!!!  entre idzone: "+zone1+" et "+zone2);
+					logger.info("TPS inféré temporairement: "+tps);
 				}
 				else {					
 					tps = gestionVitesseManutention(tps);										

@@ -272,10 +272,7 @@ public class TecalOrdo {
 
 	public LinkedHashMap<Integer, Barre> setBarresTestWithName() {
 
-		HashMap<String, String> testMap = CST.transformStringToMap("{1=N4-000747, 2=22-000097, 3=55-000747, 4=25-000020, 5=26-000485, " +
-	            "6=11-000097, 7=23-000105, 8=N2-000601, 9=32-000778, 10=29-000024, " +
-	            "11=20-000747, 12=39-000811, 13=24-000747, 14=14-000152, " +
-	            "15=15-000152, 16=16-000152, 17=17-000152, 18=18-000152, 19=19-000152}");
+		HashMap<String, String> testMap = CST.transformStringToMap(CST.TEST_PROD);
 		
 		//testMap = CST.transformStringToMap("{1=1-000001, 2=2-000002, 3=3-000003, 4=4-000004, 5=5-000152, 6=6-000152, 7=7-000152, 8=8-000152, 10=10-000152}");
 		LinkedHashMap<Integer, Barre> res= new LinkedHashMap<>();
@@ -372,7 +369,7 @@ public class TecalOrdo {
 
 	public LinkedHashMap<Integer, Barre> runTest() {
 
-		mBarresSettings = setBarresTest();	
+		mBarresSettings = setBarresTestWithName();	
 		run();
 		return mBarresSettings;
 	}
