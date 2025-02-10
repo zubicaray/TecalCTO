@@ -45,7 +45,8 @@ public class CST {
 		
 	
 	public final static String gammesTest[] =testSmall;
-	public final static String TEST_PROD="{1=45-000152, 2=7-000152, 3=31-000152, 4=S3-000776, 5=S1-000776, 6=S4-000776, 7=2-000169, 8=55-000020, 9=N3-000601, 10=D3-000008, 11=20-000686, 12=32-000161, 13=36-000164, 14=18-000024, 15=26-000485}";
+	//6=30-000369, 
+	public final static String TEST_PROD="{1=23-000713, 2=24-000169, 3=D1-000169, 4=N3-000747, 5=N2-000601, 7=44-000697, 8=19-000174, 9=25-000174}";
 	
 	public static HashMap<String, String> transformStringToMap(String input) {
         HashMap<String, String> map = new HashMap<>();

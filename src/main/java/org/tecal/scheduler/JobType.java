@@ -205,7 +205,7 @@ public class JobType {
 			if(taskOrdo.isOverlapable || taskID ==indexAnod ||  taskID == mTaskOrdoList.size()-1 ) {
 				if(taskOrdo.BloquePont()) {
 					logger.info("Coloration en "+SQL_DATA.getInstance().getZones().get(taskOrdo.mTask.numzone).codezone+ ", job: "+name);
-					fin=taskOrdoNext.getStart();
+					fin=taskOrdo.getEndBDD();
 				}
 				else
 					fin=TecalOrdo.getForeward( (IntVar) taskOrdo.getStart(),mParams.getTEMPS_ANO_ENTRE_P1_P2());

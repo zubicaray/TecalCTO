@@ -382,8 +382,7 @@ public class GanttChart extends JFrame {
 		 cumulTask.forEach((numzone, tasks) -> {
 			 tasks.forEach( task->{
 				ZoneCumul zc=zonesCumul.get(task.numzone);
-		    	int end=task.duration+(int)task.start;
-
+		    
 		    	task.IdPosteZoneCumul=zc.getPosteIdx((int)task.start, task.derive);
 
 

@@ -65,12 +65,21 @@ select
     in  ('00087384','00087385','00087386','00087387','00087388','00087389','00087391','00087392','00087393','00087394',
     '00085171','00085172','00085173','00085174','00085175','00085176','00085177','00085178','00085179','00085180','00085181','00085182','00085183','00085184',    '00085185','00085186','00085187','00085188','00085189','00085190','00085191',    '00085192','00085193','00085194','00085195','00085196','00085197','00085198',    '00085199','00085200','00085201','00085202','00085203','00085204','00085205',    '00085206','00085207','00085208','00085209','00085210','00085211','00085212',    '00085213','00085214','00085215','00085216')    
    
-
+select *
+from ANODISATION.dbo.POSTES
 select Numzone,codezone,derive ,securitePonts
 from ANODISATION.dbo.ZONES  where derive >0 --where Numzone in (13,6,4)
 
+-- ->DEC
+update ANODISATION.dbo.TempsDeplacements set normal=48 where depart=1 and arrivee=3
+update ANODISATION.dbo.TempsDeplacements set normal=48 where depart=3 and arrivee=1
+-- C04
+update ANODISATION.dbo.TempsDeplacements set normal=58 where depart=1 and arrivee=6 
+update ANODISATION.dbo.TempsDeplacements set normal=58 where depart=6 and arrivee=1
 
-select * from ANODISATION.dbo.TempsDeplacements  where depart=13 and arrivee=11
+
+
+    select * from ANODISATION.dbo.TempsDeplacements  where depart=1 and arrivee=6
 
 select * from ANODISATION.dbo.TempsDeplacements  where depart=6 and arrivee=1
 

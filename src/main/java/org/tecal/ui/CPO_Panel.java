@@ -537,7 +537,11 @@ public class CPO_Panel extends JPanel {
 
 	    @Override
 	    public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-	        Barre barre = barres.get(rowIndex);
+	    	 if (false ==(rowIndex >= 0 && rowIndex < barres.size())) 
+	        	return;
+	    	 
+	    	 
+	    	Barre barre = barres.get(rowIndex);
 	        switch (columnIndex) {
 		        case 1: // nom barre
 	                barre.setBarreNom  (aValue.toString());

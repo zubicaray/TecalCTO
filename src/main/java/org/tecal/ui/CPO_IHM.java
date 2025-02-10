@@ -51,7 +51,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.tecal.scheduler.CST;
 import org.tecal.scheduler.TecalOrdo;
-import org.tecal.scheduler.TecalOrdoParams;
 import org.tecal.scheduler.data.SQL_DATA;
 import org.tecal.scheduler.types.AssignedTask;
 import org.tecal.scheduler.types.Barre;
