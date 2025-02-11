@@ -34,17 +34,17 @@ public class CST {
 			"000818","000812","000811","000022","000601","000109","000818"};
 	
 	public final static String big_test[] = {
-			"000001","000020","000020","000020","000020","000020","000024","000024","000024","000024",
+			"000747","000001","000020","000020","000020","000020","000020","000024","000024","000024","000024",
 			"000047","000054","000116","000117","000117","000117","000119","000127","000146","000169",
 			"000200","000243","000352","000601","000601","000601","000601","000735","000770","000773",
 			"000775","000776","000776","000776","000776","000776","000776","000776","000776","000776",
 			"000811","000811","000818","000818","000818","000818"	
 	};
 	
-	public final static String testSmall[] ={"000601","000485","000024"};
+	public final static String testSmall[] ={"000747"};
 		
 	
-	public final static String gammesTest[] =testSmall;
+	public final static String gammesTest[] =big_test;
 	//6=30-000369, 
 	public final static String TEST_PROD="{1=23-000713, 2=24-000169, 3=D1-000169, 4=N3-000747, 5=N2-000601, 7=44-000697, 8=19-000174, 9=25-000174}";
 	
@@ -105,7 +105,7 @@ public class CST {
 	// temps min du zone pour qu'on la considere overlapable
 	// ie qu'elle autorise d'aller d'autre mvt pendant son traitement
 	public final static int TEMPS_ZONE_OVERLAP_MIN=180;	
-	// temps incompresible d'un mouvement d epoint
+	// temps incompresible d'un mouvement de pont
 	public final static int TEMPS_MVT_PONT_MIN_JOB = 23;
 	
 	// temps autour d'un début de grosse zone

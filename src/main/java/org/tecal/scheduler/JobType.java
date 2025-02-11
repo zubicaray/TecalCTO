@@ -122,13 +122,29 @@ public class JobType {
 		IntVar deb = null;
 		IntVar fin= null;
 		
+		boolean hasP1_secu=false;
+		boolean hasP2_secu=false;
+		
 
 		for (int taskID = 0; taskID < mTaskOrdoList.size(); ++taskID) {
+			
+			TaskOrdo task=mTaskOrdoList.get(taskID);
+			
+			
 						
-			if(mTaskOrdoList.get(taskID).zoneSecu) {
+			if(task.zoneSecu) {
+				
+				if(task.mTask.numzone<CST.ANODISATION_NUMZONE)
+					hasP1_secu=true;
+				
+				if(task.mTask.numzone>CST.ANODISATION_NUMZONE)
+					hasP2_secu=true;
+				
+				
+				
 				deb=(IntVar) mTaskOrdoList.get(taskID).getStart();
 				
-				if(indexAnod > 0 && taskID-1 == indexAnod) {
+				if(indexAnod > 0 && taskID+1 == indexAnod) {
 					deb=TecalOrdo.getBackward((IntVar) mTaskOrdoList.get(indexAnod).getEndBDD(),
 							mParams.getTEMPS_ANO_ENTRE_P1_P2());
 				}
@@ -156,7 +172,7 @@ public class JobType {
 					//on recommence après avec taskID=taskID2 ( +1 par la boucle )
 					taskID=taskID2;
 				}
-				mNoOverlapP1P2.add(TecalOrdo.model.newIntervalVar( deb,TecalOrdo.model.newIntVar(0,TecalOrdo.horizon, "") ,fin, ""));
+				//mNoOverlapP1P2.add(TecalOrdo.model.newIntervalVar( deb,TecalOrdo.model.newIntVar(0,TecalOrdo.horizon, "") ,fin, ""));
 								
 				
 			}
@@ -164,6 +180,18 @@ public class JobType {
 						
 		}
 		
+		if(indexAnod > 0 && hasP1_secu ==false) {
+			//cas où on arrive directe en ano sans
+			//passer par un rincage 
+			//mNoOverlapP1P2.add(TecalOrdo.getNoOverlapZone(mTaskOrdoList.get(indexAnod).getStart()));
+			
+		}
+		if(indexAnod > 0 && hasP2_secu ==false) {
+			//cas où on arrive directe en ano sans
+			//passer par un rincage 
+			//mNoOverlapP1P2.add(TecalOrdo.getNoOverlapZone(mTaskOrdoList.get(indexAnod).getEndBDD()));
+			
+		}
 	}
 
 	void clear() {

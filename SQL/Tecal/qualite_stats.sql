@@ -56,8 +56,12 @@ SELECT
     SUM(CASE
         WHEN DATEDIFF(SECOND, F1.DateEntreePoste, F1.DateSortiePoste) - G1.TempsAuPosteSecondes < 0
         THEN 1 * (G1.TempsAuPosteSecondes - DATEDIFF(SECOND, F1.DateEntreePoste, F1.DateSortiePoste))
-        ELSE DATEDIFF(SECOND, F1.DateEntreePoste, F1.DateSortiePoste) - Z.derive - G1.TempsAuPosteSecondes
-    END) * 100.0 / SUM(G1.TempsAuPosteSecondes) AS TX_ERREUR
+        WHEN DATEDIFF(SECOND, F1.DateEntreePoste, F1.DateSortiePoste) > (G1.TempsAuPosteSecondes + Z.derive + 20)
+        THEN DATEDIFF(SECOND, F1.DateEntreePoste, F1.DateSortiePoste) - Z.derive - G1.TempsAuPosteSecondes
+        ELSE 0
+    END) * 100.0 / 
+    SUM(G1.TempsAuPosteSecondes
+    ) AS TX_ERREUR
 FROM
     [DetailsGammesProduction] G1
     LEFT OUTER JOIN [DetailsGammesProduction] G2
@@ -70,15 +74,13 @@ FROM
         AND F1.NumLigne + 1 = F2.NumLigne
     INNER JOIN ZONES Z
         ON G1.Numzone = Z.Numzone
+   
 WHERE  
     G1.NumPosteReel = F1.NumPoste 
     AND G2.NumPosteReel = F2.NumPoste
     AND Z.NumZone IN (3, 4, 9, 13, 14, 16)
     AND G1.TempsAuPosteSecondes > 0
-    AND (
-        DATEDIFF(SECOND, F1.DateEntreePoste, F1.DateSortiePoste) > (G1.TempsAuPosteSecondes + Z.derive + 20)
-        OR DATEDIFF(SECOND, F1.DateEntreePoste, F1.DateSortiePoste) < (G1.TempsAuPosteSecondes - 20)
-    )
+   
     AND F1.NumFicheProduction IN (
         SELECT DISTINCT NumFicheProduction 
         FROM DetailsFichesProduction
