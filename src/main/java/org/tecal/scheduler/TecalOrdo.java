@@ -369,8 +369,8 @@ public class TecalOrdo {
 
 	public LinkedHashMap<Integer, Barre> runTest() {
 
-		//mBarresSettings = setBarresTestWithName();
-		mBarresSettings = setBarresTest();	
+		mBarresSettings = setBarresTestWithName();
+		//mBarresSettings = setBarresTest();	
 		run();
 		return mBarresSettings;
 	}

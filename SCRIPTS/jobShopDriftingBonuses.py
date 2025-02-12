@@ -7,11 +7,11 @@ from collections import defaultdict
 import types
 
 consts = types.SimpleNamespace()
-consts.MAX_TIME=20
-DERIVE=False
-MVT_BRIDGES=True
+consts.MAX_TIME=120
+
 
 PENALTIES= False
+SECURITY_P1_P2=True
 # if the task duration is above ALLOW_EXTRA_JOB_MOVE_TIME
 # the bridge can go else where
 consts.ALLOW_EXTRA_JOB_MOVE_TIME=180
@@ -20,7 +20,7 @@ consts.BRIDGE_MOVE_TIME=30
 #the frontiere between the two bridges areas
 consts.MIDDLE_MACHINE=15
 consts.C33_MACHINE=33
-consts.C0_MACHINE=0
+consts.C0_MACHINE=1
 consts.C35_MACHINE=35
 
 consts.CUMULS_MACHINE=[consts.MIDDLE_MACHINE,consts.C33_MACHINE,consts.C0_MACHINE,consts.C35_MACHINE]
@@ -61,14 +61,13 @@ def main() -> None:
    
 
     # Creates job intervals and add to the corresponding machine lists.
-    all_tasks = {}
-    scores = {}
+    all_tasks = {}   
     machine_to_intervals = collections.defaultdict(list)
     TPS_C15=0  
     #stat_overlap_zones(jobs_data)
 
     for job_id, job in enumerate(jobs_data):
-        scores[job_id] = model.NewIntVar(0, horizon, f'score_{job_id}')
+        
         for task_id, task in enumerate(job):
             
             machine, duration,tpsDep,derive = task
@@ -84,43 +83,42 @@ def main() -> None:
                     duration=consts.ALLOW_EXTRA_JOB_MOVE_TIME
                         
 
-           
-            derive=0
-
             suffix = f"_{job_id}_{task_id}"
             start_var = model.new_int_var(0, horizon, "start" + suffix)
             end_var = model.new_int_var(0, horizon, "end" + suffix)
             end_var_drift = model.new_int_var(0, horizon, "end drift" + suffix)
-            interval_var = model.new_interval_var(start_var, duration+tpsDep+derive, end_var, "interval" + suffix)
+            interval_var = model.new_interval_var(start_var, duration+tpsDep, end_var, "interval" + suffix)
             intervalDrift=model.new_interval_var(start_var, duration+tpsDep+derive, end_var_drift, "interval drift" + suffix)
             all_tasks[job_id, task_id] = task_type(
-                start=start_var, end=end_var_drift, interval=interval_var,
+                start=start_var, end=end_var, interval=interval_var,
                 intervalDrift=intervalDrift,endDrift=end_var_drift,
                 machine=machine,
                 duration=duration,derive=derive,tpsDep=tpsDep
             )
            
-            machine_to_intervals[machine].append(intervalDrift)
         
     
     
-    
-    bridgesMoves(model,jobs_data,machine_to_intervals,all_tasks,horizon)
-
-    set_no_overlap(all_machines,machine_to_intervals,model)
-    #makePenalties (model,jobs_data,all_tasks)
    
     for job_id, tasks in enumerate(jobs_data):
         for task_id in range(len(tasks) - 1):
+            suffix = f"_{job_id}_{task_id}"
             task=all_tasks[job_id, task_id]
-            #model.add(all_tasks[job_id, task_id + 1].start >= task.end)  
-            model.add(all_tasks[job_id, task_id + 1].start == task.endDrift)            
-            #model.add(all_tasks[job_id, task_id + 1].start <= all_tasks[job_id, task_id].endDrift)
-            #model.add(all_tasks[job_id, task_id + 1].start >= all_tasks[job_id, task_id].end)
+            taskNext=all_tasks[job_id, task_id+1]
+         
+            model.add(taskNext.start <= task.endDrift)
+            model.add(taskNext.start >= task.end)
 
+            interval_var=model.new_interval_var(task.start, model.new_int_var(0, horizon, "duree reelle" + suffix), 
+                        taskNext.start, "interval reel" + suffix)
+            machine_to_intervals[task.machine].append(interval_var)
    
 
+    bridgesMoves(model,jobs_data,machine_to_intervals,all_tasks,horizon)
 
+    set_no_overlap(all_machines,machine_to_intervals,model)
+
+    makePenalties (model,jobs_data,all_tasks)
 
     # Creates the solver and solve.
     solver = cp_model.CpSolver()
@@ -192,16 +190,13 @@ def main() -> None:
         gantt (assigned_jobs)
         #noOverlapGantt (solver)
 
-
-
         # Finally print the solution found.
         
         #print(output)
         print(f"Last unload: {assigned_jobs[35][len(assigned_jobs[35])-1].start}")
         print(f"Optimal Schedule Length: {solver.objective_value}")
         print(f"Temps en C15: {TPS_C15}")
-        print(f"Temps en cuves total: {horizon}")
-        
+        print(f"Temps en cuves total: {horizon}")       
        
 
         # Statistics.
@@ -321,8 +316,6 @@ def makePenalties (model,jobs_data,all_tasks) -> None:
         
             penalties.append(penalty)
            
-        
-
 def noOverlapGantt (solver) -> None:
     nooverlap_jobs = collections.defaultdict(list)
     for jobid, machines in NOOVERLAP_JOBS.items():
@@ -343,6 +336,7 @@ def noOverlapGantt (solver) -> None:
                 cpt+=1
 
     gantt(nooverlap_jobs)
+
 def set_no_overlap(all_machines,machine_to_intervals,model) ->None:
     cumulMachines32=[]
     # Create and add disjunctive constraints.
@@ -399,9 +393,9 @@ def  bridgesMoves (model,jobs_data,machine_to_intervals,all_tasks,horizon) ->Non
             suffix = f"_{job_id}_{task_id}"
             if(task.machine >=15) : bridge=1
 
-            if(task.machine in [14,16] ) :
+            if(task.machine in [13,14,16,17] ) :
             #if(task.machine in [14,16,17] ) :
-                securityZonesP1P2.append(task.intervalDrift)
+                securityZonesP1P2.append(task.interval)
                 
             if(task.machine ==1 ) :
                 start_var_fin = model.new_int_var(0, horizon, "start_var_fin" + suffix)
@@ -422,8 +416,8 @@ def  bridgesMoves (model,jobs_data,machine_to_intervals,all_tasks,horizon) ->Non
 
 
             if(task.duration < consts.ALLOW_EXTRA_JOB_MOVE_TIME):               
-                brigesMoves[bridge].append(task.intervalDrift)
-                NOOVERLAP_JOBS[job_id][task.machine].append(task.intervalDrift)
+                brigesMoves[bridge].append(task.interval)
+                NOOVERLAP_JOBS[job_id][task.machine].append(task.interval)
             else:               
                 start_var_fin = model.new_int_var(0, horizon, "start_var_fin" + suffix)
                 end_var_deb=model.new_int_var(0, horizon, "end_var_deb" + suffix)
@@ -456,7 +450,7 @@ def  bridgesMoves (model,jobs_data,machine_to_intervals,all_tasks,horizon) ->Non
         model.add_no_overlap(brigesMoves[brigeMoves])
     
    
-    #model.add_no_overlap(securityZonesP1P2)
+    if SECURITY_P1_P2: model.add_no_overlap(securityZonesP1P2)
 
 class ZoneCumul:
     def __init__(self, cumul):
@@ -555,9 +549,6 @@ def  gantt (assigned_jobs) ->None:
     # Afficher la figure
     plt.tight_layout()
     plt.show()
-
-
-
 
 if __name__ == "__main__":
     main()

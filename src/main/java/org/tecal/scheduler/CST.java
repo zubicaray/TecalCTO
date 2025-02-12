@@ -40,13 +40,18 @@ public class CST {
 			"000775","000776","000776","000776","000776","000776","000776","000776","000776","000776",
 			"000811","000811","000818","000818","000818","000818"	
 	};
-	
+	public final static String test747[] = {
+			"000747","000001","000020","000024",
+			"000047","000054","000116","000117","000119","000127","000146","000169"
+			
+	};
 	public final static String testSmall[] ={"000747"};
 		
 	
-	public final static String gammesTest[] =big_test;
+	public final static String gammesTest[] =test747;
 	//6=30-000369, 
-	public final static String TEST_PROD="{1=23-000713, 2=24-000169, 3=D1-000169, 4=N3-000747, 5=N2-000601, 7=44-000697, 8=19-000174, 9=25-000174}";
+	public final static String TEST_PROD="{1=S4-000776, 2=S1-000776, 3=S3-000776, 5=8-000293, 6=N2-000091, 7=1-000116, 8=47-000818, 9=52-000818, 10=13-000818, 11=39-000818, 12=56-000119}";
+			
 	
 	public static HashMap<String, String> transformStringToMap(String input) {
         HashMap<String, String> map = new HashMap<>();

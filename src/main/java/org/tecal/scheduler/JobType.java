@@ -144,7 +144,7 @@ public class JobType {
 				
 				deb=(IntVar) mTaskOrdoList.get(taskID).getStart();
 				
-				if(indexAnod > 0 && taskID+1 == indexAnod) {
+				if(indexAnod > 0 && taskID-1 == indexAnod) {
 					deb=TecalOrdo.getBackward((IntVar) mTaskOrdoList.get(indexAnod).getEndBDD(),
 							mParams.getTEMPS_ANO_ENTRE_P1_P2());
 				}
@@ -172,7 +172,7 @@ public class JobType {
 					//on recommence après avec taskID=taskID2 ( +1 par la boucle )
 					taskID=taskID2;
 				}
-				//mNoOverlapP1P2.add(TecalOrdo.model.newIntervalVar( deb,TecalOrdo.model.newIntVar(0,TecalOrdo.horizon, "") ,fin, ""));
+				mNoOverlapP1P2.add(TecalOrdo.model.newIntervalVar( deb,TecalOrdo.model.newIntVar(0,TecalOrdo.horizon, "") ,fin, ""));
 								
 				
 			}
@@ -183,13 +183,15 @@ public class JobType {
 		if(indexAnod > 0 && hasP1_secu ==false) {
 			//cas où on arrive directe en ano sans
 			//passer par un rincage 
-			//mNoOverlapP1P2.add(TecalOrdo.getNoOverlapZone(mTaskOrdoList.get(indexAnod).getStart()));
+			mNoOverlapP1P2.add(TecalOrdo.getNoOverlapZone(mTaskOrdoList.get(indexAnod).getStart()));
+			logger.info("pas de zones secu pour P1 pour le job: "+name);
 			
 		}
 		if(indexAnod > 0 && hasP2_secu ==false) {
 			//cas où on arrive directe en ano sans
 			//passer par un rincage 
-			//mNoOverlapP1P2.add(TecalOrdo.getNoOverlapZone(mTaskOrdoList.get(indexAnod).getEndBDD()));
+			mNoOverlapP1P2.add(TecalOrdo.getNoOverlapZone(mTaskOrdoList.get(indexAnod).getEndBDD()));
+			logger.info("pas de zones secu pour P2 pour le job: "+name);
 			
 		}
 	}

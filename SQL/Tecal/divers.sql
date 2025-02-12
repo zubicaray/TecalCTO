@@ -11,6 +11,10 @@ truncate  table [ANODISATION].dbo.DetailsFichesProduction;
 truncate  table [ANODISATION].dbo.DetailsPhasesProduction;
 truncate  table [ANODISATION].dbo.DetailsChargesProduction;
 
+
+select * from  ANODISATION.dbo.DetailsGammesAnodisation
+where numgamme='000747' order by numligne
+
 select count(*) from ANODISATION.dbo.DetailsFichesProduction --1707486
 where NumFicheProduction  between '00088384' and '00088384'
 
