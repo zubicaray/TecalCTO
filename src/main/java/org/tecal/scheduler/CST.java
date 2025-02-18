@@ -45,7 +45,7 @@ public class CST {
 			"000047","000054","000116","000117","000119","000127","000146","000169"
 			
 	};
-	public final static String testSmall[] ={"000747"};
+	public final static String testSmall[] ={"000601"};
 		
 	
 	public final static String gammesTest[] =test747;

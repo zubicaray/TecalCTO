@@ -12,6 +12,12 @@ public class AssignedTask {
 	public long start;
 	public long end;
 	public int duration;    
+	public int getDuration() {
+		return duration;
+	}
+	public void setDuration(int duration) {
+		this.duration = duration;
+	}
 	public int derive;    
 	// offset pour les zones cumul
 	public int IdPosteZoneCumul;

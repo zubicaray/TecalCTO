@@ -1,4 +1,5 @@
 
+-- last 15/02/2025 00088762
 select max(NumFicheProduction) from ANODISATION.dbo.DetailsFichesProduction
 
 ALTER INDEX ALL ON ANODISATION.dbo.DetailsFichesProduction REBUILD;

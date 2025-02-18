@@ -15,6 +15,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -369,8 +370,8 @@ public class TecalOrdo {
 
 	public LinkedHashMap<Integer, Barre> runTest() {
 
-		mBarresSettings = setBarresTestWithName();
-		//mBarresSettings = setBarresTest();	
+		//mBarresSettings = setBarresTestWithName();
+		mBarresSettings = setBarresTest();	
 		run();
 		return mBarresSettings;
 	}
@@ -482,13 +483,45 @@ public class TecalOrdo {
 			mOutPutMsg.append(System.getProperty("line.separator"));
 			int tpsAno=0;
 			createAssignedTasks();
-			for (AssignedTask assignedTask : mAssignedTasksByNumzone.get(CST.ANODISATION_NUMZONE)) {
-				
-				tpsAno+=assignedTask.duration;
-				
+			for (AssignedTask assignedTask : mAssignedTasksByNumzone.get(CST.ANODISATION_NUMZONE)) {				
+				tpsAno+=assignedTask.duration;				
 			}
 			mOutPutMsg.append("Heures en anodisation: "+secondsToHours(tpsAno));
+			
 			mOutPutMsg.append(System.getProperty("line.separator"));
+			
+			 // Calcul de la somme des durations par clé
+	        Map<Integer, Integer> sumByZone = new HashMap<>();
+	        int SumSum=0;
+	        for (Map.Entry<Integer, List<AssignedTask>> entry : mAssignedTasksByNumzone.entrySet()) {
+	        	if(entry.getKey() != CST.CHARGEMENT_NUMZONE && entry.getKey() != CST.DECHARGEMENT_NUMZONE ) {
+	        		int sum = entry.getValue().stream().mapToInt(AssignedTask::getDuration).sum();
+	 	            sumByZone.put(entry.getKey(), sum);
+	 	            SumSum+=sum;
+	        	}
+	           
+	        }
+	        // Tri par valeurs décroissantes
+	        LinkedHashMap<Integer, Integer> sortedByValueDesc = sumByZone.entrySet()
+	                .stream()
+	                .sorted(Map.Entry.<Integer, Integer>comparingByValue(Comparator.reverseOrder()))
+	                .collect(Collectors.toMap(
+	                        Map.Entry::getKey,
+	                        Map.Entry::getValue,
+	                        (e1, e2) -> e1,
+	                        LinkedHashMap::new
+	                ));
+
+	        // Affichage du résultat trié
+	        sortedByValueDesc.forEach(
+	        		(zone, sum) -> 
+	        		mOutPutMsg.append("Zone " + zonesBDD.get(zone).codezone + " : Somme des durations = " + secondsToHours(sum)+"\n")
+	        );
+
+	        
+	        
+			mOutPutMsg.append(System.getProperty("line.separator"));
+			mOutPutMsg.append("Temps total:"+SumSum);
 			mOutPutMsg.append(System.getProperty("line.separator"));
 
 			if (CST.PrintTaskTime) {

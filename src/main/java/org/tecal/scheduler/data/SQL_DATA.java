@@ -382,8 +382,8 @@ public  ResultSet getStatsAnodisation(String[] listeOF) {
                     DATEDIFF(SECOND, 
                         DateEntreePoste,DateSortiePoste) AS DureeOccupation
                 FROM DetailsFichesProduction
-                WHERE NumPoste IN (18, 19, 20)
-                  AND DateSortiePoste > @DateDebut
+                WHERE -- NumPoste IN (18, 19, 20) AND
+                  DateSortiePoste > @DateDebut
                   AND DateEntreePoste < @DateFin
                   AND NumFicheProduction IN (%s)
             )
@@ -395,7 +395,7 @@ public  ResultSet getStatsAnodisation(String[] listeOF) {
             FROM CTE_Durees,Postes P
             WHERE P.NumPoste=CTE_Durees.NumPoste
             GROUP BY P.NomPoste
-            ORDER BY P.NomPoste
+            ORDER BY durée desc --P.NomPoste
             """,paramsOF,paramsOF);
 	try {
 		resultSet = mStatement.executeQuery(requeteSQL);
