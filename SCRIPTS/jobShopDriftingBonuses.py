@@ -81,6 +81,7 @@ def main() -> None:
             start_var = model.new_int_var(0, horizon, "start" + suffix)
             end_var_min = model.new_int_var(0, horizon, "end" + suffix)
             end_var_max = model.new_int_var(0, horizon, "end drift" + suffix)
+
             interval_var_min = model.new_interval_var(start_var, duration+moveTime, end_var_min, "interval" + suffix)
             interval_var_max=model.new_interval_var(start_var, duration+moveTime+drifting, end_var_max, "interval drift" + suffix)
             all_tasks[job_id, task_id] = task_type(
@@ -454,7 +455,7 @@ def  gantt (assigned_jobs) ->None:
     zonesCumul[consts.MIDDLE_MACHINE]=ZoneCumul(cumul=3)
     zonesCumul[33]=ZoneCumul(cumul=2)
     zonesCumul[1]=ZoneCumul(cumul=2)
-    zonesCumul[35]=ZoneCumul(cumul=2)
+    
 
     # Création de la figure
     fig, ax = plt.subplots(figsize=(12, 8))

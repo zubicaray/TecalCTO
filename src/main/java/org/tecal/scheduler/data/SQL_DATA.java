@@ -390,7 +390,6 @@ public  ResultSet getStatsAnodisation(String[] listeOF) {
             SELECT
                 P.NomPoste,
                 CONVERT(VARCHAR(8), DATEADD(SECOND, SUM(DureeOccupation), '1900-01-01'), 108) AS durée,
-                --DATEDIFF(SECOND, @DateDebut, @DateFin) AS DureeTotalePeriode,
                 CAST(SUM(DureeOccupation) * 100.0 / NULLIF(DATEDIFF(SECOND, @DateDebut, @DateFin), 0) AS DECIMAL(10, 2)) AS 'taux occupation'
             FROM CTE_Durees,Postes P
             WHERE P.NumPoste=CTE_Durees.NumPoste
@@ -639,37 +638,29 @@ public boolean insertCalibrageGamme(String gamme,String of,java.util.Date d,int 
 public boolean updateTpsMvts(String of,boolean updateNoNull,int tpsAdjust) {
 	boolean res= false;
 
-	String req="Update  [TempsDeplacements] \r\n"
-			+ "SET normal=T.tps + "+tpsAdjust+"\r\n"
-			+ "FROM \r\n"
-			+ "	[dbo].[TempsDeplacements] TPS\r\n"
-			+ "	INNER JOIN (\r\n"
-			+ "\r\n"
-			+ "		select \r\n"
-			+ "			Z1.NumZone N1 ,--Z1.LibelleZone M1,\r\n"
-			+ "			Z2.NumZone N2,--Z2.LibelleZone M2,\r\n"
-			+ "			DATEDIFF(SECOND, F1.DateSortiePoste, F2.DateEntreePoste)-\r\n"
-			+ "				DP1.TempsEgouttageSecondes	as tps\r\n"
-			+ "		from \r\n"
-			+ "			DetailsFichesProduction  F1\r\n"
-			+ "			INNER JOIN DetailsFichesProduction  F2\r\n"
-			+ "			ON F1.NumFicheProduction =F2.NumFicheProduction\r\n"
-			+ "				AND F1.NumLigne=F2.NumLigne-1			\r\n"
-			+ "			INNER JOIN DetailsGammesProduction DP1\r\n"
-			+ "				ON F1.NumFicheProduction =DP1.NumFicheProduction and F1.NumLigne =DP1.NumLigne\r\n"
-			+ "			INNER JOIN DetailsGammesProduction DP2\r\n"
-			+ "				ON F2.NumFicheProduction =DP2.NumFicheProduction and F2.NumLigne =DP2.NumLigne			\r\n"
-			+ "			INNER JOIN Zones Z1\r\n"
-			+ "				on Z1.NumZone=DP1.NumZone\r\n"
-			+ "			INNER JOIN Zones Z2\r\n"
-			+ "				on Z2.NumZone=DP2.NumZone\r\n"
-			+ "			\r\n"
-			+ "	\r\n"
-			+ "		where F1.NumFicheProduction='"+of+"' \r\n"
-			+ "	)  T\r\n"
-			+ "	ON TPS.depart=T.N1 and TPS.arrivee=T.N2 ";
+	String req="""
+			
+	Update  TD
+	SET normal=F.TempsDeplacement + dbo.getOffset(DC.vitesse_bas,DC.vitesse_haut)
+	FROM 
+		DetailsFichesProduction  F
+	    INNER JOIN DetailsChargesProduction DC
+	        ON DC.NumLigne=1 and DC.NumFicheProduction=F.NumFicheProduction      
+		INNER JOIN Postes P1
+	        on P1.NumPoste=F.NumPostePrecedent
+	    INNER JOIN Zones Z1
+	        on Z1.NumZone=P1.NumZone
+	    INNER JOIN Postes P2
+	        on P2.NumPoste=F.NumPoste
+	    INNER JOIN Zones Z2
+	        on Z2.NumZone=P2.NumZone
+	    INNER JOIN TempsDeplacements TD
+	        on Z2.NumZone=TD.arrivee and Z1.NumZone=TD.depart
+			
+		
+		where F.NumFicheProduction='"""+of+"' ";
 	if(!updateNoNull) {
-		req+="where normal=0";
+		req+="and normal=0";
 	}
 
 
@@ -710,39 +701,42 @@ public boolean eraseTpsMvts() {
 public boolean resetAllTpsMvts() {
 	boolean res= true;
 
-	String req="Update  [TempsDeplacements] \r\n"
-			+ "SET normal=T.tps\r\n"
-			+ "FROM \r\n"
-			+ "	[dbo].[TempsDeplacements] TPS\r\n"
-			+ "	INNER JOIN (\r\n"
-			+ "\r\n"
-			+ "		select \r\n"
-			+ "			Z1.NumZone N1 ,\r\n"
-			+ "			Z2.NumZone N2,\r\n"
-			+ "			AVG(\r\n"
-			+ "				DATEDIFF(SECOND, F1.DateSortiePoste, F2.DateEntreePoste)-\r\n"
-			+ "				DP1.TempsEgouttageSecondes\r\n"
-			+ "			)	as tps\r\n"
-			+ "		from \r\n"
-			+ "			DetailsFichesProduction  F1\r\n"
-			+ "			INNER JOIN DetailsFichesProduction  F2\r\n"
-			+ "			ON F1.NumFicheProduction COLLATE FRENCH_CI_AS =F2.NumFicheProduction  COLLATE FRENCH_CI_AS  \r\n"
-			+ "				AND F1.NumLigne=F2.NumLigne-1			and 	F1.DateSortiePoste< F2.DateEntreePoste\r\n"
-			+ "			INNER JOIN DetailsGammesProduction DP1\r\n"
-			+ "				ON F1.NumFicheProduction COLLATE FRENCH_CI_AS  =DP1.NumFicheProduction  COLLATE FRENCH_CI_AS and F1.NumLigne =DP1.NumLigne\r\n"
-			+ "			INNER JOIN DetailsGammesProduction DP2\r\n"
-			+ "				ON F2.NumFicheProduction COLLATE FRENCH_CI_AS =DP2.NumFicheProduction COLLATE FRENCH_CI_AS and F2.NumLigne =DP2.NumLigne			\r\n"
-			+ "			INNER JOIN Zones Z1\r\n"
-			+ "				on Z1.NumZone=DP1.NumZone\r\n"
-			+ "			INNER JOIN Zones Z2\r\n"
-			+ "				on Z2.NumZone=DP2.NumZone\r\n"
-			+ "			\r\n"
-			+ "	\r\n"
-			+ "		where F1.NumFicheProduction COLLATE FRENCH_CI_AS in (select NumFicheProduction COLLATE FRENCH_CI_AS from CalibrageTempsGammes )   \r\n"
-			+ "		group by Z1.NumZone  ,Z2.NumZone "
-			+ "		\r\n"
-			+ "	)  T\r\n"
-			+ "	ON TPS.depart=T.N1 and TPS.arrivee=T.N2 ";
+	String req="""
+			
+			Update  [TempsDeplacements] 
+			SET normal=T.tps
+			FROM 
+				[dbo].[TempsDeplacements] TPS
+				INNER JOIN (
+			
+					select 
+						Z1.NumZone N1 ,
+						Z2.NumZone N2,
+						AVG(
+							F.TempsDeplacement+ dbo.getOffset(DC.vitesse_bas,DC.vitesse_haut)
+						)	as tps
+					from 
+						DetailsFichesProduction  F
+						INNER JOIN DetailsChargesProduction DC
+							ON DC.NumLigne=1 and DC.NumFicheProduction=F.NumFicheProduction      
+						INNER JOIN Postes P1
+							on P1.NumPoste=F.NumPostePrecedent
+						INNER JOIN Zones Z1
+							on Z1.NumZone=P1.NumZone
+						INNER JOIN Postes P2
+							on P2.NumPoste=F.NumPoste
+						INNER JOIN Zones Z2
+							on Z2.NumZone=P2.NumZone						
+			
+			
+					where F.NumFicheProduction COLLATE FRENCH_CI_AS in 
+					(select NumFicheProduction COLLATE FRENCH_CI_AS from CalibrageTempsGammes )   
+					group by Z1.NumZone  ,Z2.NumZone 		
+				)  T
+				ON TPS.depart=T.N1 and TPS.arrivee=T.N2 
+						
+			
+			""";
 	
 
 	    try {
@@ -808,7 +802,7 @@ public ResultSet getVisuProd(java.util.Date inDate) {
 
     // Create and execute a SELECT SQL statement.
     String selectSql = "select distinct  DG.numficheproduction as [N° OF], 	DC.NumGammeANodisation as [gamme ],DC.NumBarre as  [barre] \r\n"
-    		+ "from   	[DetailsGammesProduction]  DG 	\r\n"
+    		+ " , dbo.hasBadCalibrage (DG.numficheproduction) as BAD_CALIB from   	[DetailsGammesProduction]  DG 	\r\n"
     		+ "LEFT OUTER JOIN   [DetailsFichesProduction] DF 	on   		\r\n"
     		+ "DG.numficheproduction=DF.numficheproduction COLLATE FRENCH_CI_AS and 		\r\n"
     		+ "DG.numligne=DF.NumLigne  and DF.NumLigne=1 	\r\n"

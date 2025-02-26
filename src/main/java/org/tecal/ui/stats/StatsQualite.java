@@ -132,44 +132,36 @@ public class StatsQualite extends JPanel {
                 DECLARE @DateDebut DATE = '%s';
 				DECLARE @DateFin DATE = '%s';
 				
+				
 				SELECT
 				
-				    CONVERT(DATE, F1.DateEntreePoste) AS Day,
+				    CONVERT(DATE, F.DateEntreePoste) AS Day,
 				    SUM(CASE
-				        WHEN DATEDIFF(SECOND, F1.DateEntreePoste, F1.DateSortiePoste) - G1.TempsAuPosteSecondes < 0
-				        THEN 1 * (G1.TempsAuPosteSecondes - DATEDIFF(SECOND, F1.DateEntreePoste, F1.DateSortiePoste))
-				        WHEN DATEDIFF(SECOND, F1.DateEntreePoste, F1.DateSortiePoste) > (G1.TempsAuPosteSecondes + Z.derive + 20)
-				        THEN DATEDIFF(SECOND, F1.DateEntreePoste, F1.DateSortiePoste) - Z.derive - G1.TempsAuPosteSecondes
+				        WHEN Z.derive + 20 < G.DecompteDuTempsAuPosteReelSecondes *(-1)
+				        THEN ABS(G.DecompteDuTempsAuPosteReelSecondes)
+				        WHEN G.DecompteDuTempsAuPosteReelSecondes>0
+				        THEN G.DecompteDuTempsAuPosteReelSecondes
 				        ELSE 0
-				    END) * 100.0 / 
-				    SUM(G1.TempsAuPosteSecondes
-				    ) AS TX_ERREUR
+				    END) * 100.0 /
+				    SUM(G.TempsAuPosteSecondes    ) AS TX_ERREUR
 				FROM
-				    [DetailsGammesProduction] G1
-				    LEFT OUTER JOIN [DetailsGammesProduction] G2
-				        ON G1.numficheproduction = G2.numficheproduction
-				        AND G1.NumLigne + 1 = G2.NumLigne
-				    RIGHT OUTER JOIN [DetailsFichesProduction] F1
-				        ON G1.numficheproduction = F1.numficheproduction
-				    LEFT OUTER JOIN [DetailsFichesProduction] F2
-				        ON G1.numficheproduction = F2.numficheproduction
-				        AND F1.NumLigne + 1 = F2.NumLigne
+				    [DetailsGammesProduction] G
+				    INNER JOIN DetailsFichesProduction F
+				        ON G.NumFicheProduction = F.NumFicheProduction and F.NumLigne=1
 				    INNER JOIN ZONES Z
-				        ON G1.Numzone = Z.Numzone
-				   
-				WHERE  
-				    G1.NumPosteReel = F1.NumPoste 
-				    AND G2.NumPosteReel = F2.NumPoste
-				    AND Z.NumZone IN (3, 4, 9, 13, 14, 16)
-				    AND G1.TempsAuPosteSecondes > 0
-				   
-				    AND F1.NumFicheProduction IN (
-				        SELECT DISTINCT NumFicheProduction 
+				        ON G.Numzone = Z.Numzone
+				
+				WHERE
+				    Z.NumZone IN (3, 4, 9, 13, 14, 16)
+				    AND G.TempsAuPosteSecondes > 0
+				
+				    AND G.NumFicheProduction IN (
+				        SELECT DISTINCT NumFicheProduction
 				        FROM DetailsFichesProduction
 				        WHERE DateEntreePoste >= @DateDebut AND DateSortiePoste < @DateFin
 				    )
 				GROUP BY
-				    CONVERT(DATE, F1.DateEntreePoste)
+				    CONVERT(DATE, F.DateEntreePoste)
 				ORDER BY  Day;
 
                 """, dateDebut, dateFin);

@@ -214,7 +214,17 @@ public class TecalGUI {
 
 		mIcons = loadIcons(this);
 		frmTecalOrdonnanceur.setIconImage(mIcons.get(0));
+		
 		frmTecalOrdonnanceur.setIconImages(mIcons);
+		
+		// Chargement de l'icône depuis le classpath
+        java.net.URL iconURL = TecalGUI.class.getClassLoader().getResource("icon_32x32.ico");
+        if (iconURL != null) {
+            ImageIcon icon = new ImageIcon(iconURL);
+            frmTecalOrdonnanceur.setIconImage(icon.getImage());
+        } else {
+            System.err.println("Icône non trouvée !");
+        }
 
 		// mCPO_IHM = new CPO(mIcons);
 
@@ -232,13 +242,19 @@ public class TecalGUI {
 				.addComponent(tabbedPaneMain, GroupLayout.DEFAULT_SIZE, 674, Short.MAX_VALUE)
 		);
 
-		// scrollPane_gamme.setViewportView(tableGammes);
-		// panelCPO.setLayout(gl_panel);
+		
 		buildVisuProd();
+		buildStats();
 		buildMvtPonts();
 		buildCalibrageTab();
 		buildParamsTab(tabbedPaneMain);
 
+		
+
+		frmTecalOrdonnanceur.getContentPane().setLayout(groupLayout);
+	}
+
+	private void buildStats() {
 		TauxAnodisationPanel  taux= new TauxAnodisationPanel();
 		StatsQualite mens=new StatsQualite();
 		JTabbedPane statTabbedPaneMain = new JTabbedPane(SwingConstants.LEFT);
@@ -247,8 +263,6 @@ public class TecalGUI {
 		tabbedPaneMain.addTab("Statistiques",iconStat,statTabbedPaneMain);
 		statTabbedPaneMain.addTab("Production", null, taux, null);
 		statTabbedPaneMain.addTab("Qualité", null, mens, null);
-
-		frmTecalOrdonnanceur.getContentPane().setLayout(groupLayout);
 	}
 
 	public static List<Image> loadIcons(Object o) {

@@ -2,6 +2,9 @@
 -- last 15/02/2025 00088762
 select max(NumFicheProduction) from ANODISATION.dbo.DetailsFichesProduction
 
+ALTER TABLE [ANODISATION].dbo.DetailsChargesProduction
+ALTER COLUMN NbrReparations VARCHAR(50);
+
 ALTER INDEX ALL ON ANODISATION.dbo.DetailsFichesProduction REBUILD;
 ALTER INDEX ALL ON ANODISATION.dbo.DetailsGammesProduction REBUILD;
 ALTER INDEX ALL ON ANODISATION.dbo.DetailsPhasesProduction REBUILD;
