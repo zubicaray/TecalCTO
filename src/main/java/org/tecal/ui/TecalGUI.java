@@ -6,10 +6,7 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.Image;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -43,8 +40,7 @@ import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
+
 import javax.swing.JFormattedTextField.AbstractFormatter;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -64,6 +60,7 @@ import javax.swing.WindowConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
@@ -77,6 +74,7 @@ import org.tecal.scheduler.TecalOrdoParams;
 import org.tecal.scheduler.data.SQL_DATA;
 import org.tecal.scheduler.types.Barre;
 import org.tecal.ui.frame.CPO_LOGS_GANT;
+import org.tecal.ui.frame.FicheProductionDialog;
 import org.tecal.ui.panel.ZonesPanel;
 import org.tecal.ui.stats.StatsQualite;
 import org.tecal.ui.stats.StatsWindow;
@@ -1102,6 +1100,10 @@ public class TecalGUI {
 			}
 
 		};
+		
+		TableColumnModel columnModel = tableOF.getColumnModel();
+        TableColumn column = columnModel.getColumn(3);
+        columnModel.removeColumn(column);
 		// scrollPaneVisuProd.setViewportView(tableOF);
 		// panelVisuProd.setLayout(gl_panelVisuProd);
 		tableOF.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
@@ -1117,11 +1119,16 @@ public class TecalGUI {
 					boolean hasFocus, int row, int col) {
 				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
 				String gamme = (String) table.getModel().getValueAt(row, 1);
-
+				boolean bad_calib=(boolean) table.getModel().getValueAt(row, 3);
 				if (SQL_DATA.getInstance().getMissingTimeMovesGammes().contains(gamme)) {
 					setBackground(Color.RED);
 					setForeground(Color.BLACK);
-				} else {
+				} 
+				else if(bad_calib) {
+					setBackground(Color.yellow);
+					setForeground(Color.BLACK);
+					
+				}else {
 					setBackground(table.getBackground());
 					setForeground(table.getForeground());
 				}
@@ -1137,14 +1144,13 @@ public class TecalGUI {
 
 		tableOF.addMouseListener(new MouseAdapter() {
 		    @Override
-		    public void mouseReleased(MouseEvent e) {
-		        if (SwingUtilities.isRightMouseButton(e)) { // Vérifie si c'est un clic droit
+		    public void mouseClicked(MouseEvent e) {
+		        if (e.getClickCount() == 2) { // Vérifie si c'est un double-clic
 		            int row = tableOF.rowAtPoint(e.getPoint());
 		            if (row != -1) { // Vérifie que la ligne cliquée est valide
-		                // Sélectionner la ligne sur laquelle on a cliqué
-		                tableOF.setRowSelectionInterval(row, row);
-
-		                // Afficher la fenêtre modale
+		                tableOF.setRowSelectionInterval(row, row); // Sélectionne la ligne
+		                
+		                // Appelle la méthode pour ouvrir le JDialog
 		                openCalibrageDialog(frmTecalOrdonnanceur, tableOF, row);
 		            }
 		        }
@@ -1166,150 +1172,11 @@ public class TecalGUI {
     private  void openCalibrageDialog(JFrame parent, JTable table, int selectedRow) {
     	String of = tableOF.getModel().getValueAt(selectedRow, 0).toString();
 		String gamme = tableOF.getModel().getValueAt(selectedRow, 1).toString();
-        JDialog dialog = new JDialog(parent, "Calibrage de la gamme "+gamme, true);
-        dialog.setSize(400, 200);
-        dialog.setLayout(new GridBagLayout());
-        dialog.setLocationRelativeTo(parent);
-
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-
-        // Label et ComboBox pour la première vitesse
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        dialog.add(new JLabel("descente :"), gbc);
-
-        JComboBox<String> comboBox1 = new JComboBox<>(CST.VITESSES);
-        gbc.gridx = 1;
-        gbc.gridy = 0;
-        dialog.add(comboBox1, gbc);
-
-        // Label et ComboBox pour la deuxième vitesse
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        dialog.add(new JLabel("montée :"), gbc);
-
-        JComboBox<String> comboBox2 = new JComboBox<>(CST.VITESSES);
-        gbc.gridx = 1;
-        gbc.gridy = 1;
-        dialog.add(comboBox2, gbc);
-
-        comboBox1.setSelectedIndex(CST.VITESSE_NORMALE);
-        comboBox2.setSelectedIndex(CST.VITESSE_NORMALE);
-
-        // Bouton "Valider"
-        JButton validateButton = new JButton("Valider");
-        gbc.gridx = 0;
-        gbc.gridy = 2;
-        gbc.gridwidth = 2;
-        gbc.anchor = GridBagConstraints.CENTER;
-        dialog.add(validateButton, gbc);
-
-        // Action du bouton "Valider"
-        validateButton.addActionListener(e -> {
-            String choix1 = (String) comboBox1.getSelectedItem();
-            String choix2 = (String) comboBox2.getSelectedItem();
-            String rowName = (String) table.getValueAt(selectedRow, 0);
-            if (selectedRow >= 0) {
-    			
-    			calibrage( of, gamme,comboBox1.getSelectedIndex(),comboBox2.getSelectedIndex());
-            } else {
-    			JOptionPane.showMessageDialog(frmTecalOrdonnanceur, "Sélectionner une ligne.");
-    		}
-
-            JOptionPane.showMessageDialog(dialog,
-                    "Ligne sélectionnée : " + rowName + "\n" +
-                            "Vitesse descente : " + choix1 + "\n" +
-                            "Vitesse montée : " + choix2,
-                    "Validation",
-                    JOptionPane.INFORMATION_MESSAGE);
-
-            dialog.dispose(); // Fermer la fenêtre modale
-        });
+		FicheProductionDialog dialog = new FicheProductionDialog(parent, of,gamme);
 
         dialog.setVisible(true);
     }
 
 
-	private int gestionVitesseManutention(int vitesseLente,int  vitesseMontee) {
-		int tpsAdjust=0;
-
-		switch(vitesseLente){
-
-		   case CST.VITESSE_LENTE:
-			   tpsAdjust-=CST.VITESSE_LENTE_DESCENTE;
-		       break;
-		   case CST.VITESSE_NORMALE:
-		      break;
-		   case CST.VITESSE_RAPIDE:
-			   tpsAdjust+=CST.VITESSE_RAPIDE_DESCENTE;
-		       break;
-		   default:
-		       System.out.println("ERREUR gestionVitesseManutention descente");
-		       break;
-		}
-
-		switch(vitesseMontee){
-
-		   case CST.VITESSE_LENTE:
-			   tpsAdjust-=CST.VITESSE_LENTE_MONTEE;
-		       break;
-		   case CST.VITESSE_NORMALE:
-		       break;
-		   case CST.VITESSE_RAPIDE:
-			   tpsAdjust+=CST.VITESSE_RAPIDE_MONTEE;
-		       break;
-		   default:
-		       System.out.println("ERREUR gestionVitesseManutention montée");
-		       break;
-		}
-
-
-		return tpsAdjust;
-	}
-    private void calibrage(String of, String gamme,int descente,int monte) {
-
-
-		int resultGammeChanged = 0;
-		if (SQL_DATA.getInstance().gammeChangedAfterOF(of, gamme)) {
-			resultGammeChanged = JOptionPane.showConfirmDialog((Component) null,
-					"La gamme a changé depuis que cet OF est passé en prod. Des mouvements peuvent manquer ... continuer?",
-					"alert", JOptionPane.YES_NO_OPTION);
-
-		}
-
-		if (resultGammeChanged == 0) {
-
-			// JOptionPane.showMessageDialog(frmTecalOrdonnanceur, "Right-click
-			// gamme="+tableOF.getModel().getValueAt(row, 1).toString());
-			int result = JOptionPane.showConfirmDialog((Component) null,
-					"OF choisi: " + of + ". Voulez-vous aussi écraser les valeurs non nulles?", "alert",
-					JOptionPane.YES_NO_CANCEL_OPTION);
-
-			if (result != 2) {
-				boolean updateNull = (result == 0);
-				int tpsAdjust=gestionVitesseManutention(descente, monte);
-				if (!SQL_DATA.getInstance().updateTpsMvts(of, updateNull,tpsAdjust)) {
-					// MAJ des gammes
-					SQL_DATA.getInstance().setMissingTimeMovesGammes();
-				}
-			}
-			java.util.Date d = (java.util.Date) datePicker.getModel().getValue();
-
-			if (SQL_DATA.getInstance().gammeCalibrageExists(gamme)) {
-				result = JOptionPane.showConfirmDialog((Component) null,
-						"La gamme a déjà un OF de calibré, MAJ ?", "alert", JOptionPane.YES_NO_OPTION);
-
-				if (result == 0) {
-					SQL_DATA.getInstance().updateCalibrageGamme(gamme, of, d,descente, monte);
-				}
-			} else {
-				SQL_DATA.getInstance().insertCalibrageGamme(gamme, of, d,descente, monte);
-			}
-
-		}
-
-	}
 
 }

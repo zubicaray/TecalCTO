@@ -578,14 +578,12 @@ public boolean gammeCalibrageExists(String gamme) {
 
 }
 
-public boolean updateCalibrageGamme(String gamme,String of,java.util.Date d,int descente,int monte) {
+public boolean updateCalibrageGamme(String gamme,String of) {
 	boolean res= false;
-	String date=toSQLServerFormat(d); 
+	
 	String req="update \r\n"
 			+ "	CalibrageTempsGammes \r\n"
-			+" set NumFicheProduction='"+of+"' , date='"+date+"',"
-			+" vit_descente="+descente
-			+" ,vit_montee="+monte
+			+" set NumFicheProduction='"+of+"' , date=CURRENT_TIMESTAMP"
 			+ "	Where NumGamme='"+gamme+"' ;";
 	
 
@@ -605,22 +603,16 @@ public boolean updateCalibrageGamme(String gamme,String of,java.util.Date d,int 
 
 }
 
-public boolean insertCalibrageGamme(String gamme,String of,java.util.Date d,int descente,int montee) {
+public boolean insertCalibrageGamme(String gamme,String of) {
 	boolean res= false;
 	
-	String date=toSQLServerFormat(d); 
-	
 	String req="insert into  \r\n"
-			+ "	CalibrageTempsGammes (NumGamme,NumFicheProduction,date,vit_descente,vit_montee) values \r\n"
-			+"( '"+gamme+"','"+of+"','"+date+"',"+descente+","+montee+" )";
-	
+			+ "	CalibrageTempsGammes (NumGamme,NumFicheProduction,date) values \r\n"
+			+"( '"+gamme+"','"+of+"',CURRENT_TIMESTAMP)";	
 
 
 	    try {
 	    	res = mStatement.execute(req);
-			// Print results from select statement
-	    	
-
 		} catch (SQLException e) {
 			JOptionPane.showMessageDialog(null, e, "Alerte exception !", JOptionPane.ERROR_MESSAGE);
 			logger.error(e);
@@ -635,7 +627,7 @@ public boolean insertCalibrageGamme(String gamme,String of,java.util.Date d,int 
 
 
 
-public boolean updateTpsMvts(String of,boolean updateNoNull,int tpsAdjust) {
+public boolean updateTpsMvts(String of,boolean updateNoNull) {
 	boolean res= false;
 
 	String req="""
