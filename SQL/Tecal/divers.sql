@@ -1,5 +1,5 @@
 
--- last 15/02/2025 00088762
+-- last: 00089639
 select max(NumFicheProduction) from ANODISATION.dbo.DetailsFichesProduction
 
 ALTER TABLE [ANODISATION].dbo.DetailsChargesProduction
@@ -43,13 +43,16 @@ WHERE RowNum = 1
 ORDER BY NumFicheProduction
 OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY;
 
-select numgammeanodisation
-FROM ANODISATION.dbo.DetailsChargesProduction
-    WHERE  numficheproduction in 
-    ('00085171','00085172','00085173')
-      --  '00087384','00087385','00087386','00087387','00087388','00087389','00087391','00087392','00087393','00087394',
-    --'00085171','00085172','00085173','00085174','00085175','00085176','00085177','00085178','00085179','00085180','00085181','00085182','00085183','00085184',    '00085185','00085186','00085187','00085188','00085189','00085190','00085191',    '00085192','00085193','00085194','00085195','00085196','00085197','00085198',    '00085199','00085200','00085201','00085202','00085203','00085204','00085205',    '00085206','00085207','00085208','00085209','00085210','00085211','00085212',    '00085213','00085214','00085215','00085216')    
-    
+select * from ANODISATION.dbo.vitesse_haut
+select * from ANODISATION.dbo.vitesse_bas
+select NumPostePrecedent,NumPoste,tempsdeplacement,vitesse_bas,vitesse_haut 
+FROM
+    ANODISATION.dbo.DetailsFichesProduction F
+    INNER JOIN  ANODISATION.dbo.DetailsChargesProduction C
+    ON C.numficheproduction=F.numficheproduction and C.NumLigne=1
+    WHERE  F.numficheproduction in 
+    ('00089404','00089406','00089412','00089429','00089431')
+order by NumPostePrecedent,NumPoste,vitesse_bas,vitesse_haut ,tempsdeplacement
 
 
 

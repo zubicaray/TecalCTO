@@ -257,8 +257,7 @@ public class JobType {
 	}
 
 	void addIntervalForModel (Map<List<Integer>, TaskOrdo> inAllTasks,Map<Integer, List<IntervalVar>> zoneToIntervals,
-			Map<Integer,List<IntervalVar>> multiZoneIntervals,
-			Map<Integer, List<IntervalVar>> cumulDemands) {
+			Map<Integer,List<IntervalVar>> multiZoneIntervals) {
 
 		//System.out.println("Job "+name);
 		for (int taskID = 0; taskID < tasksJob.size(); ++taskID) {
@@ -299,10 +298,13 @@ public class JobType {
 				if(SQL_DATA.getInstance().getRelatedZones().containsKey(task.numzone)) {
 					int zoneToAdd=SQL_DATA.getInstance().getRelatedZones().get(task.numzone);
 					//cumulDemands.add
-					if(!cumulDemands.containsKey(zoneToAdd)) {
-						cumulDemands.put(zoneToAdd,new ArrayList<IntervalVar>());
-					}
-					cumulDemands.get(zoneToAdd).add(inter);
+					//if(!cumulDemands.containsKey(zoneToAdd)) {
+					//	cumulDemands.put(zoneToAdd,new ArrayList<IntervalVar>());
+					//}
+					//cumulDemands.get(zoneToAdd).add(inter);
+					
+					multiZoneIntervals.computeIfAbsent(zoneToAdd, (Integer k) -> new ArrayList<>());   
+					multiZoneIntervals.get(zoneToAdd).add(inter);
 				}
 			}
 		}

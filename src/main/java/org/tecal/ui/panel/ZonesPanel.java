@@ -13,7 +13,7 @@ import java.awt.*;
 	    private static final long serialVersionUID = 1L;
 		private JTable table;
 	    private DefaultTableModel tableModel;
-	    private Connection connection=SQL_DATA.getInstance().getmConnection();
+	    private Connection connection=SQL_DATA.getInstance().getConnection();
 
 	    public ZonesPanel() {
 	        setLayout(new BorderLayout());

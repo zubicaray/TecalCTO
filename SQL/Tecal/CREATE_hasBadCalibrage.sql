@@ -31,7 +31,7 @@ BEGIN
     INNER JOIN Zones Z2 ON Z2.NumZone = P2.NumZone
     INNER JOIN TempsDeplacements TD ON Z2.NumZone = TD.arrivee AND Z1.NumZone = TD.depart
     WHERE F.NumFicheProduction = @NumFicheProduction
-      AND ABS(F.TempsDeplacement - (TD.normal + @OFFSET_BAS + @OFFSET_HAUT)) > 10;
+      AND ABS(F.TempsDeplacement - (TD.normal - @OFFSET_BAS - @OFFSET_HAUT)) > 10;
 
     -- Détermination du résultat
     SET @result = CASE WHEN @count > 0 THEN 1 ELSE 0 END;

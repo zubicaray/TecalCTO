@@ -37,7 +37,7 @@ class TempsDeplacement 		extends HashMap<List<Integer>,Integer[]>	{	private stat
 public class SQL_DATA {
 	private static final Logger logger = LogManager.getLogger(SQL_DATA.class);
 	private Connection mConnection ;
-	public Connection getmConnection() {
+	public Connection getConnection() {
 		return mConnection;
 	}
 	public void setmConnection(Connection mConnection) {
@@ -793,19 +793,27 @@ public ResultSet getVisuProd(java.util.Date inDate) {
 	String fin=toSQLServerFormat(dt);
 
     // Create and execute a SELECT SQL statement.
-    String selectSql = "select distinct  DG.numficheproduction as [N° OF], 	DC.NumGammeANodisation as [gamme ],DC.NumBarre as  [barre] \r\n"
-    		+ " , dbo.hasBadCalibrage (DG.numficheproduction) as BAD_CALIB from   	[DetailsGammesProduction]  DG 	\r\n"
-    		+ "LEFT OUTER JOIN   [DetailsFichesProduction] DF 	on   		\r\n"
-    		+ "DG.numficheproduction=DF.numficheproduction COLLATE FRENCH_CI_AS and 		\r\n"
-    		+ "DG.numligne=DF.NumLigne  and DF.NumLigne=1 	\r\n"
-    		+ "INNER JOIN ( select distinct numficheproduction,NumGammeANodisation,NumBarre from [DetailsChargesProduction] where numligne=1\r\n"
-    		+ ") DC 	\r\n"
-    		+ "on   		DC.numficheproduction=DF.numficheproduction  COLLATE FRENCH_CI_AS \r\n"
+    String selectSql = "select distinct  \n"
+    		+ "    DF.numficheproduction as [N° OF], 	DC.NumGammeANodisation as [gamme ],\n"
+    		+ "    DC.NumBarre as  [barre]  , \n"
+    		+ "    VB.libelle as descente,\n"
+    		+ "    VH.libelle as montee,\n"
+    		+ "    dbo.hasBadCalibrage (DF.numficheproduction) as BAD_CALIB \n"
+    		+ "from  \n"
+    		+ "    [DetailsFichesProduction] DF\n"
+    		+ "    INNER JOIN  DetailsChargesProduction DC 	\n"
+    		+ "        on DC.numficheproduction=DF.numficheproduction  COLLATE FRENCH_CI_AS \n"
+    		+ "        and DC.numligne=1 and DF.NumLigne=1 \n"
+    		+ "    INNER JOIN vitesse_bas VB on VB.id=DC.vitesse_bas\n"
+    		+ "    INNER JOIN vitesse_haut VH on VH.id=DC.vitesse_haut\n"
     		+ "WHERE		DF.DateEntreePoste >=  '"+deb+"'  and DF.DateEntreePoste < '"+fin+"'      "
-    		+ "order by DG.numficheproduction ,DC.NumBarre"
+    		+ "order by DF.numficheproduction ,DC.NumBarre"
 
 
     		;
+
+    
+    
     try {
 		resultSet = mStatement.executeQuery(selectSql);
 		// Print results from select statement

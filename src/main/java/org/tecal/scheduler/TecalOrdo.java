@@ -171,7 +171,7 @@ public class TecalOrdo {
 	private Map<List<Integer>, TaskOrdo> 	allTasks 			= new HashMap<>();
 	private Map<Integer, List<IntervalVar>> zoneToIntervals 	= new HashMap<>();
 	private Map<Integer, List<IntervalVar>> multiZoneIntervals 	= new HashMap<>();
-	private Map<Integer, List<IntervalVar>> cumulDemands 		= new HashMap<>();
+
 
 	private Map<Integer, List<AssignedTask>> 			mAssignedTasksByNumzone;
 	private LinkedHashMap<Integer, List<AssignedTask>> 	mAssignedTasksByBarreId;
@@ -711,7 +711,7 @@ public class TecalOrdo {
 		allTasks.clear();
 		zoneToIntervals.clear();
 		multiZoneIntervals.clear();
-		cumulDemands.clear();
+		
 		
 		for (Map.Entry<Integer, List<ElementGamme>> entry : mBarreFutures.entrySet()) {
 
@@ -756,7 +756,7 @@ public class TecalOrdo {
 		
 		for (JobType job : arrayAllJobs) {
 			// on créé les zones avec leut temps de déplacement, égouttage, etc ...
-			job.addIntervalForModel(allTasks, zoneToIntervals, multiZoneIntervals, cumulDemands);
+			job.addIntervalForModel(allTasks, zoneToIntervals, multiZoneIntervals);
 			// on créé les zones corespondant a mouvement des ponts
 			job.simulateBridgesMoves(mCurrentTime);
 			// regroupement des zones qui pourraient être trop proches de zones d'autre jobs

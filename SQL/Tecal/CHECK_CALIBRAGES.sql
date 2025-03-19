@@ -190,7 +190,7 @@ and  NumPosteReel>0;
 -- INIT TPS DEP
 ---------------------------------------------------------------------------------------
 UPDATE ANODISATION.dbo.DetailsFichesProduction 
-SET TempsDeplacement =0 ,NumPostePrecedent=0
+SET TempsDeplacement =0 ,NumPostePrecedent=0 WHERE NumPoste <3
 
 
 UPDATE F2
@@ -202,4 +202,5 @@ JOIN ANODISATION.dbo.DetailsFichesProduction F2
     ON F1.NumFicheProduction = F2.NumFicheProduction
     AND F1.NumLigne = F2.NumLigne - 1
     AND CONVERT(DATE, F1.DateDebutEgouttage) = CONVERT(DATE, F1.DateFinEgouttage)
-    AND CONVERT(DATE, F1.DateSortiePoste) = CONVERT(DATE, F2.DateEntreePoste); 
+    AND CONVERT(DATE, F1.DateSortiePoste) = CONVERT(DATE, F2.DateEntreePoste)
+WHERE F2.NumPoste >2 and F2.TempsDeplacement=0

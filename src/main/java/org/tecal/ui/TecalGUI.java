@@ -76,6 +76,7 @@ import org.tecal.scheduler.types.Barre;
 import org.tecal.ui.frame.CPO_LOGS_GANT;
 import org.tecal.ui.frame.FicheProductionDialog;
 import org.tecal.ui.panel.ZonesPanel;
+import org.tecal.ui.stats.InstabiliteGraph;
 import org.tecal.ui.stats.StatsQualite;
 import org.tecal.ui.stats.StatsWindow;
 import org.tecal.ui.stats.TauxAnodisationPanel;
@@ -255,12 +256,14 @@ public class TecalGUI {
 	private void buildStats() {
 		TauxAnodisationPanel  taux= new TauxAnodisationPanel();
 		StatsQualite mens=new StatsQualite();
+		InstabiliteGraph instGra=new InstabiliteGraph();
 		JTabbedPane statTabbedPaneMain = new JTabbedPane(SwingConstants.LEFT);
 		ImageIcon iconStat = new ImageIcon(this.getClass().getResource("/icons8-statistic-16.png"));
 
 		tabbedPaneMain.addTab("Statistiques",iconStat,statTabbedPaneMain);
 		statTabbedPaneMain.addTab("Production", null, taux, null);
 		statTabbedPaneMain.addTab("Qualité", null, mens, null);
+		statTabbedPaneMain.addTab("Stabilité des mouvements", null, instGra, null);
 	}
 
 	public static List<Image> loadIcons(Object o) {
@@ -543,16 +546,19 @@ public class TecalGUI {
 
 		// Suppression dans le modèle de table en ordre décroissant pour éviter les
 		// décalages d'indices
-		for (int i = selectedRows.length - 1; i >= 0; i--) {
-			String numGamme = (String) tableModelCalibrage.getValueAt(selectedRows[i], 0);
-			String numFicheProduction = (String) tableModelCalibrage.getValueAt(selectedRows[i], 1);
+		for (int row = selectedRows.length - 1; row >= 0; row--) {
+			
+			int modelRow = mTableCalibrage.convertRowIndexToModel(row); // Index dans le modèle
+			
+			String numGamme = (String) tableModelCalibrage.getValueAt(modelRow, 0);
+			String numFicheProduction = (String) tableModelCalibrage.getValueAt(modelRow, 1);
 
 			// Définir les paramètres pour la suppression
 			pstmt.setString(1, numGamme);
 			pstmt.setString(2, numFicheProduction);
 			pstmt.executeUpdate(); // Exécuter la suppression dans la base de données
 
-			tableModelCalibrage.removeRow(selectedRows[i]); // Supprimer la ligne du modèle
+			tableModelCalibrage.removeRow(modelRow); // Supprimer la ligne du modèle
 		}
 
     }
@@ -1049,7 +1055,9 @@ public class TecalGUI {
 	public void buildTableModelVisuProd() throws SQLException {
 
 		java.util.Date d = (java.util.Date) datePicker.getModel().getValue();
+		frmTecalOrdonnanceur.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));		
 		ResultSet rs = sqlCnx.getVisuProd(d);
+		frmTecalOrdonnanceur.setCursor(Cursor.getDefaultCursor());
 		ResultSetMetaData metaData = rs.getMetaData();
 
 		// names of columns
@@ -1102,7 +1110,7 @@ public class TecalGUI {
 		};
 		
 		TableColumnModel columnModel = tableOF.getColumnModel();
-        TableColumn column = columnModel.getColumn(3);
+        TableColumn column = columnModel.getColumn(5);
         columnModel.removeColumn(column);
 		// scrollPaneVisuProd.setViewportView(tableOF);
 		// panelVisuProd.setLayout(gl_panelVisuProd);
@@ -1119,7 +1127,7 @@ public class TecalGUI {
 					boolean hasFocus, int row, int col) {
 				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
 				String gamme = (String) table.getModel().getValueAt(row, 1);
-				boolean bad_calib=(boolean) table.getModel().getValueAt(row, 3);
+				boolean bad_calib=(boolean) table.getModel().getValueAt(row, 5);
 				if (SQL_DATA.getInstance().getMissingTimeMovesGammes().contains(gamme)) {
 					setBackground(Color.RED);
 					setForeground(Color.BLACK);

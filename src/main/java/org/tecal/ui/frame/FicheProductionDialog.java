@@ -41,7 +41,7 @@ public class FicheProductionDialog extends JDialog {
             }
         });
         
-        Connection connection=SQL_DATA.getInstance().getmConnection();
+        Connection connection=SQL_DATA.getInstance().getConnection();
         
         // Remplissage des données
         loadData(numFicheProduction, connection);
@@ -65,6 +65,7 @@ public class FicheProductionDialog extends JDialog {
 			public void actionPerformed(ActionEvent e) {
 
 				calibrage(numFicheProduction, gamme) ;
+				loadData(numFicheProduction, connection);
 			}
 		});
         buttonPanel.add(calibrerButton);
@@ -76,16 +77,17 @@ public class FicheProductionDialog extends JDialog {
     }
     
     private void loadData(String numFicheProduction, Connection connection) {
+    	tableModel.setRowCount(0); // Efface les anciennes données
         String query = "SELECT Z1.CodeZone AS depart, Z2.CodeZone AS arrivee, " +
-                       "F.TempsDeplacement AS reel, TD.normal + dbo.getOffset(DC.vitesse_bas, DC.vitesse_haut) AS calibrage " +
+                       "F.TempsDeplacement AS reel, TD.normal - dbo.getOffset(DC.vitesse_bas, DC.vitesse_haut) AS calibrage " +
                        "FROM DetailsFichesProduction F " +
-                       "INNER JOIN DetailsChargesProduction DC ON DC.NumLigne=1 AND DC.NumFicheProduction=F.NumFicheProduction " +
+                       "INNER JOIN DetailsChargesProduction DC ON DC.NumLigne=1 AND DC.NumFicheProduction=F.NumFicheProduction  COLLATE FRENCH_CI_AS " +
                        "INNER JOIN Postes P1 ON P1.NumPoste=F.NumPostePrecedent " +
                        "INNER JOIN Zones Z1 ON Z1.NumZone=P1.NumZone " +
                        "INNER JOIN Postes P2 ON P2.NumPoste=F.NumPoste " +
                        "INNER JOIN Zones Z2 ON Z2.NumZone=P2.NumZone " +
                        "INNER JOIN TempsDeplacements TD ON Z2.NumZone=TD.arrivee AND Z1.NumZone=TD.depart " +
-                       "WHERE F.NumFicheProduction=? " +
+                       "WHERE F.NumFicheProduction=?  COLLATE FRENCH_CI_AS " +
                        "ORDER BY F.numligne";
         
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
