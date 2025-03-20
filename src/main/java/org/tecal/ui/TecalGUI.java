@@ -327,6 +327,8 @@ public class TecalGUI {
 		buttonsDate.add(btnGanttCpoLogs);
 
 		panelVisuProd.add(buttonsDate, BorderLayout.PAGE_START);
+		
+
 
 		scrollPaneVisuProd = new JScrollPane();
 		scrollPaneVisuProd.addComponentListener(new ComponentAdapter() {
@@ -1115,8 +1117,36 @@ public class TecalGUI {
 		// scrollPaneVisuProd.setViewportView(tableOF);
 		// panelVisuProd.setLayout(gl_panelVisuProd);
 		tableOF.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-
+		TableColumn fixedColumn = tableOF.getColumnModel().getColumn(2);
+		fixedColumn.setPreferredWidth(50);  // Largeur préférée
+		fixedColumn.setMinWidth(50);        // Largeur minimale
+		fixedColumn.setMaxWidth(50);        // Largeur maximale
+		fixedColumn = tableOF.getColumnModel().getColumn(1);
+		fixedColumn.setPreferredWidth(100);  // Largeur préférée
+		fixedColumn.setMinWidth(100);        // Largeur minimale
+		fixedColumn.setMaxWidth(100);        // Largeur maximale
+		fixedColumn = tableOF.getColumnModel().getColumn(0);
+		fixedColumn.setPreferredWidth(100);  // Largeur préférée
+		fixedColumn.setMinWidth(100);        // Largeur minimale
+		fixedColumn.setMaxWidth(100);        // Largeur maximale
+		
+		fixedColumn = tableOF.getColumnModel().getColumn(3);
+		fixedColumn.setPreferredWidth(300);  // Largeur préférée
+		fixedColumn.setMinWidth(300);        // Largeur minimale
+		fixedColumn.setMaxWidth(300);        // Largeur maximale
+		
+	
+		
+		fixedColumn = tableOF.getColumnModel().getColumn(4);
+		fixedColumn.setPreferredWidth(300);  // Largeur préférée
+		fixedColumn.setMinWidth(300);        // Largeur minimale
+		fixedColumn.setMaxWidth(300);        // Largeur maximale
+		
 		scrollPaneVisuProd.setViewportView(tableOF);
+		
+		
+		 // Création d'un renderer pour centrer le texte
+       
 
 		tableOF.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
 
@@ -1145,7 +1175,13 @@ public class TecalGUI {
 			}
 
 		});
-
+		DefaultTableCellRenderer centerRenderer = (DefaultTableCellRenderer) tableOF.getDefaultRenderer(Object.class);
+		centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
+		
+		    // Appliquer le renderer à toutes les colonnes
+		for (int i = 0; i < tableOF.getColumnCount(); i++) {
+			tableOF.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+		}
 
 
 

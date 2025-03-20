@@ -35,7 +35,8 @@ ORDER BY l.idzone;
 ---------------------------------------------------------------------------------------------
 
 select 
-    distinct  DG.numficheproduction as [N° OF], 	DC.NumGammeANodisation as [gamme ],DC.NumBarre as  [barre] ,
+    distinct  DG.numficheproduction as [N° OF], 	
+    DC.NumGammeANodisation as [gamme ],DC.NumBarre as  [barre] ,
     dbo.hasBadCalibrage (DG.numficheproduction) as BAD_CALIB
 from   	
     [DetailsGammesProduction]  DG 	
@@ -77,48 +78,22 @@ select * from DetailsChargesProduction where  NumFicheProduction='00088871'
 ---------------------------------------------------------------------------------------------------
 
 
-
-select 
-    Z1.NumZone N1 ,--Z1.LibelleZone M1,
-    Z2.NumZone N2,--Z2.LibelleZone M2,
-    DATEDIFF(SECOND, F1.DateSortiePoste, F2.DateEntreePoste)-DP1.TempsEgouttageSecondes	
-    --,    TD.normal-9 as diff
-from 
-    DetailsFichesProduction  F1
-    LEFT OUTER JOIN DetailsFichesProduction  F2
-    ON F1.NumFicheProduction =F2.NumFicheProduction
-        AND F1.NumLigne=F2.NumLigne-1			
-    INNER JOIN DetailsGammesProduction DP1
-        ON F1.NumFicheProduction =DP1.NumFicheProduction and F1.NumLigne =DP1.NumLigne
-    LEFT OUTER JOIN DetailsGammesProduction DP2
-        ON F2.NumFicheProduction =DP2.NumFicheProduction and F2.NumLigne =DP2.NumLigne			
-    INNER JOIN Zones Z1         on Z1.NumZone=DP1.NumZone
-    LEFT OUTER JOIN  Zones Z2         on Z2.NumZone=DP2.NumZone
-    -- INNER JOIN TempsDeplacements TD         on Z2.NumZone=TD.arrivee and Z1.NumZone=TD.depart
-    INNER JOIN DetailsChargesProduction DC on DC.NumLigne=1 and F1.NumFicheProduction =DC.NumFicheProduction
-where F1.NumFicheProduction='00088320'-- and     ABS(DATEDIFF(SECOND, F1.DateSortiePoste, F2.DateEntreePoste)-   DP1.TempsEgouttageSecondes	-    TD.normal+9 )>10
-
 select 
     Z1.NumZone as depart,Z2.NumZone as arrivee,
     DC.vitesse_bas,DC.vitesse_haut,
     F.TempsDeplacement, TD.normal 
 from 
     DetailsFichesProduction  F
-    INNER JOIN Postes P1
-        on P1.NumPoste=F.NumPostePrecedent
-    INNER JOIN Zones Z1
-        on Z1.NumZone=P1.NumZone
-    INNER JOIN Postes P2
-        on P2.NumPoste=F.NumPoste
-    INNER JOIN Zones Z2
-        on Z2.NumZone=P2.NumZone
-    INNER JOIN TempsDeplacements TD
-        on Z2.NumZone=TD.arrivee and Z1.NumZone=TD.depart
+    INNER JOIN Postes P1 on P1.NumPoste=F.NumPostePrecedent
+    INNER JOIN Zones Z1 on Z1.NumZone=P1.NumZone
+    INNER JOIN Postes P2 on P2.NumPoste=F.NumPoste
+    INNER JOIN Zones Z2 on Z2.NumZone=P2.NumZone
+    INNER JOIN TempsDeplacements TD on Z2.NumZone=TD.arrivee and Z1.NumZone=TD.depart
     INNER JOIN DetailsChargesProduction DC
         on DC.NumLigne=1 and F.NumFicheProduction =DC.NumFicheProduction
-    
+where 
+    F.NumFicheProduction='00089610' 
 
-where F.NumFicheProduction='00088320' 
 
 
 select 
@@ -178,7 +153,9 @@ FROM
 
 ORDER BY F.NumFicheProduction DESC;
 
-select * from  ANODISATION.dbo.DetailsFichesProduction F where NumFicheProduction='00089115' and numposte=26;
+select * from  ANODISATION.dbo.DetailsFichesProduction F 
+where NumFicheProduction='00089614' and numposte=26;
+
 select NumLigne,NumPosteReel 
 from  ANODISATION.dbo.DetailsGammesProduction F where NumFicheProduction='00089115'
 and  NumPosteReel>0;

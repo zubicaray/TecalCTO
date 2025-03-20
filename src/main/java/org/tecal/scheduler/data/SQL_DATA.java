@@ -633,7 +633,7 @@ public boolean updateTpsMvts(String of,boolean updateNoNull) {
 	String req="""
 			
 	Update  TD
-	SET normal=F.TempsDeplacement + dbo.getOffset(DC.vitesse_bas,DC.vitesse_haut)
+	SET normal=F.TempsDeplacement - dbo.getOffset(DC.vitesse_bas,DC.vitesse_haut)
 	FROM 
 		DetailsFichesProduction  F
 	    INNER JOIN DetailsChargesProduction DC

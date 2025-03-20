@@ -2,6 +2,14 @@
 -- last: 00089639
 select max(NumFicheProduction) from ANODISATION.dbo.DetailsFichesProduction
 
+SELECT COLUMN_NAME, COLLATION_NAME 
+FROM INFORMATION_SCHEMA.COLUMNS 
+WHERE TABLE_NAME = 'DetailsFichesProduction' 
+  AND COLUMN_NAME = 'NumFicheProduction';
+
+  ALTER TABLE DetailsFichesProduction 
+ALTER COLUMN NumFicheProduction NVARCHAR(50) COLLATE FRENCH_CI_AS;
+
 ALTER TABLE [ANODISATION].dbo.DetailsChargesProduction
 ALTER COLUMN NbrReparations VARCHAR(50);
 
@@ -17,7 +25,10 @@ truncate  table [ANODISATION].dbo.DetailsChargesProduction;
 
 
 select * from  ANODISATION.dbo.DetailsGammesAnodisation
-where numgamme='000747' order by numligne
+where numgamme='000713' order by numligne
+
+select * from  ANODISATION.dbo.DetailsGammesProduction
+where numficheproduction='00089620' order by numligne
 
 select count(*) from ANODISATION.dbo.DetailsFichesProduction --1707486
 where NumFicheProduction  between '00088384' and '00088384'

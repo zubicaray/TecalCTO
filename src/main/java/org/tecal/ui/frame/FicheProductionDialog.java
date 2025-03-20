@@ -79,7 +79,7 @@ public class FicheProductionDialog extends JDialog {
     private void loadData(String numFicheProduction, Connection connection) {
     	tableModel.setRowCount(0); // Efface les anciennes données
         String query = "SELECT Z1.CodeZone AS depart, Z2.CodeZone AS arrivee, " +
-                       "F.TempsDeplacement AS reel, TD.normal - dbo.getOffset(DC.vitesse_bas, DC.vitesse_haut) AS calibrage " +
+                       "F.TempsDeplacement AS reel, TD.normal + dbo.getOffset(DC.vitesse_bas, DC.vitesse_haut) AS calibrage " +
                        "FROM DetailsFichesProduction F " +
                        "INNER JOIN DetailsChargesProduction DC ON DC.NumLigne=1 AND DC.NumFicheProduction=F.NumFicheProduction  COLLATE FRENCH_CI_AS " +
                        "INNER JOIN Postes P1 ON P1.NumPoste=F.NumPostePrecedent " +
@@ -155,7 +155,7 @@ public class FicheProductionDialog extends JDialog {
     public static void main(String[] args) {
         // Exemple de connexion (adapter selon votre configuration)
        
-            SwingUtilities.invokeLater(() -> new FicheProductionDialog(null,"00086035", "000609").setVisible(true));
+            SwingUtilities.invokeLater(() -> new FicheProductionDialog(null,"00089612", "000735").setVisible(true));
        
     }
 }
