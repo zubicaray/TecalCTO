@@ -76,6 +76,7 @@ import org.tecal.scheduler.types.Barre;
 import org.tecal.ui.frame.CPO_LOGS_GANT;
 import org.tecal.ui.frame.FicheProductionDialog;
 import org.tecal.ui.panel.ZonesPanel;
+import org.tecal.ui.stats.CourbeTempsDeplacement;
 import org.tecal.ui.stats.InstabiliteGraph;
 import org.tecal.ui.stats.StatsQualite;
 import org.tecal.ui.stats.StatsWindow;
@@ -227,7 +228,7 @@ public class TecalGUI {
 
 		// mCPO_IHM = new CPO(mIcons);
 
-		frmTecalOrdonnanceur.setBounds(100, 100, 889, 674);
+		//frmTecalOrdonnanceur.setBounds(100, 100, 889, 674);
 		frmTecalOrdonnanceur.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		mParamTabs=new  JTabbedPane(SwingConstants.TOP);
 		tabbedPaneMain = new JTabbedPane(SwingConstants.TOP);
@@ -251,6 +252,7 @@ public class TecalGUI {
 		
 
 		frmTecalOrdonnanceur.getContentPane().setLayout(groupLayout);
+		frmTecalOrdonnanceur.pack();
 	}
 
 	private void buildStats() {
@@ -259,11 +261,13 @@ public class TecalGUI {
 		InstabiliteGraph instGra=new InstabiliteGraph();
 		JTabbedPane statTabbedPaneMain = new JTabbedPane(SwingConstants.LEFT);
 		ImageIcon iconStat = new ImageIcon(this.getClass().getResource("/icons8-statistic-16.png"));
+		CourbeTempsDeplacement courveMvts=new CourbeTempsDeplacement();
 
 		tabbedPaneMain.addTab("Statistiques",iconStat,statTabbedPaneMain);
 		statTabbedPaneMain.addTab("Production", null, taux, null);
 		statTabbedPaneMain.addTab("Qualité", null, mens, null);
-		statTabbedPaneMain.addTab("Stabilité des mouvements", null, instGra, null);
+		statTabbedPaneMain.addTab("Variance des mouvements", null, instGra, null);
+		statTabbedPaneMain.addTab("Courbes des mouvements", null, courveMvts, null);
 	}
 
 	public static List<Image> loadIcons(Object o) {

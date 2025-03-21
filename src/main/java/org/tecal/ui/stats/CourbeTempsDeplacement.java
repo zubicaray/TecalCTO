@@ -5,7 +5,7 @@ import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.ValueMarker;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.time.Day;
@@ -116,6 +116,28 @@ public class CourbeTempsDeplacement extends JPanel {
             JOptionPane.showMessageDialog(this, "Erreur SQL: " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
         }
     }
+    private int getCalibrage(int dep,int arrivee) {
+        String req = "SELECT normal FROM dbo.TempsDeplacements  where depart=? and arrivee=?";
+        int tps=0;
+       
+       
+        try (PreparedStatement stmt = conn.prepareStatement(req)){
+        	 stmt.setInt(1, dep);
+             stmt.setInt(2, arrivee);	
+            ResultSet rs = stmt.executeQuery();
+        
+            if (rs.next()) {
+                tps= rs.getInt("normal");
+               
+            }
+            
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Erreur SQL: " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
+        }
+		return tps;
+    }
 
     private void afficherGraphique() {
     	
@@ -135,6 +157,7 @@ public class CourbeTempsDeplacement extends JPanel {
 
         int poste1 = postesMap.get(poste1Label);
         int poste2 = postesMap.get(poste2Label);
+        int moyenne=getCalibrage(poste1,poste2);
 
         Timestamp dateDebutStr = new Timestamp(dateDebut.getTime());
         Timestamp dateFinStr = new Timestamp(dateFin.getTime());
@@ -184,9 +207,19 @@ public class CourbeTempsDeplacement extends JPanel {
                 dataset,
                 true, true, false
         );
+        
+      
+
 
         // Personnalisation du graphique
         XYPlot plot = lineChart.getXYPlot();
+        
+        // Ajouter une ligne horizontale à la valeur 15 sur l'axe des Y
+        ValueMarker horizontalLine = new ValueMarker(moyenne); // L'axe des Y est en secondes, donc on met 15
+        horizontalLine.setPaint(Color.BLACK); // Couleur de la ligne
+        horizontalLine.setStroke(new BasicStroke(1.0f)); // Épaisseur de la ligne
+        plot.addRangeMarker(horizontalLine); // Ajout du marker sur l'axe des Y
+        
         XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
         renderer.setSeriesShapesVisible(0, false);
         plot.setRenderer(renderer);
@@ -200,7 +233,8 @@ public class CourbeTempsDeplacement extends JPanel {
         // Configuration de l'axe Y
         NumberAxis yAxis = (NumberAxis) plot.getRangeAxis();
         yAxis.setLabel("Temps (secondes)");
-
+        
+   
         // Affichage
         ChartPanel chart = new ChartPanel(lineChart);
         chartPanel.removeAll();

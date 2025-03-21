@@ -9,7 +9,7 @@
 	<artifactId>TecalCPO</artifactId>
 	<version>2.3.0</version>
 	<packaging>jar</packaging>
-
+	
 
 	<name>${project.groupId}:${project.artifactId}</name>
 	<description>Ordonnancement de la prod Tecal</description>
@@ -63,10 +63,19 @@
 			<id>jitpack.io</id>
 			<url>https://jitpack.io</url>
 		</repository>
+		 <repository>
+            <id>jogamp-remote</id>
+            
+            <url>https://www.jogamp.org/deployment/maven/</url>
+           
+          </repository>
+	
+	
 	</repositories>
 
 
 	<dependencies>
+		
 
 		<dependency>
 			<groupId>com.google.ortools</groupId>
@@ -75,6 +84,21 @@
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
+		<dependency>
+	      <groupId>org.jogamp.gluegen</groupId>
+	      <artifactId>gluegen-rt-main</artifactId>
+	      <version>2.3.2</version>
+	    </dependency>
+	    <dependency>
+	      <groupId>org.jogamp.jogl</groupId>
+	      <artifactId>jogl-all-main</artifactId>
+	      <version>2.3.2</version>
+	    </dependency>
+		<dependency>
+	        <groupId>org.processing</groupId>
+	        <artifactId>core</artifactId>
+	        <version>3.3.6</version>
+	    </dependency>
 
 		<dependency>
 			<groupId>com.github.xingshuangs</groupId>
@@ -152,6 +176,7 @@
 				<configuration>
 					<executable>java</executable>
 	                <arguments>
+	                	
 	                    <argument>-XX:+UseG1GC</argument>
 	                    <argument>-Xms512m</argument>
 	                    <argument>-Xmx4g</argument>
