@@ -27,7 +27,17 @@ public class CourbeTempsDeplacement extends JPanel {
     private static final long serialVersionUID = 1L;
     private JDateChooser dateDebutChooser, dateFinChooser;
     private JComboBox<String> poste1ComboBox, poste2ComboBox;
-    private JPanel chartPanel;
+    
+	public void setPoste1ComboBox(JComboBox<String> poste1ComboBox) {
+		this.poste1ComboBox = poste1ComboBox;
+	}
+
+	
+	public void setPoste2ComboBox(JComboBox<String> poste2ComboBox) {
+		this.poste2ComboBox = poste2ComboBox;
+	}
+
+	private JPanel chartPanel;
     private Map<String, Integer> postesMap = new HashMap<>();
     private Connection conn;
 
@@ -117,7 +127,13 @@ public class CourbeTempsDeplacement extends JPanel {
         }
     }
     private int getCalibrage(int dep,int arrivee) {
-        String req = "SELECT normal FROM dbo.TempsDeplacements  where depart=? and arrivee=?";
+        String req = """
+        		
+        		SELECT T.normal 
+        		FROM  dbo.TempsDeplacements   T
+        		INNER JOIN dbo.Postes P1 on ?=P1.NumPoste AND T.depart=P1.NumZone
+        		INNER JOIN dbo.Postes P2 on ?=P2.NumPoste AND T.arrivee=P2.NumZone
+        """;
         int tps=0;
        
        
@@ -140,6 +156,7 @@ public class CourbeTempsDeplacement extends JPanel {
     }
 
     private void afficherGraphique() {
+    	
     	
         Date dateDebut = dateDebutChooser.getDate();
         Date dateFin = dateFinChooser.getDate();
@@ -165,14 +182,16 @@ public class CourbeTempsDeplacement extends JPanel {
         TimeSeries series = new TimeSeries("Temps de déplacement");
         String req = """
             SELECT 
-			    D.DateEntreePoste,D.TempsDeplacement+ dbo.getOffset(C.vitesse_bas, C.vitesse_haut) as TempsDeplacement
+			    CAST(D.DateEntreePoste AS DATE) AS Jour, 
+			    AVG(D.TempsDeplacement - dbo.getOffset(C.vitesse_bas, C.vitesse_haut)) AS TempsDeplacementMoyen
 			FROM ANODISATION.dbo.DetailsFichesProduction D
 			INNER JOIN ANODISATION.dbo.DetailsChargesProduction C 
-			    on C.NumFicheProduction=D.NumFicheProduction and C.NumLigne=1
-			
-			WHERE D.NumPostePrecedent=? and D.NumPoste=?
-			AND D.DateEntreePoste BETWEEN ? AND ?
-			ORDER BY D.DateEntreePoste;
+			    ON C.NumFicheProduction = D.NumFicheProduction AND C.NumLigne = 1
+			WHERE D.NumPostePrecedent = ? 
+			    AND D.NumPoste = ?
+			    AND D.DateEntreePoste BETWEEN ? AND ?
+			GROUP BY CAST(D.DateEntreePoste AS DATE)
+			ORDER BY Jour;
         """;
 
         try (PreparedStatement stmt = conn.prepareStatement(req)) {
@@ -184,8 +203,8 @@ public class CourbeTempsDeplacement extends JPanel {
 
             SimpleDateFormat dbDateFormat = new SimpleDateFormat("yyyy-MM-dd");
             while (rs.next()) {
-                double tempsDeplacement = rs.getDouble("TempsDeplacement");
-                Date date = dbDateFormat.parse(rs.getString("DateEntreePoste"));
+                double tempsDeplacement = rs.getDouble("TempsDeplacementMoyen");
+                Date date = dbDateFormat.parse(rs.getString("Jour"));
                 series.addOrUpdate(new Day(date), tempsDeplacement);
             }
 
@@ -214,11 +233,12 @@ public class CourbeTempsDeplacement extends JPanel {
         // Personnalisation du graphique
         XYPlot plot = lineChart.getXYPlot();
         
-        // Ajouter une ligne horizontale à la valeur 15 sur l'axe des Y
-        ValueMarker horizontalLine = new ValueMarker(moyenne); // L'axe des Y est en secondes, donc on met 15
-        horizontalLine.setPaint(Color.BLACK); // Couleur de la ligne
-        horizontalLine.setStroke(new BasicStroke(1.0f)); // Épaisseur de la ligne
-        plot.addRangeMarker(horizontalLine); // Ajout du marker sur l'axe des Y
+        ValueMarker horizontalLine = new ValueMarker(moyenne);
+        horizontalLine.setPaint(Color.BLUE); // Couleur plus visible
+        horizontalLine.setStroke(new BasicStroke(1.0f)); // Épaisseur plus grande
+        plot.addRangeMarker(horizontalLine); 
+        
+        
         
         XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
         renderer.setSeriesShapesVisible(0, false);
@@ -233,13 +253,36 @@ public class CourbeTempsDeplacement extends JPanel {
         // Configuration de l'axe Y
         NumberAxis yAxis = (NumberAxis) plot.getRangeAxis();
         yAxis.setLabel("Temps (secondes)");
+     
         
-   
+        
         // Affichage
         ChartPanel chart = new ChartPanel(lineChart);
+      
+   
         chartPanel.removeAll();
         chartPanel.add(chart, BorderLayout.CENTER);
-        chartPanel.validate();
+        chartPanel.revalidate(); // Ajouté
+        chartPanel.repaint();    // Ajouté
+    }
+    
+    public void initialiserFiltres(int numPostePrecedent, int numPosteActuel) {
+        // Initialisation des dates (dernier mois par défaut)
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.MONTH, -1);
+        dateDebutChooser.setDate(cal.getTime());
+        dateFinChooser.setDate(new Date());
+
+        // Sélection des postes dans les JComboBox
+        for (Map.Entry<String, Integer> entry : postesMap.entrySet()) {
+            if (entry.getValue() == numPostePrecedent) {
+                poste1ComboBox.setSelectedItem(entry.getKey());
+            }
+            if (entry.getValue() == numPosteActuel) {
+                poste2ComboBox.setSelectedItem(entry.getKey());
+            }
+        }
+        afficherGraphique();
     }
     
     public static void main(String[] args) {
@@ -247,7 +290,9 @@ public class CourbeTempsDeplacement extends JPanel {
             JFrame frame = new JFrame("Courbe du Temps de Déplacement");
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setSize(800, 600);
-            frame.add(new CourbeTempsDeplacement());
+            CourbeTempsDeplacement c=new CourbeTempsDeplacement();
+            frame.add(c);
+            c.initialiserFiltres(9,15);
             frame.setVisible(true);
         });
     }

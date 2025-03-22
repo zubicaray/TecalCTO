@@ -5,10 +5,13 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
 import org.tecal.scheduler.data.SQL_DATA;
+import org.tecal.ui.stats.CourbeTempsDeplacement;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.sql.*;
 
 public class FicheProductionDialog extends JDialog {
@@ -21,17 +24,28 @@ public class FicheProductionDialog extends JDialog {
         setLayout(new BorderLayout());
         
         // Définition des colonnes
-        String[] columnNames = {"Départ", "Arrivée", "Réel", "Calibrage"};
-        tableModel = new DefaultTableModel(columnNames, 0);
+        String[] columnNames = {"Départ", "Arrivée", "Réel", "Calibrage","N1","N2"};
+        
+        tableModel = new DefaultTableModel(columnNames,0) {
+            private static final long serialVersionUID = 1L;
+
+			@Override
+            public boolean isCellEditable(int row, int column) {
+                return false; // Rend toutes les cellules non éditables
+            }
+        };
+
+       
         table = new JTable(tableModel);
+        
         table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
             private static final long serialVersionUID = 1L;
 
 			@Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 Component cell = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                double reel = (double) table.getValueAt(row, 2);
-                double calibrage = (double) table.getValueAt(row, 3);
+                int reel = (int) table.getValueAt(row, 2);
+                int calibrage = (int) table.getValueAt(row, 3);
                 if (Math.abs(calibrage - reel) >= 10) {
                     cell.setBackground(Color.RED);
                 } else {
@@ -40,12 +54,54 @@ public class FicheProductionDialog extends JDialog {
                 return cell;
             }
         });
-        
+        table.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2 && table.getSelectedRow() != -1) { // Double-clic et ligne sélectionnée
+                    int selectedRow = table.getSelectedRow();
+                    Object postePrecedent = table.getValueAt(selectedRow, 4); // Colonne 4
+                    Object posteActuel = table.getValueAt(selectedRow, 5);    // Colonne 5
+                    
+                    if (postePrecedent != null && posteActuel != null) {
+                        try {
+                            int numPostePrecedent = Integer.parseInt(postePrecedent.toString());
+                            int numPosteActuel = Integer.parseInt(posteActuel.toString());
+
+                         // Récupérer la fenêtre parente (peut être un JFrame ou un JDialog)
+                            Window parentWindow = SwingUtilities.getWindowAncestor(table);
+
+                            // Créer et initialiser la fenêtre CourbeTempsDeplacement
+                            CourbeTempsDeplacement courbe = new CourbeTempsDeplacement();
+                            courbe.initialiserFiltres(numPostePrecedent, numPosteActuel);
+
+                            // Création du JDialog modal avec le bon parent
+                            JDialog dialog = new JDialog(parentWindow, "Courbe Temps de Déplacement", Dialog.ModalityType.APPLICATION_MODAL);
+                            dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+                            dialog.setSize(800, 600);
+                            dialog.setLayout(new BorderLayout());
+                            dialog.add(courbe, BorderLayout.CENTER);
+                            dialog.setLocationRelativeTo(parentWindow); // Centrer par rapport à la fenêtre parente
+                            dialog.setVisible(true); // Rendre la fenêtre modale
+
+                        } catch (NumberFormatException ex) {
+                            JOptionPane.showMessageDialog(table, "Erreur : Numéro de poste invalide.", "Erreur", JOptionPane.ERROR_MESSAGE);
+                        }
+                    }
+                }
+            }
+        });
+        table.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
         Connection connection=SQL_DATA.getInstance().getConnection();
         
         // Remplissage des données
         loadData(numFicheProduction, connection);
-        
+     // Masquer les colonnes 4 et 5
+        for (int col = 4; col <= 5; col++) {
+            table.getColumnModel().getColumn(col).setMinWidth(0);
+            table.getColumnModel().getColumn(col).setMaxWidth(0);
+            table.getColumnModel().getColumn(col).setWidth(0);
+            table.getColumnModel().getColumn(col).setPreferredWidth(0);
+        }
         // Ajout de la table dans un JScrollPane
         add(new JScrollPane(table), BorderLayout.CENTER);
         
@@ -79,7 +135,8 @@ public class FicheProductionDialog extends JDialog {
     private void loadData(String numFicheProduction, Connection connection) {
     	tableModel.setRowCount(0); // Efface les anciennes données
         String query = "SELECT Z1.CodeZone AS depart, Z2.CodeZone AS arrivee, " +
-                       "F.TempsDeplacement AS reel, TD.normal + dbo.getOffset(DC.vitesse_bas, DC.vitesse_haut) AS calibrage " +
+                       "F.TempsDeplacement AS reel, TD.normal + dbo.getOffset(DC.vitesse_bas, DC.vitesse_haut) AS calibrage, " +
+                       "P1.NumPoste AS N1, P2.NumPoste AS N2 " +
                        "FROM DetailsFichesProduction F " +
                        "INNER JOIN DetailsChargesProduction DC ON DC.NumLigne=1 AND DC.NumFicheProduction=F.NumFicheProduction  COLLATE FRENCH_CI_AS " +
                        "INNER JOIN Postes P1 ON P1.NumPoste=F.NumPostePrecedent " +
@@ -96,9 +153,11 @@ public class FicheProductionDialog extends JDialog {
                 while (rs.next()) {
                     String depart = rs.getString("depart");
                     String arrivee = rs.getString("arrivee");
-                    double reel = rs.getDouble("reel");
-                    double calibrage = rs.getDouble("calibrage");
-                    tableModel.addRow(new Object[]{depart, arrivee, reel, calibrage});
+                    int reel = rs.getInt("reel");
+                    int calibrage = rs.getInt("calibrage");
+                    int N1 = rs.getInt("N1");
+                    int N2 = rs.getInt("N2");
+                    tableModel.addRow(new Object[]{depart, arrivee, reel, calibrage,N1,N2});
                 }
             }
         } catch (SQLException e) {

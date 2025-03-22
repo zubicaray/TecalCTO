@@ -75,60 +75,46 @@ select * from dbo.DetailsFichesProduction where DateEntreePoste>='20250219';
 select * from dbo.DetailsFichesProduction where NumFicheProduction ='00088870';
 select * from dbo.LOGS_CPO where label ='37-000183' and idbarre=7 and entree between '20250219' and  '20250220' ;
 select * from DetailsChargesProduction where  NumFicheProduction='00088871'
+
+---------------------------------------------------------------------------------------------------
+
+SELECT 
+    D.NumPostePrecedent,D.NumPoste,
+    D.TempsDeplacement+ dbo.getOffset(C.vitesse_bas, C.vitesse_haut) as TempsDeplacement
+FROM ANODISATION.dbo.DetailsFichesProduction D
+INNER JOIN ANODISATION.dbo.DetailsChargesProduction C 
+    on C.NumFicheProduction=D.NumFicheProduction and C.NumLigne=1
+
+WHERE 
+D.DateEntreePoste BETWEEN '20250101' AND '2250301'
+group by D.NumPostePrecedent,D.NumPoste
+ORDER BY D.DateEntreePoste;
+
+WITH VarianceData AS (
+SELECT 
+      
+        P1.NomPoste AS libelleX, 
+        P2.NomPoste AS libelleY, 
+        STDEV(D.TempsDeplacement+ dbo.getOffset(C.vitesse_bas, C.vitesse_haut)) AS variance_t 
+FROM ANODISATION.dbo.DetailsFichesProduction D 
+    INNER JOIN ANODISATION.dbo.DetailsChargesProduction C 
+        on C.NumFicheProduction=D.NumFicheProduction and C.NumLigne=1
+    INNER JOIN ANODISATION.dbo.POSTES P1 ON P1.NumPoste = D.NumPostePrecedent 
+    INNER JOIN ANODISATION.dbo.POSTES P2 ON P2.NumPoste = D.NumPoste 
+WHERE D.NumPoste not in (1,2,0) and D.NumPostePrecedent not in (0,41,42) 
+    and D.TempsDeplacement <60
+    and abs(D.NumPostePrecedent-D.NumPoste) <20 AND D.DateEntreePoste BETWEEN  '20250101' AND '2250301'
+GROUP BY D.NumPostePrecedent, D.NumPoste, P1.NomPoste, P2.NomPoste 
+) 
+SELECT TOP 10 * FROM VarianceData ORDER BY variance_t DESC
+
+---------------------------------------------------------------------------------------------------
+
 ---------------------------------------------------------------------------------------------------
 
 
-select 
-    Z1.NumZone as depart,Z2.NumZone as arrivee,
-    DC.vitesse_bas,DC.vitesse_haut,
-    F.TempsDeplacement, TD.normal 
-from 
-    DetailsFichesProduction  F
-    INNER JOIN Postes P1 on P1.NumPoste=F.NumPostePrecedent
-    INNER JOIN Zones Z1 on Z1.NumZone=P1.NumZone
-    INNER JOIN Postes P2 on P2.NumPoste=F.NumPoste
-    INNER JOIN Zones Z2 on Z2.NumZone=P2.NumZone
-    INNER JOIN TempsDeplacements TD on Z2.NumZone=TD.arrivee and Z1.NumZone=TD.depart
-    INNER JOIN DetailsChargesProduction DC
-        on DC.NumLigne=1 and F.NumFicheProduction =DC.NumFicheProduction
-where 
-    F.NumFicheProduction='00089610' 
 
 
-
-select 
-    distinct  DG.numficheproduction as [N° OF], 	DC.NumGammeANodisation as [gamme ],DC.NumBarre as  [barre] ,
-    dbo.hasBadCalibrage(DG.numficheproduction)
-from   	
-    [DetailsGammesProduction]  DG 	
-    LEFT OUTER JOIN   [DetailsFichesProduction] DF 	on   		
-        DG.numficheproduction=DF.numficheproduction COLLATE FRENCH_CI_AS and 		
-        DG.numligne=DF.NumLigne  and DF.NumLigne=1 	
-    INNER JOIN ( select distinct numficheproduction,NumGammeANodisation,NumBarre from [DetailsChargesProduction] where numligne=1
-    ) DC 	
-    on   		DC.numficheproduction=DF.numficheproduction  COLLATE FRENCH_CI_AS 
-WHERE		DF.DateEntreePoste >=  '20250113'  and DF.DateEntreePoste < '20250114'      
-order by DG.numficheproduction ,DC.NumBarre
-
-Update  TD
-SET normal=F.TempsDeplacement + dbo.getOffset(DC.vitesse_bas,DC.vitesse_haut)
-FROM 
-	DetailsFichesProduction  F
-    INNER JOIN DetailsChargesProduction DC
-        ON DC.NumLigne=1 and DC.NumFicheProduction=F.NumFicheProduction      
-	INNER JOIN Postes P1
-        on P1.NumPoste=F.NumPostePrecedent
-    INNER JOIN Zones Z1
-        on Z1.NumZone=P1.NumZone
-    INNER JOIN Postes P2
-        on P2.NumPoste=F.NumPoste
-    INNER JOIN Zones Z2
-        on Z2.NumZone=P2.NumZone
-    INNER JOIN TempsDeplacements TD
-        on Z2.NumZone=TD.arrivee and Z1.NumZone=TD.depart
-		
-	
-	where F.NumFicheProduction='00088320' 
 ---------------------------------------------------------------------------------------
 -- DIFFERENCE DE LIGNES ENTRE FICHE et GAMME  !!!!!!!!!!!!!!!!!!!!!
 ---------------------------------------------------------------------------------------
