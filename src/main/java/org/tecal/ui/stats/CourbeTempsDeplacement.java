@@ -18,34 +18,41 @@ import com.toedter.calendar.JDateChooser;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Date;
 
+
 public class CourbeTempsDeplacement extends JPanel {
     private static final long serialVersionUID = 1L;
     private JDateChooser dateDebutChooser, dateFinChooser;
-    private JComboBox<String> poste1ComboBox, poste2ComboBox;
+    private JComboBox<String> mPoste1ComboBox, mPoste2ComboBox;
+    private int mMoyenne=40;
+    int mPoste1 ;
+    int mPoste2 ;
+    private boolean isDragging = false;
     
-	public void setPoste1ComboBox(JComboBox<String> poste1ComboBox) {
-		this.poste1ComboBox = poste1ComboBox;
+	public void setmPoste1ComboBox(JComboBox<String> mPoste1ComboBox) {
+		this.mPoste1ComboBox = mPoste1ComboBox;
 	}
 
 	
-	public void setPoste2ComboBox(JComboBox<String> poste2ComboBox) {
-		this.poste2ComboBox = poste2ComboBox;
+	public void setmPoste2ComboBox(JComboBox<String> mPoste2ComboBox) {
+		this.mPoste2ComboBox = mPoste2ComboBox;
 	}
 
 	private JPanel chartPanel;
-    private Map<String, Integer> postesMap = new HashMap<>();
+    private Map<String, Integer> mPostesMap = new HashMap<>();
     private Connection conn;
 
     public CourbeTempsDeplacement() {
         conn = SQL_DATA.getInstance().getConnection();
         setLayout(new BorderLayout());
 
-        // ** Panel pour la sélection des dates et postes **
+        // ** Panel pour la sélection des dates et mPostes **
         JPanel topPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -71,21 +78,21 @@ public class CourbeTempsDeplacement extends JPanel {
         gbc.gridx = 3;
         topPanel.add(dateFinChooser, gbc);
 
-        // ** Ligne 2 : ComboBox Poste 1 et Poste 2 (centrées et alignées) **
+        // ** Ligne 2 : ComboBox mPoste 1 et mPoste 2 (centrées et alignées) **
         gbc.gridx = 0;
         gbc.gridy = 1;
         topPanel.add(new JLabel("Poste précédent :"), gbc);
 
-        poste1ComboBox = new JComboBox<>();
+        mPoste1ComboBox = new JComboBox<>();
         gbc.gridx = 1;
-        topPanel.add(poste1ComboBox, gbc);
+        topPanel.add(mPoste1ComboBox, gbc);
 
         gbc.gridx = 2;
         topPanel.add(new JLabel("Poste actuel :"), gbc);
 
-        poste2ComboBox = new JComboBox<>();
+        mPoste2ComboBox = new JComboBox<>();
         gbc.gridx = 3;
-        topPanel.add(poste2ComboBox, gbc);
+        topPanel.add(mPoste2ComboBox, gbc);
 
         // ** Ligne 3 : Bouton centré **
         JButton fetchButton = new JButton("Afficher la Courbe");
@@ -114,11 +121,11 @@ public class CourbeTempsDeplacement extends JPanel {
              ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
-                String posteLabel = rs.getString("NomPoste");
-                int posteNum = rs.getInt("NumPoste");
-                postesMap.put(posteLabel, posteNum);
-                poste1ComboBox.addItem(posteLabel);
-                poste2ComboBox.addItem(posteLabel);
+                String mPosteLabel = rs.getString("NomPoste");
+                int mPosteNum = rs.getInt("NumPoste");
+                mPostesMap.put(mPosteLabel, mPosteNum);
+                mPoste1ComboBox.addItem(mPosteLabel);
+                mPoste2ComboBox.addItem(mPosteLabel);
             }
 
         } catch (SQLException e) {
@@ -126,6 +133,29 @@ public class CourbeTempsDeplacement extends JPanel {
             JOptionPane.showMessageDialog(this, "Erreur SQL: " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
         }
     }
+    private void updateCalibrage() {
+        String req = """
+        		UPDATE T
+        		SET T.normal=?        		
+        		FROM  dbo.TempsDeplacements   T
+        		INNER JOIN dbo.Postes P1 on ?=P1.NumPoste AND T.depart=P1.NumZone
+        		INNER JOIN dbo.Postes P2 on ?=P2.NumPoste AND T.arrivee=P2.NumZone
+        """;     
+       
+       
+        try (PreparedStatement stmt = conn.prepareStatement(req)){
+			 stmt.setInt(1, mMoyenne);
+			 stmt.setInt(2, mPoste1);
+		     stmt.setInt(3, mPoste2);	
+			 stmt.executeUpdate();        
+          
+            
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Erreur SQL: " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
+        }
+	}
     private int getCalibrage(int dep,int arrivee) {
         String req = """
         		
@@ -165,16 +195,16 @@ public class CourbeTempsDeplacement extends JPanel {
             return;
         }
 
-        String poste1Label = (String) poste1ComboBox.getSelectedItem();
-        String poste2Label = (String) poste2ComboBox.getSelectedItem();
-        if (poste1Label == null || poste2Label == null) {
-            JOptionPane.showMessageDialog(this, "Veuillez sélectionner les postes.", "Erreur", JOptionPane.ERROR_MESSAGE);
+        String mPoste1Label = (String) mPoste1ComboBox.getSelectedItem();
+        String mPoste2Label = (String) mPoste2ComboBox.getSelectedItem();
+        if (mPoste1Label == null || mPoste2Label == null) {
+            JOptionPane.showMessageDialog(this, "Veuillez sélectionner les mPostes.", "Erreur", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
-        int poste1 = postesMap.get(poste1Label);
-        int poste2 = postesMap.get(poste2Label);
-        int moyenne=getCalibrage(poste1,poste2);
+        mPoste1 = mPostesMap.get(mPoste1Label);
+        mPoste2 = mPostesMap.get(mPoste2Label);
+        mMoyenne=getCalibrage(mPoste1,mPoste2);
 
         Timestamp dateDebutStr = new Timestamp(dateDebut.getTime());
         Timestamp dateFinStr = new Timestamp(dateFin.getTime());
@@ -195,8 +225,8 @@ public class CourbeTempsDeplacement extends JPanel {
         """;
 
         try (PreparedStatement stmt = conn.prepareStatement(req)) {
-            stmt.setInt(1, poste1);
-            stmt.setInt(2, poste2);
+            stmt.setInt(1, mPoste1);
+            stmt.setInt(2, mPoste2);
             stmt.setTimestamp(3, dateDebutStr);
             stmt.setTimestamp(4, dateFinStr);
             ResultSet rs = stmt.executeQuery();
@@ -233,7 +263,7 @@ public class CourbeTempsDeplacement extends JPanel {
         // Personnalisation du graphique
         XYPlot plot = lineChart.getXYPlot();
         
-        ValueMarker horizontalLine = new ValueMarker(moyenne);
+        ValueMarker horizontalLine = new ValueMarker(mMoyenne);
         horizontalLine.setPaint(Color.BLUE); // Couleur plus visible
         horizontalLine.setStroke(new BasicStroke(1.0f)); // Épaisseur plus grande
         plot.addRangeMarker(horizontalLine); 
@@ -258,6 +288,54 @@ public class CourbeTempsDeplacement extends JPanel {
         
         // Affichage
         ChartPanel chart = new ChartPanel(lineChart);
+       
+        chart.addMouseMotionListener(new MouseAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+            	if(isDragging) {
+            	    double yValue = plot.getRangeAxis().java2DToValue(e.getY(), chart.getScreenDataArea(), plot.getRangeAxisEdge());
+                    horizontalLine.setValue(yValue);
+            	}
+            
+            }
+        });
+
+        chart.addMouseListener(new MouseAdapter() {
+        	@Override
+            public void mousePressed(MouseEvent e) {
+                double yValue = plot.getRangeAxis().java2DToValue(e.getY(), chart.getScreenDataArea(), plot.getRangeAxisEdge());
+                if (Math.abs(yValue - horizontalLine.getValue()) < 1) { // Seuil de sélection
+                    isDragging = true;
+                }
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+            	if(isDragging) {
+            		 int nouvelleValeur =  (int) Math.round(horizontalLine.getValue());
+                     int confirmation = JOptionPane.showConfirmDialog(
+                             CourbeTempsDeplacement.this,
+                             "Confirmez-vous la nouvelle valeur: " + nouvelleValeur + " ?",
+                             "Confirmation", JOptionPane.YES_NO_OPTION
+                     );
+                     if (confirmation == JOptionPane.YES_OPTION) {                 
+            
+                         mMoyenne =  nouvelleValeur; // Mise à jour de la valeur validée
+                         horizontalLine.setValue(mMoyenne); // Remet l'ancienne valeur
+                         updateCalibrage();
+                         chartPanel.repaint();  
+                         
+                     }else {
+                    	 chartPanel.repaint();  
+                     }
+                     isDragging=false;
+            	}
+               
+                
+                
+            }
+        });
+
       
    
         chartPanel.removeAll();
@@ -266,20 +344,20 @@ public class CourbeTempsDeplacement extends JPanel {
         chartPanel.repaint();    // Ajouté
     }
     
-    public void initialiserFiltres(int numPostePrecedent, int numPosteActuel) {
+    public void initialiserFiltres(int nummPostePrecedent, int nummPosteActuel) {
         // Initialisation des dates (dernier mois par défaut)
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.MONTH, -1);
         dateDebutChooser.setDate(cal.getTime());
         dateFinChooser.setDate(new Date());
 
-        // Sélection des postes dans les JComboBox
-        for (Map.Entry<String, Integer> entry : postesMap.entrySet()) {
-            if (entry.getValue() == numPostePrecedent) {
-                poste1ComboBox.setSelectedItem(entry.getKey());
+        // Sélection des mPostes dans les JComboBox
+        for (Map.Entry<String, Integer> entry : mPostesMap.entrySet()) {
+            if (entry.getValue() == nummPostePrecedent) {
+                mPoste1ComboBox.setSelectedItem(entry.getKey());
             }
-            if (entry.getValue() == numPosteActuel) {
-                poste2ComboBox.setSelectedItem(entry.getKey());
+            if (entry.getValue() == nummPosteActuel) {
+                mPoste2ComboBox.setSelectedItem(entry.getKey());
             }
         }
         afficherGraphique();

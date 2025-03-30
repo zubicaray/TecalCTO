@@ -121,7 +121,7 @@ public class InstabiliteGraph extends JPanel {
                 double moyenne = rs.getDouble("moyenne_t") ;// Réduction de la moyenne
 
                 ecartTypeDataset.addValue(ecartType, "Écart-Type", couple);
-                moyenneDataset.addValue(moyenne, "Moyenne (divisée)", couple);
+                moyenneDataset.addValue(moyenne, "Moyenne", couple);
             }
 
         } catch (SQLException e) {
