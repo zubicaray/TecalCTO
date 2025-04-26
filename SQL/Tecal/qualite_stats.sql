@@ -89,3 +89,34 @@ WHERE
 GROUP BY
     CONVERT(DATE, F1.DateEntreePoste)
 ORDER BY  Day;
+
+
+SELECT
+
+    CONVERT(DATE, DateEntreeEnLigne) AS Day,
+    SUM(NumLigne)
+FROM
+    [DetailsChargesProduction] 
+WHERE  
+  NumLigne=1 and DateEntreeEnLigne > '20240601'
+GROUP BY
+    CONVERT(DATE, DateEntreeEnLigne)
+ORDER BY  Day;
+
+
+
+
+SELECT
+    CAST(DateEntreePoste AS DATE ) as J,
+    AVG(DATEDIFF(SECOND, DateEntreePoste ,DateSortiePoste)) AS MoyOccupation,
+    SUM(DATEDIFF(SECOND, DateEntreePoste ,DateSortiePoste)) AS DureeOccupation
+
+FROM DetailsFichesProduction
+WHERE NumPoste IN (18, 19, 20) -- Postes concernés
+    AND DateEntreePoste >= '20250101' -- Exclure les enregistrements terminés avant la période
+    AND DateSortiePoste < '20250505'   -- Exclure les enregistrements commençant après la période
+GROUP BY 
+    CAST(DateEntreePoste AS DATE)
+HAVING 
+    COUNT(*) > 0 -- Elimine les jours sans occupation
+ORDER BY J

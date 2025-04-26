@@ -1038,6 +1038,12 @@ public class TecalOrdo {
 		mPassedTasksByBarreId.put(barreid,mAssignedTasksByBarreId.get(barreid));
 		mAssignedTasksByBarreId.remove(barreid);
 	}
+	public void removeAllByBarreId(int barreid) {
+		mPassedTasksByBarreId.remove(barreid);
+		mAssignedTasksByBarreId.remove(barreid);
+		removeBarreFinie(barreid);
+		
+	}
 
 	public LinkedHashMap<Integer, List<AssignedTask>> getPassedTasksByBarreId() {
 		return mPassedTasksByBarreId;

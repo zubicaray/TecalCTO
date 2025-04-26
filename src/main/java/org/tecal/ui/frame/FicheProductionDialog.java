@@ -138,13 +138,13 @@ public class FicheProductionDialog extends JDialog {
                        "F.TempsDeplacement AS reel, TD.normal + dbo.getOffset(DC.vitesse_bas, DC.vitesse_haut) AS calibrage, " +
                        "P1.NumPoste AS N1, P2.NumPoste AS N2 " +
                        "FROM DetailsFichesProduction F " +
-                       "INNER JOIN DetailsChargesProduction DC ON DC.NumLigne=1 AND DC.NumFicheProduction=F.NumFicheProduction  COLLATE FRENCH_CI_AS " +
+                       "INNER JOIN DetailsChargesProduction DC ON DC.NumLigne=1 AND DC.NumFicheProduction=F.NumFicheProduction   " +
                        "INNER JOIN Postes P1 ON P1.NumPoste=F.NumPostePrecedent " +
                        "INNER JOIN Zones Z1 ON Z1.NumZone=P1.NumZone " +
                        "INNER JOIN Postes P2 ON P2.NumPoste=F.NumPoste " +
                        "INNER JOIN Zones Z2 ON Z2.NumZone=P2.NumZone " +
                        "INNER JOIN TempsDeplacements TD ON Z2.NumZone=TD.arrivee AND Z1.NumZone=TD.depart " +
-                       "WHERE F.NumFicheProduction=?  COLLATE FRENCH_CI_AS " +
+                       "WHERE F.NumFicheProduction=?   " +
                        "ORDER BY F.numligne";
         
         try (PreparedStatement stmt = connection.prepareStatement(query)) {

@@ -144,6 +144,7 @@ public class CPO_IHM extends JFrame {
 				try {
 
 					String version = getManifestVersion();
+					/*
 					Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
 						// Gérer les exceptions non interceptées ici
 
@@ -152,7 +153,7 @@ public class CPO_IHM extends JFrame {
 
 						logger.error("Exception non interceptée dans le thread : " + thread.getName(), throwable);
 					});
-
+					*/
 					SwingUtilities.invokeLater(() -> {
 						// Définit un gestionnaire global pour les exceptions dans Swing
 						System.setProperty("sun.awt.exception.handler", "org.tecal.ui.MyExceptionHandler");

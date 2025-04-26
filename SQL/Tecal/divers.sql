@@ -3,12 +3,17 @@ USE ANODISATION;
 select max(NumFicheProduction) from ANODISATION.dbo.DetailsFichesProduction
 
 
+delete from ANODISATION.dbo.DetailsFichesProduction where NumFicheProduction>'00089639'
+delete from ANODISATION.dbo.DetailsPhasesProduction where NumFicheProduction>'00089639'
+delete from ANODISATION.dbo.DetailsGammesProduction where NumFicheProduction>'00089639'
+delete from ANODISATION.dbo.DetailsChargesProduction where NumFicheProduction>'00089639'
+
 SELECT COLUMN_NAME, COLLATION_NAME 
 FROM INFORMATION_SCHEMA.COLUMNS 
 WHERE TABLE_NAME = 'DetailsFichesProduction' AND COLUMN_NAME = 'NumFicheProduction';
 
 ALTER TABLE [ANODISATION].dbo.DetailsFichesProduction 
-ALTER COLUMN NumFicheProduction NVARCHAR(50) COLLATE FRENCH_CI_AS;
+ALTER COLUMN NumFicheProduction NVARCHAR(10) COLLATE FRENCH_CI_AS;
 
 SELECT COLUMN_NAME, COLLATION_NAME 
 FROM INFORMATION_SCHEMA.COLUMNS 
@@ -143,3 +148,19 @@ normal !=0  and (depart=arrivee+5 or depart+5=arrivee )
 
 --code ?
 --*6565/sdA
+
+select distinct  
+    DF.numficheproduction COLLATE FRENCH_CI_AS as [N° OF], 	DC.NumGammeANodisation as [gamme ],
+    DC.NumBarre as  [barre]  , 
+    VB.libelle as descente,
+    VH.libelle as montee,
+    dbo.hasBadCalibrage (DF.numficheproduction) as BAD_CALIB 
+from  
+    [DetailsFichesProduction] DF
+    INNER JOIN  DetailsChargesProduction DC 	
+        on DC.numficheproduction=DF.numficheproduction  COLLATE FRENCH_CI_AS 
+        and DC.numligne=1 and DF.NumLigne=1 
+    INNER JOIN vitesse_bas VB on VB.id=DC.vitesse_bas
+    INNER JOIN vitesse_haut VH on VH.id=DC.vitesse_haut
+WHERE		DF.DateEntreePoste >=  '20250418'  and DF.DateEntreePoste < '20250419'      
+order by DF.numficheproduction ,DC.NumBarre

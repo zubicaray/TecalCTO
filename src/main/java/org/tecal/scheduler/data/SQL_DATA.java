@@ -259,7 +259,7 @@ public HashMap<Integer,PosteBDD> getPostes(String[] listeOF) {
         		+ "[DetailsGammesProduction]  DG "
         		+ " RIGHT OUTER  JOIN [DetailsFichesProduction] DF "
         		+ "on   "
-        		+ "	DG.numficheproduction=DF.numficheproduction  COLLATE FRENCH_CI_AS  and "
+        		+ "	DG.numficheproduction=DF.numficheproduction    and "
         		+ "	DG.numligne=DF.NumLigne and DG.NumPosteReel=DF.NumPoste "
         		+ " "
         		+ "INNER JOIN  POSTES P "
@@ -427,7 +427,7 @@ public  ResultSet getTauxAnodisationJours( Date dateDebut , Date dateFin ) {
 		    SELECT
 		        CAST(DateEntreePoste AS DATE ) as J,
 		        DATEDIFF(SECOND, Min(DateEntreePoste) ,max(DateSortiePoste))*3 AS DureeMaxPossible,
-		        SUM(DATEDIFF(SECOND, DateEntreePoste ,DateSortiePoste         )) AS DureeOccupation
+		        SUM(DATEDIFF(SECOND, DateEntreePoste ,DateSortiePoste)) AS DureeOccupation
 		
 		    FROM DetailsFichesProduction
 		    WHERE NumPoste IN (18, 19, 20) -- Postes concernés
@@ -721,8 +721,8 @@ public boolean resetAllTpsMvts() {
 							on Z2.NumZone=P2.NumZone						
 			
 			
-					where F.NumFicheProduction COLLATE FRENCH_CI_AS in 
-					(select NumFicheProduction COLLATE FRENCH_CI_AS from CalibrageTempsGammes )   
+					where F.NumFicheProduction  in 
+					(select NumFicheProduction  from CalibrageTempsGammes )   
 					group by Z1.NumZone  ,Z2.NumZone 		
 				)  T
 				ON TPS.depart=T.N1 and TPS.arrivee=T.N2 
@@ -793,7 +793,7 @@ public ResultSet getVisuProd(java.util.Date inDate) {
 	String fin=toSQLServerFormat(dt);
 
     // Create and execute a SELECT SQL statement.
-    String selectSql = "select distinct  \n"
+	String selectSql = "select distinct  \n"
     		+ "    DF.numficheproduction as [N° OF], 	DC.NumGammeANodisation as [gamme ],\n"
     		+ "    DC.NumBarre as  [barre]  , \n"
     		+ "    VB.libelle as descente,\n"
@@ -802,7 +802,7 @@ public ResultSet getVisuProd(java.util.Date inDate) {
     		+ "from  \n"
     		+ "    [DetailsFichesProduction] DF\n"
     		+ "    INNER JOIN  DetailsChargesProduction DC 	\n"
-    		+ "        on DC.numficheproduction=DF.numficheproduction  COLLATE FRENCH_CI_AS \n"
+    		+ "        on DC.numficheproduction=DF.numficheproduction   \n"
     		+ "        and DC.numligne=1 and DF.NumLigne=1 \n"
     		+ "    INNER JOIN vitesse_bas VB on VB.id=DC.vitesse_bas\n"
     		+ "    INNER JOIN vitesse_haut VH on VH.id=DC.vitesse_haut\n"
@@ -844,7 +844,7 @@ public HashMap<String, String>  getFicheGamme(String[] listeOF) {
         		+ "from  [DetailsChargesProduction] DC"
         		+ " INNER JOIN   [DetailsFichesProduction] DF "
         		+ "on   "
-        		+ "	DC.numficheproduction=DF.numficheproduction   COLLATE FRENCH_CI_AS "
+        		+ "	DC.numficheproduction=DF.numficheproduction    "
 
         		+" and DF.numficheproduction in ("+toClause(listeOF)+")  order by DateEntreePoste " ;
         try {
@@ -926,7 +926,7 @@ public void setTempsDeplacements() {
         		+ "[DetailsGammesProduction]  DG "
         		+ "RIGHT OUTER JOIN   [DetailsFichesProduction] DF "
         		+ "on   "
-        		+ "	DG.numficheproduction=DF.numficheproduction  COLLATE FRENCH_CI_AS  and "
+        		+ "	DG.numficheproduction=DF.numficheproduction    and "
         		+ "	DG.numligne=DF.NumLigne and DG.NumPosteReel=DF.NumPoste "
         		+ " "
         		+ "INNER JOIN POSTES P "

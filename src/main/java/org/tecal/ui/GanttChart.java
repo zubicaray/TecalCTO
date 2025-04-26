@@ -2,6 +2,7 @@ package org.tecal.ui;
 
 import java.awt.Color;
 import java.awt.Font;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -15,15 +16,21 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 
+import org.jfree.chart.ChartMouseEvent;
+import org.jfree.chart.ChartMouseListener;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.SymbolAxis;
+import org.jfree.chart.entity.ChartEntity;
+import org.jfree.chart.entity.LegendItemEntity;
 import org.jfree.chart.labels.StandardXYItemLabelGenerator;
 import org.jfree.chart.labels.StandardXYToolTipGenerator;
+import org.jfree.chart.labels.XYToolTipGenerator;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.ValueMarker;
 import org.jfree.chart.plot.XYPlot;
@@ -62,19 +69,21 @@ public class GanttChart extends JFrame {
 	private XYIntervalSeriesCollection mDataset;
 	private HashMap<Integer,ZoneType> mZonesBDD;
 	private Map<Integer, List<AssignedTask>> mTabAssignedJobsSorted;
-	HashMap<Integer,Integer> barreToIndex;
-	HashMap<Integer,Integer> indexToBarreIndex;
+	HashMap<Integer,Integer> mBarreToIndex;
+	HashMap<Integer,Integer> mSeriesIndexToBarreIndex;
 
 	private long mLowerBound;
 
 	private XYPlot mPlot;
 	private ChartPanel  mChartPanel;
+	private TecalOrdo  mTecalOrdo;
+	private ToggleableToolTipGenerator mTtgen;
 
 
 	public ChartPanel getChartPanel() {
 		return mChartPanel;
 	}
-	private  HashMap<Integer,String[]>  labelsModel;
+	private  HashMap<Integer,String[]>  mLabelsModel;
 	//ArrayList<AssignedTask[]>  tasksTab;
 	ArrayList<String[]> labels;
 	private ValueMarker timeBar;
@@ -82,6 +91,98 @@ public class GanttChart extends JFrame {
 	public ValueMarker getTimeBar() {
 		return timeBar;
 	}
+	private void suprimeSerie(ChartMouseEvent event) {
+		// Vérifier si c'est un double-clic
+        if (event.getTrigger().getClickCount() == 2) {
+        	
+            ChartEntity entity = event.getEntity();
+            if (entity instanceof LegendItemEntity) {
+                LegendItemEntity legendEntity = (LegendItemEntity) entity;
+                Comparable<?> seriesKey = legendEntity.getSeriesKey();
+
+                // Trouver l'index de la série associée
+                XYPlot plot = (XYPlot) mChartPanel.getChart().getPlot();
+                XYDataset dataset = plot.getDataset();
+                
+                if (dataset instanceof XYIntervalSeriesCollection) {
+                    XYIntervalSeriesCollection intervalDataset = (XYIntervalSeriesCollection) dataset;
+                    
+                    int seriesIndex = -1;
+
+                    for (int i = 0; i < intervalDataset.getSeriesCount(); i++) {
+                        if (intervalDataset.getSeriesKey(i).equals(seriesKey)) {
+                            seriesIndex = i;
+                            break;
+                        }
+                    }
+
+                    // Vérification et confirmation avant suppression
+                    if (seriesIndex != -1) {
+                    	
+                        int choix = JOptionPane.showConfirmDialog(
+                            mChartPanel, 
+                            "Voulez-vous vraiment supprimer la barre " + seriesKey + " ?", 
+                            "Confirmation", 
+                            JOptionPane.YES_NO_OPTION, 
+                            JOptionPane.WARNING_MESSAGE
+                        );
+                        
+                       
+                        if (choix == JOptionPane.YES_OPTION) {
+                            // Supprimer la série
+                        		mTtgen.setEnabled(false);
+                        		System.out.println("Série supprimée : " + seriesIndex);
+	                            int barre=mSeriesIndexToBarreIndex.get(seriesIndex);
+	                            mBarreToIndex.remove(barre);
+	                            
+	                            mSeriesIndexToBarreIndex.clear();		    	                    		
+	                    		int cptIndex=0;
+	                    		for (Map.Entry<Integer, Integer > barreSerie : mBarreToIndex.entrySet()) {
+	                    			int barreVal=barreSerie.getValue();
+	                    			if(barreVal>seriesIndex)
+	                    				barreSerie.setValue(barreVal-1);
+	                    			mSeriesIndexToBarreIndex.put(cptIndex,barreSerie.getKey());
+	                    			cptIndex++;
+	                    		}
+	                            
+	                            mTabAssignedJobsSorted.remove(barre);		    	                            
+	                            mTecalOrdo.removeAllByBarreId(barre);
+	                            mLabelsModel.remove(seriesIndex);
+	                         	//. Récupérer toutes les clés à traiter
+	                            List<Integer> keysToModify = new ArrayList<>();
+	                            for (int serieKey : mLabelsModel.keySet()) {
+	                                if (serieKey > seriesIndex) {
+	                                    keysToModify.add(serieKey);
+	                                }
+	                            }
+
+	                            // 2. Modifier ensuite
+	                            for (int serieKey : keysToModify) {
+	                                String[] ts = mLabelsModel.get(serieKey);
+	                                mLabelsModel.put(serieKey - 1, ts);
+	                                mLabelsModel.remove(serieKey);
+	                            }
+	                           
+	                            
+	                            
+	                            intervalDataset.removeSeries(seriesIndex);
+	                            //buildPlot() ;
+	                            mTtgen.setEnabled(true);
+        				
+                		
+                        }
+                        
+                        
+                    }
+                } else {
+                    System.out.println("Le dataset n'est pas un XYIntervalSeriesCollection.");
+                }
+            	
+            }
+        	
+        }
+	}
+
 
 	public GanttChart(final String title) {
 
@@ -92,17 +193,57 @@ public class GanttChart extends JFrame {
 		 int nbZones=mZonesBDD.keySet().size();
 		 mZonesAllGamme =  new String[nbZones];
 		 mDataset = new XYIntervalSeriesCollection();
-		 barreToIndex=new HashMap<>();
-		 indexToBarreIndex=new HashMap<>();
+		 mBarreToIndex=new HashMap<>();
+		 mSeriesIndexToBarreIndex=new HashMap<>();
+		 mTtgen=new ToggleableToolTipGenerator();
 
 
 		 mChartPanel=  new ChartPanel(null);
+		 mChartPanel.addChartMouseListener(new ChartMouseListener() {
+	    	    @Override
+	    	    public void chartMouseClicked(ChartMouseEvent event) {
+	    	        suprimeSerie(event);
+	    	    }
+
+				
+	    	    @Override
+	    	    public void chartMouseMoved(ChartMouseEvent event) {}
+	    	});
+		
+
 
 		 timeBar = new ValueMarker(1500);  // position is the value on the axis
 	     timeBar.setPaint(Color.red);
 		 timeBar.setValue(CST.CPT_GANTT_OFFSET);
 
 	}
+	public class ToggleableToolTipGenerator implements XYToolTipGenerator {
+	    private boolean enabled = true;
+
+	    public void setEnabled(boolean enabled) {
+	        this.enabled = enabled;
+	    }
+
+	    
+	    @Override
+		 public String generateToolTip(XYDataset dataset, int series, int item) {
+	    	 if (!enabled) {
+	             return null; // Ne génère pas de tooltip
+	         } 
+			if(mSeriesIndexToBarreIndex.containsKey(series)) {
+				int barre=mSeriesIndexToBarreIndex.get(series);
+				//System.out.println("series:"+series+" "+" item:"+item+" val="+ mLabelsModel.get(series)[item] );
+				
+				return "<html>"+
+				mLabelsModel.get(series)[item]+ "<br>" +
+				tmpsAvantSortie(mTabAssignedJobsSorted.get(barre).get(item).derive) + "<br>" +
+				   "</html>";
+			}
+			else return "";
+			
+		 }
+	}
+	 
 
 
 	class ZoneCumul {
@@ -192,20 +333,21 @@ public class GanttChart extends JFrame {
 	public void model_diag(TecalOrdo  inTecalOrdo){
 
 		mLowerBound=0;
+		mTecalOrdo=inTecalOrdo;
 
 		LinkedHashMap<Integer, List<ElementGamme> > 	barreZones	= inTecalOrdo.getBarreZonesAll();
 		LinkedHashMap<Integer,String> 					barreLabels	= inTecalOrdo.getBarreLabels();
 		Map<Integer, List<AssignedTask>> mAssignedTasksByNumzone	= inTecalOrdo.getAssignedJobs();
 
-		indexToBarreIndex.clear();
-		barreToIndex.clear();
+		mSeriesIndexToBarreIndex.clear();
+		mBarreToIndex.clear();
 
 		// on doit mettre les barres sous forme d'index comme demandée
 		// par l'objet XYIntervalSeries qui est un tableau
 		int cptBarre=0;
 		for (Map.Entry<Integer, List<ElementGamme> > entry : barreZones.entrySet()) {
-			barreToIndex.put(entry.getKey(),cptBarre);
-			indexToBarreIndex.put(cptBarre,entry.getKey());
+			mBarreToIndex.put(entry.getKey(),cptBarre);
+			mSeriesIndexToBarreIndex.put(cptBarre,entry.getKey());
 			cptBarre++;
 		}
 
@@ -239,7 +381,7 @@ public class GanttChart extends JFrame {
 			int barre=entry.getKey();
 			String lgamme=barreLabels.get(barre);
 
-			int index=barreToIndex.get(barre);
+			int index=mBarreToIndex.get(barre);
 			series[index] = new XYIntervalSeries(lgamme);
 			mDataset.addSeries(series[index]);
 
@@ -247,7 +389,7 @@ public class GanttChart extends JFrame {
 
 
 
-		 labelsModel = new HashMap<>();
+		 mLabelsModel = new HashMap<>();
 
 
 		 //!!!!!!!!!!!!!!!!!!!!
@@ -282,8 +424,8 @@ public class GanttChart extends JFrame {
 		 for (Entry<Integer, List<AssignedTask>> lset :  mTabAssignedJobsSorted.entrySet()) {
 			List<AssignedTask> listeTache=lset.getValue();
 			Integer barre=lset.getKey();
-			int index=barreToIndex.get(barre);
-			labelsModel.put(index,new String[listeTache.size()]);
+			int index=mBarreToIndex.get(barre);
+			mLabelsModel.put(index,new String[listeTache.size()]);
 			//tasksTab.add(new AssignedTask[listeTache.size()]);
 			int cpt1=0;
 		    for(AssignedTask at :listeTache) {
@@ -321,7 +463,7 @@ public class GanttChart extends JFrame {
 
 			    }
 
-			    labelsModel.get(index)[cpt1]="barre "+barreLabels.get(barre)+" en "+df.get(at.taskID).codezone+"<br>start:"+at.start+", durée:"+toMinutes(at.duration)+", fin:"+(at.derive)
+			    mLabelsModel.get(index)[cpt1]="barre "+barreLabels.get(barre)+" en "+df.get(at.taskID).codezone+"<br>start:"+at.start+", durée:"+toMinutes(at.duration)+", fin:"+(at.derive)
 			    		+ "<br>dérive: " +(at.derive-dr[1])+", égouttage:"+df.get(at.taskID).egouttage ;
 
 
@@ -411,27 +553,11 @@ public class GanttChart extends JFrame {
 		 renderer.setBarPainter(new StandardXYBarPainter());
 
 		
-		 StandardXYToolTipGenerator ttgen = new StandardXYToolTipGenerator() {
-
-
-		 private static final long serialVersionUID = 1L;
-
-		 @Override
-		 public String generateToolTip(XYDataset dataset, int series, int item) {
-			 	int barre=indexToBarreIndex.get(series);
-			 	//System.out.println("series:"+series+" "+" item:"+item+" val="+labelsModel[series][item]);
-			 	
-			 	return "<html>" +
-			 	labelsModel.get(series)[item]+ "<br>" +
-			 	tmpsAvantSortie(mTabAssignedJobsSorted.get(barre).get(item).derive) + "<br>" +
-	               "</html>";
-		    }
-		 };
-
+		
 	
-
-	     renderer.setSeriesToolTipGenerator(0, ttgen);
-	     renderer.setBaseToolTipGenerator(ttgen);
+		 
+	     renderer.setSeriesToolTipGenerator(0, mTtgen);
+	     renderer.setBaseToolTipGenerator(mTtgen);
 
 
 		 mPlot = new XYPlot(mDataset, new SymbolAxis("zones", mZonesAllGamme), new NumberAxis(), renderer);
@@ -453,6 +579,8 @@ public class GanttChart extends JFrame {
 	     UIManager.put("ToolTip.font", new Font("SansSerif", Font.BOLD, 20)); // Exemple de police
 
 	     mChartPanel.setChart(j);
+	    
+	     
 
 	}
 
