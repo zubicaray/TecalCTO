@@ -376,11 +376,20 @@ public class TecalOrdo {
 		return mBarresSettings;
 	}
 	
-	public void execute(LinkedHashMap<Integer, Barre> inBarresFutures,Long currentTime) {
+	public void incremente() {
+		mCurrentTime+=1;		
+	}
+	public void incremente(int v) {
+		mCurrentTime+=v;		
+	}
+	public long getCurrentTime() {
+		return mCurrentTime;		
+	}
+	
+	
+	public void execute(LinkedHashMap<Integer, Barre> inBarresFutures) {
 
-
-		mCurrentTime=currentTime;
-		System.out.println("mCurrentTime:"+mCurrentTime);
+		//System.out.println("mCurrentTime:"+mCurrentTime);
 		setBarres(inBarresFutures);
 		run();
 		

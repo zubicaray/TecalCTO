@@ -3,6 +3,7 @@ package org.tecal.ui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -16,6 +17,11 @@ import java.io.InputStream;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -23,6 +29,7 @@ import java.util.Map;
 import java.util.Vector;
 
 import javax.imageio.ImageIO;
+import javax.swing.BorderFactory;
 import javax.swing.DefaultCellEditor;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
@@ -31,6 +38,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
+import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -54,6 +62,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
+import javax.swing.text.MaskFormatter;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -658,17 +667,21 @@ public class CPO_Panel extends JPanel {
 		}
 	}
 
-	private  void showGammeEditor(CPO_IHM cpo,List<ElementGamme> gammeArray) {
+
+	private void showGammeEditor(CPO_IHM cpo, Barre selectedBarre) {
 	    // Créer le modèle pour gammeArray
-	    GammeTableModel gammeModel = new GammeTableModel(gammeArray);
+	    GammeTableModel gammeModel = new GammeTableModel(selectedBarre.getGammeArray());
 	    JTable gammeTable = new JTable(gammeModel);
+	    
+	    
+	    LocalDateTime heureLimite=LocalDateTime.now();
 
 	    // Configurer les colonnes
 	    gammeTable.getColumnModel().getColumn(4).setCellEditor(new DefaultCellEditor(new JCheckBox()));
 	    gammeTable.getColumnModel().getColumn(4).setCellRenderer(new DefaultTableCellRenderer() {
 	        private static final long serialVersionUID = 1L;
 
-			@Override
+	        @Override
 	        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 	            JCheckBox checkBox = new JCheckBox();
 	            checkBox.setSelected((Boolean) value);
@@ -684,18 +697,79 @@ public class CPO_Panel extends JPanel {
 
 	    // Fenêtre modale
 	    JDialog dialog = new JDialog(cpo, "Éditeur de Gamme", true);
-	    dialog.setLayout(new BorderLayout());
-	    dialog.add(new JScrollPane(gammeTable), BorderLayout.CENTER);
+	    dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+	    dialog.setLayout(new BorderLayout(10, 10));
+
+	    // Panel pour la saisie de l'heure
+	    JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+	    topPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 10));
+	    topPanel.add(new JLabel("à terminer avant :"));
+	    // Boutons
+	    JButton validerButton = new JButton("valider heure");
+	    
+		 // Boutons
+	    final JFormattedTextField[] heureField = new JFormattedTextField[1];
+	    try {
+	        MaskFormatter heureFormatter = new MaskFormatter("##:##");
+	        heureFormatter.setPlaceholderCharacter('_');
+	        heureField[0] = new JFormattedTextField(heureFormatter);
+	    } catch (java.text.ParseException ex) {
+	        heureField[0] = new JFormattedTextField();
+	    }
+	    heureField[0].setColumns(5);
+	    topPanel.add(heureField[0]);
+	    topPanel.add(validerButton);
+	    dialog.add(topPanel, BorderLayout.NORTH);
+
+	    // Table dans une JScrollPane
+	    JScrollPane scrollPane = new JScrollPane(gammeTable);
+	    scrollPane.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
+	    dialog.add(scrollPane, BorderLayout.CENTER);
+
+	    
+
+	    validerButton.addActionListener(e -> {
+	        String texteHeure = heureField[0].getText();
+	        try {
+	            LocalDateTime saisieHeure = LocalDateTime.parse(texteHeure, DateTimeFormatter.ofPattern("HH:mm"));
+	            //LocalDate aujourdHui = LocalDate.now();
+	            
+	            // Création de LocalDateTime avec la date d'aujourd'hui
+	            LocalDateTime saisieDateTime = LocalDateTime.now();
+	        
+	            
+	            // Si la saisie est avant la limite -> jour suivant
+	            if (saisieHeure.isBefore(heureLimite)) {
+	                saisieDateTime = saisieDateTime.plusDays(1);
+	            }
+	            
+	            selectedBarre.setmHeureLimite(saisieDateTime);
+
+	            JOptionPane.showMessageDialog(dialog,
+	                "Heure validée : " + saisieDateTime.toString(),
+	                "Succès", JOptionPane.INFORMATION_MESSAGE);
+	            
+	            dialog.dispose(); // Tu peux continuer ici ton traitement
+
+	        } catch (DateTimeParseException ex1) {
+	            JOptionPane.showMessageDialog(dialog,
+	                "Format d'heure invalide. Utilisez HH:mm.",
+	                "Erreur", JOptionPane.ERROR_MESSAGE);
+	        }
+	    });
 
 	    JButton closeButton = new JButton("Fermer");
 	    closeButton.addActionListener(e -> dialog.dispose());
 
-	    JPanel buttonPanel = new JPanel();
+	    JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+	    buttonPanel.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
+	    //buttonPanel.add(validerButton);
 	    buttonPanel.add(closeButton);
 
 	    dialog.add(buttonPanel, BorderLayout.SOUTH);
-	    dialog.setSize(600, 300);
-	    dialog.setLocationRelativeTo(null); // Centrer la fenêtre
+
+	    dialog.setSize(600, 400);
+	    dialog.setLocationRelativeTo(cpo);
 	    dialog.setVisible(true);
 	}
 
@@ -763,7 +837,7 @@ public class CPO_Panel extends JPanel {
              int selectedRow = mTableBarres.getSelectedRow();
              if (selectedRow != -1) {
                  Barre selectedBarre = mModelBarres.getBarre(selectedRow);
-                 showGammeEditor(mCPO_IHM,selectedBarre.getGammeArray());
+                 showGammeEditor(mCPO_IHM,selectedBarre);
              }
          });
 

@@ -422,12 +422,16 @@ public  ResultSet getTauxAnodisationJours( Date dateDebut , Date dateFin ) {
           
             
 		SELECT
-		    J as Jour,DureeOccupation,DureeOccupation*100/DureeMaxPossible as TauxOccupationPourcentage
+		    J as Jour,DureeOccupation,
+		    DureeOccupation*100/DureeMaxPossible as TauxOccupationPourcentage,
+		    MoyenneAno
+		    
 		FROM (
 		    SELECT
 		        CAST(DateEntreePoste AS DATE ) as J,
 		        DATEDIFF(SECOND, Min(DateEntreePoste) ,max(DateSortiePoste))*3 AS DureeMaxPossible,
-		        SUM(DATEDIFF(SECOND, DateEntreePoste ,DateSortiePoste)) AS DureeOccupation
+		        SUM(DATEDIFF(SECOND, DateEntreePoste ,DateSortiePoste)) AS DureeOccupation,
+		        AVG(DATEDIFF(SECOND, DateEntreePoste ,DateSortiePoste)) AS MoyenneAno
 		
 		    FROM DetailsFichesProduction
 		    WHERE NumPoste IN (18, 19, 20) -- Postes concernés

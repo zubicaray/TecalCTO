@@ -2,8 +2,9 @@ package org.tecal.ui;
 
 import java.awt.Color;
 import java.awt.Font;
-
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,6 +25,7 @@ import org.jfree.chart.ChartMouseEvent;
 import org.jfree.chart.ChartMouseListener;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.SymbolAxis;
 import org.jfree.chart.entity.ChartEntity;
@@ -86,10 +88,15 @@ public class GanttChart extends JFrame {
 	private  HashMap<Integer,String[]>  mLabelsModel;
 	//ArrayList<AssignedTask[]>  tasksTab;
 	ArrayList<String[]> labels;
-	private ValueMarker timeBar;
+	private ValueMarker mTimeBar;
+	private long mIncrement=1;
 
 	public ValueMarker getTimeBar() {
-		return timeBar;
+		return mTimeBar;
+	}
+	
+	public void incrementTimeBar() {
+		mTimeBar.setValue(mTimeBar.getValue() + mIncrement);
 	}
 	private void suprimeSerie(ChartMouseEvent event) {
 		// Vérifier si c'est un double-clic
@@ -130,45 +137,45 @@ public class GanttChart extends JFrame {
                        
                         if (choix == JOptionPane.YES_OPTION) {
                             // Supprimer la série
-                        		mTtgen.setEnabled(false);
-                        		System.out.println("Série supprimée : " + seriesIndex);
-	                            int barre=mSeriesIndexToBarreIndex.get(seriesIndex);
-	                            mBarreToIndex.remove(barre);
-	                            
-	                            mSeriesIndexToBarreIndex.clear();		    	                    		
-	                    		int cptIndex=0;
-	                    		for (Map.Entry<Integer, Integer > barreSerie : mBarreToIndex.entrySet()) {
-	                    			int barreVal=barreSerie.getValue();
-	                    			if(barreVal>seriesIndex)
-	                    				barreSerie.setValue(barreVal-1);
-	                    			mSeriesIndexToBarreIndex.put(cptIndex,barreSerie.getKey());
-	                    			cptIndex++;
-	                    		}
-	                            
-	                            mTabAssignedJobsSorted.remove(barre);		    	                            
-	                            mTecalOrdo.removeAllByBarreId(barre);
-	                            mLabelsModel.remove(seriesIndex);
-	                         	//. Récupérer toutes les clés à traiter
-	                            List<Integer> keysToModify = new ArrayList<>();
-	                            for (int serieKey : mLabelsModel.keySet()) {
-	                                if (serieKey > seriesIndex) {
-	                                    keysToModify.add(serieKey);
-	                                }
-	                            }
+                    		mTtgen.setEnabled(false);
+                    		System.out.println("Série supprimée : " + seriesIndex);
+                            int barre=mSeriesIndexToBarreIndex.get(seriesIndex);
+                            mBarreToIndex.remove(barre);
+                            
+                            mSeriesIndexToBarreIndex.clear();		    	                    		
+                    		int cptIndex=0;
+                    		for (Map.Entry<Integer, Integer > barreSerie : mBarreToIndex.entrySet()) {
+                    			int barreVal=barreSerie.getValue();
+                    			if(barreVal>seriesIndex)
+                    				barreSerie.setValue(barreVal-1);
+                    			mSeriesIndexToBarreIndex.put(cptIndex,barreSerie.getKey());
+                    			cptIndex++;
+                    		}
+                            
+                            mTabAssignedJobsSorted.remove(barre);		    	                            
+                            mTecalOrdo.removeAllByBarreId(barre);
+                            mLabelsModel.remove(seriesIndex);
+                         	//. Récupérer toutes les clés à traiter
+                            List<Integer> keysToModify = new ArrayList<>();
+                            for (int serieKey : mLabelsModel.keySet()) {
+                                if (serieKey > seriesIndex) {
+                                    keysToModify.add(serieKey);
+                                }
+                            }
 
-	                            // 2. Modifier ensuite
-	                            for (int serieKey : keysToModify) {
-	                                String[] ts = mLabelsModel.get(serieKey);
-	                                mLabelsModel.put(serieKey - 1, ts);
-	                                mLabelsModel.remove(serieKey);
-	                            }
-	                           
-	                            
-	                            
-	                            intervalDataset.removeSeries(seriesIndex);
-	                            //buildPlot() ;
-	                            mTtgen.setEnabled(true);
-        				
+                            // 2. Modifier ensuite
+                            for (int serieKey : keysToModify) {
+                                String[] ts = mLabelsModel.get(serieKey);
+                                mLabelsModel.put(serieKey - 1, ts);
+                                mLabelsModel.remove(serieKey);
+                            }
+                           
+                            
+                            
+                            intervalDataset.removeSeries(seriesIndex);
+                            //buildPlot() ;
+                            mTtgen.setEnabled(true);
+    				
                 		
                         }
                         
@@ -212,9 +219,9 @@ public class GanttChart extends JFrame {
 		
 
 
-		 timeBar = new ValueMarker(1500);  // position is the value on the axis
-	     timeBar.setPaint(Color.red);
-		 timeBar.setValue(CST.CPT_GANTT_OFFSET);
+		 mTimeBar = new ValueMarker(1500);  // position is the value on the axis
+	     mTimeBar.setPaint(Color.red);
+		 mTimeBar.setValue(CST.CPT_GANTT_OFFSET);
 
 	}
 	public class ToggleableToolTipGenerator implements XYToolTipGenerator {
@@ -236,7 +243,7 @@ public class GanttChart extends JFrame {
 				
 				return "<html>"+
 				mLabelsModel.get(series)[item]+ "<br>" +
-				tmpsAvantSortie(mTabAssignedJobsSorted.get(barre).get(item).derive) + "<br>" +
+				tmpsAvantSortie(mTabAssignedJobsSorted.get(barre).get(item).finDerive) + "<br>" +
 				   "</html>";
 			}
 			else return "";
@@ -295,8 +302,8 @@ public class GanttChart extends JFrame {
 	}
 	public String tmpsAvantSortie(int fin) {
 
-		if(timeBar != null && mStartTime !=null) {
-			int seconds =(int) (fin -timeBar.getValue());
+		if(mTimeBar != null && mStartTime !=null) {
+			int seconds =(int) (fin -mTecalOrdo.getCurrentTime());
 			String minutes="";
 
 			String hour="";
@@ -324,10 +331,12 @@ public class GanttChart extends JFrame {
 	}
 
 	public void  backward(int v) {
-		timeBar.setValue(timeBar.getValue()-v);
+		mTimeBar.setValue(mTimeBar.getValue()-v*mIncrement);
+		mTecalOrdo.incremente(-v);
 	}
 	public void  foreward(int v) {
-		timeBar.setValue(timeBar.getValue()+v);
+		mTimeBar.setValue(mTimeBar.getValue()+v*mIncrement);
+		mTecalOrdo.incremente(+v);
 	}
 
 	public void model_diag(TecalOrdo  inTecalOrdo){
@@ -435,9 +444,14 @@ public class GanttChart extends JFrame {
 		    	//on retrouve le idtask de la table ZONES SQLSERVER ( numéroté sans trou à partir de 0 <> numzone donc)
 		    	// car quant à lui,le taskid de google, est propre à l'ordres des zones d'une gamme
 		    	int posteEncours=df.get(at.taskID).idzonebdd;
-
-			    long[] dr={at.start,at.start+at.duration,at.start+at.duration+at.derive};
-
+		    	long[] dr={at.start,at.start+at.duration,at.start+at.duration};
+		    	if(mStartTime != null) {
+		    		long now = toMillis();
+		    		
+				    dr[0]=dr[0]*1000+now;
+				    dr[1]=dr[1]*1000+now;
+		    	}
+			    
 
 			    if(at.start < mLowerBound || mLowerBound==0) {
 			    	mLowerBound=at.start;
@@ -453,7 +467,8 @@ public class GanttChart extends JFrame {
 			    	double offset=incrementY*at.IdPosteZoneCumul;
 			    	double incrementSpaceY=0.45;
 			    	//Encode the room as x value. The width of the bar is only 0.6 to leave a small gap. The course starts 0.1 h/6 min after the end of the preceding course.
-				    series[index].add(posteEncours, posteEncours - incrementSpaceY+offset, posteEncours -incrementSpaceY+offset+incrementY, dr[0],dr[0] ,dr[1]);
+				    series[index].add(posteEncours, posteEncours - incrementSpaceY+offset, 
+				    		posteEncours -incrementSpaceY+offset+incrementY, dr[0],dr[0] ,dr[1]);
 				 }
 
 			    else {
@@ -463,8 +478,8 @@ public class GanttChart extends JFrame {
 
 			    }
 
-			    mLabelsModel.get(index)[cpt1]="barre "+barreLabels.get(barre)+" en "+df.get(at.taskID).codezone+"<br>start:"+at.start+", durée:"+toMinutes(at.duration)+", fin:"+(at.derive)
-			    		+ "<br>dérive: " +(at.derive-dr[1])+", égouttage:"+df.get(at.taskID).egouttage ;
+			    mLabelsModel.get(index)[cpt1]="barre "+barreLabels.get(barre)+" en "+df.get(at.taskID).codezone+"<br>start:"+at.start+", durée:"+toMinutes(at.duration)+", fin:"+(at.finDerive)
+			    		+ "<br>dérive: " +(at.finDerive-dr[2])+", égouttage:"+df.get(at.taskID).egouttage ;
 
 
 
@@ -525,7 +540,7 @@ public class GanttChart extends JFrame {
 			 tasks.forEach( task->{
 				ZoneCumul zc=zonesCumul.get(task.numzone);
 		    
-		    	task.IdPosteZoneCumul=zc.getPosteIdx((int)task.start, task.derive);
+		    	task.IdPosteZoneCumul=zc.getPosteIdx((int)task.start, task.finDerive);
 
 
 			 });
@@ -535,7 +550,16 @@ public class GanttChart extends JFrame {
 	}
 	public void setStartTime() {
 		mStartTime= LocalDateTime.now();
+		//affichage horaire => on passe en millisecondes pour JFREECHART
+		mIncrement=1000;
+		mTimeBar.setValue(toMillis());		
+		
 	}
+	private  long toMillis() {
+		if(mStartTime != null)
+			return mStartTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+		else return 0;
+    }
 
 	private void buildPlot() {
 		 XYBarRenderer renderer = new XYBarRenderer();
@@ -551,10 +575,6 @@ public class GanttChart extends JFrame {
 		 renderer.setBaseItemLabelGenerator(new StandardXYItemLabelGenerator());
 		 renderer.setBaseItemLabelsVisible(false);
 		 renderer.setBarPainter(new StandardXYBarPainter());
-
-		
-		
-	
 		 
 	     renderer.setSeriesToolTipGenerator(0, mTtgen);
 	     renderer.setBaseToolTipGenerator(mTtgen);
@@ -564,7 +584,7 @@ public class GanttChart extends JFrame {
 
 		 mPlot.setOrientation(PlotOrientation.HORIZONTAL);
 
-	     mPlot.addRangeMarker(timeBar);
+	     mPlot.addRangeMarker(mTimeBar);
 
 	     JFreeChart j= new JFreeChart(mPlot);
 
@@ -573,7 +593,13 @@ public class GanttChart extends JFrame {
 	     mPlot.getRangeAxis().setTickLabelPaint(Color.WHITE);
 	     mPlot.getDomainAxis().setTickLabelPaint(Color.WHITE);
 	     mPlot.getDomainAxis().setLabelPaint(Color.WHITE);
-
+	     
+	     if(mStartTime != null) {
+	    	// Remplacer l'axe X par un DateAxis avec un format HH:mm
+	        DateAxis axis = new DateAxis("Temps");
+	        axis.setDateFormatOverride(new SimpleDateFormat("HH:mm"));
+	        mPlot.setRangeAxis(axis);	     
+	     }
 
 	     ToolTipManager.sharedInstance().setInitialDelay(0);
 	     UIManager.put("ToolTip.font", new Font("SansSerif", Font.BOLD, 20)); // Exemple de police

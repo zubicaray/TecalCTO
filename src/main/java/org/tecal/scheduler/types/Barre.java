@@ -1,5 +1,6 @@
 package org.tecal.scheduler.types;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -13,6 +14,7 @@ public class Barre {
 		private int vitesseDescente;
 		private int vitesseMontee;
 		private boolean prioritaire;
+		private LocalDateTime mHeureLimite;
 		
 		private List<ElementGamme>  gammeArray;
 
@@ -84,6 +86,12 @@ public class Barre {
 
 		public void setGammeArray(ArrayList<ElementGamme> gammeArray) {
 			this.gammeArray = gammeArray;
+		}
+		public LocalDateTime getmHeureLimite() {
+			return mHeureLimite;
+		}
+		public void setmHeureLimite(LocalDateTime mHeureLimite) {
+			this.mHeureLimite = mHeureLimite;
 		}
 
 	}

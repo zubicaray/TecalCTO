@@ -58,6 +58,28 @@ import org.tecal.ui.frame.CountdownWindow;
 import org.tecal.ui.frame.ModalProgressBar;
 
 public class CPO_IHM extends JFrame {
+	public class timerGantt extends TimerTask {
+		@Override
+		public void run() {
+			try {
+				if(CST.TEST_FIXED_JOBS) {
+					mGanttTecalOR.getTimeBar().setValue(7600);
+				}else {					
+					mGanttTecalOR.incrementTimeBar();
+					mTecalOrdo.incremente();
+				}
+				
+				
+				manageOngoingJobs();
+			} catch (Exception e) {
+				JOptionPane.showMessageDialog(null, "Erreur dans la tâche périodique : " + e.getMessage(), "Erreur",
+						JOptionPane.ERROR_MESSAGE);
+
+				logger.error("Erreur dans la tâche périodique", e);
+			}
+		}
+
+	}
 
 	private static final long serialVersionUID = 1L;
 	private JPanel mMainPane;
@@ -221,8 +243,7 @@ public class CPO_IHM extends JFrame {
 		mCPO_PANEL.setModelBarres(mBarresSettingsFutures);
 		if (mBarresSettingsFutures.size() >= 0) {
 			try {
-				mTecalOrdo.execute(mBarresSettingsFutures, (long) mGanttTecalOR.getTimeBar().getValue());
-
+				mTecalOrdo.execute(mBarresSettingsFutures);
 			} catch (Exception e) {
 				String msg = "Erreur du moteur Google OR: " + e.getMessage();
 				logger.error(msg);
@@ -253,27 +274,7 @@ public class CPO_IHM extends JFrame {
 
 	}
 
-	public class timerGantt extends TimerTask {
-		@Override
-		public void run() {
-			try {
-				if(CST.TEST_FIXED_JOBS) {
-					mGanttTecalOR.getTimeBar().setValue(7600);
-				}else {
-					mGanttTecalOR.getTimeBar().setValue(mGanttTecalOR.getTimeBar().getValue() + 1);
-				}
-				
-				
-				manageOngoingJobs();
-			} catch (Exception e) {
-				JOptionPane.showMessageDialog(null, "Erreur dans la tâche périodique : " + e.getMessage(), "Erreur",
-						JOptionPane.ERROR_MESSAGE);
-
-				logger.error("Erreur dans la tâche périodique", e);
-			}
-		}
-
-	}
+	
 
 	private void logAndRemoveBarreTasks(List<Integer> barreToremove) {
 		for (Integer i : barreToremove) {
@@ -291,7 +292,7 @@ public class CPO_IHM extends JFrame {
 				Barre b=mTecalOrdo.getAllJobs().get(i).getBarre();
 
 				SQL_DATA.getInstance().insertLogCPO(d, a.barreID, mTecalOrdo.getBarreLabels().get(i), cptZone,
-						a.numzone, deb, fin,(int) (a.derive-a.end),b.getVitesseDescente(),b.getVitesseMontee());
+						a.numzone, deb, fin,(int) (a.finDerive-a.end),b.getVitesseDescente(),b.getVitesseMontee());
 				cptZone++;
 			}
 
@@ -309,7 +310,7 @@ public class CPO_IHM extends JFrame {
 		ArrayList<Integer> barresCommencantes = new ArrayList<>();
 		ArrayList<Integer> barresTerminees = new ArrayList<>();
 
-		double current_time = mGanttTecalOR.getTimeBar().getValue();
+		double current_time = mTecalOrdo.getCurrentTime();
 		for (Entry<Integer, List<AssignedTask>> entry : mTecalOrdo.getAssignedTasksByBarreId().entrySet()) {
 
 			List<AssignedTask> values = entry.getValue();
@@ -391,9 +392,9 @@ public class CPO_IHM extends JFrame {
 
 		for (List<AssignedTask> lat : mTecalOrdo.getAssignedJobs().values()) {
 			for (AssignedTask at : lat) {
-				if (at.derive > at.end) {
+				if (at.finDerive > at.end) {
 					if (!mTecalOrdo.getBarresEnCours().contains(at.barreID)) {
-						long t = at.derive - at.start;
+						long t = at.finDerive - at.start;
 						String minutes = String.format("%02d:%02d", t / 60, (t % 60));
 						Object[] rowO = { mTecalOrdo.getAllJobs().get(at.barreID).getName(),
 								SQL_DATA.getInstance().getZones().get(at.numzone).codezone, minutes };

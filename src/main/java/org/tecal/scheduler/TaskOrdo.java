@@ -100,7 +100,7 @@ public class TaskOrdo {
 		
 		fixedEndBDD=task.end;
 				
-		fixedFin=task.derive+tempsDeplacement+mTask.egouttage;
+		fixedFin=task.finDerive+tempsDeplacement+mTask.egouttage;
 		
 	
 	}

@@ -18,7 +18,7 @@ public class AssignedTask {
 	public void setDuration(int duration) {
 		this.duration = duration;
 	}
-	public int derive;    
+	public int finDerive;    
 	// offset pour les zones cumul
 	public int IdPosteZoneCumul;
 	// Ctor
@@ -29,6 +29,6 @@ public class AssignedTask {
 		this.duration = duration;
 		this.end = duration+start;
 		this.numzone=numzone;
-		this.derive=derive;
+		this.finDerive=derive;
 	}
 }

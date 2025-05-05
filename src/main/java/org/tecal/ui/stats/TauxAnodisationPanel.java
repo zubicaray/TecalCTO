@@ -53,8 +53,8 @@ public class TauxAnodisationPanel extends JPanel {
     TimeSeries seriesBar;
     TimeSeries seriesSmoothed ;
     TimeSeries seriesCurveSmoothed ;
-    TimeSeries seriesCorrelation; // Courbe de corrélation
-
+    TimeSeries seriesMoyenneAno;
+    
     public TauxAnodisationPanel() {
         sqlCnx = SQL_DATA.getInstance();
         setLayout(new BorderLayout());
@@ -180,36 +180,6 @@ public class TauxAnodisationPanel extends JPanel {
             btnToggleSeries.setText("Données brutes");
         }
 	}
-	private List<Double> calculateCorrelation(List<Double> dataX, List<Double> dataY, int windowSize) {
-	    List<Double> correlationValues = new ArrayList<>();
-	    for (int i = 0; i < dataX.size(); i++) {
-	        int start = Math.max(0, i - windowSize / 2);
-	        int end = Math.min(dataX.size() - 1, i + windowSize / 2);
-
-	        List<Double> subX = dataX.subList(start, end + 1);
-	        List<Double> subY = dataY.subList(start, end + 1);
-
-	        double meanX = subX.stream().mapToDouble(val -> val).average().orElse(0.0);
-	        double meanY = subY.stream().mapToDouble(val -> val).average().orElse(0.0);
-
-	        double numerator = 0.0;
-	        double denominatorX = 0.0;
-	        double denominatorY = 0.0;
-
-	        for (int j = 0; j < subX.size(); j++) {
-	            double dx = subX.get(j) - meanX;
-	            double dy = subY.get(j) - meanY;
-
-	            numerator += dx * dy;
-	            denominatorX += dx * dx;
-	            denominatorY += dy * dy;
-	        }
-
-	        double correlation = (denominatorX > 0 && denominatorY > 0) ? (numerator / Math.sqrt(denominatorX * denominatorY)) : 0.0;
-	        correlationValues.add(correlation);
-	    }
-	    return correlationValues;
-	}
 
     private void afficherGraphique() {
         Date dateDebut = dateDebutChooser.getDate();
@@ -242,111 +212,96 @@ public class TauxAnodisationPanel extends JPanel {
 
         getDatas(dateDebut, dateFin, windowSize);
 
-        // Création des collections de séries
-        TimeSeriesCollection datasetCurve = new TimeSeriesCollection(seriesCurve); // Durée d'Occupation
-        TimeSeriesCollection datasetBar = new TimeSeriesCollection(seriesBar);    // Taux d'Occupation
-        TimeSeriesCollection datasetSmoothed = new TimeSeriesCollection(seriesSmoothed); // Taux lissé
-        // Ajouter la série lissée au dataset
+        // Datasets
+        TimeSeriesCollection datasetCurve = new TimeSeriesCollection(seriesCurve);
+        TimeSeriesCollection datasetBar = new TimeSeriesCollection(seriesBar);
+        TimeSeriesCollection datasetSmoothed = new TimeSeriesCollection(seriesSmoothed);
         TimeSeriesCollection datasetCurveSmoothed = new TimeSeriesCollection(seriesCurveSmoothed);
-      
-
-        // Création du graphique
+        TimeSeriesCollection datasetMoyenneAno = new TimeSeriesCollection(seriesMoyenneAno);
+        
         JFreeChart chart = ChartFactory.createTimeSeriesChart(
                 "Taux de remplissage et temps en anodisation",
                 "Jour",
-                "Durée (heures)", // Axe Y principal
+                "Durée (heures)",
                 datasetCurve,
                 true,
                 true,
                 false
         );
 
-        // Obtenir le plot
         XYPlot plot = chart.getXYPlot();
 
-        // Rendu pour la courbe (série principale - Durée d'Occupation)
-        XYStepRenderer LineRendererHeures = new XYStepRenderer(); // Activer uniquement les lignes
-        plot.setRenderer(0, LineRendererHeures); // Série 0 : Durée d'Occupation
+        XYStepRenderer LineRendererHeures = new XYStepRenderer();
+        plot.setRenderer(0, LineRendererHeures);
 
-      
-
-        // Ajouter la deuxième série (courbe lissée) avec un deuxième axe Y
         NumberAxis axisY2 = new NumberAxis("Taux de remplissage (%)");
-        axisY2.setLabelPaint(Color.BLUE); // Changer la couleur du label de l'axe Y
-        plot.setRangeAxis(1, axisY2); // Ajouter l'axe Y2
-        plot.setDataset(1, datasetSmoothed); // Série 2 : Taux lissé
-        plot.setDataset(2,datasetBar ); // Série 1 : Taux d'Occupation
-        plot.mapDatasetToRangeAxis(1, 1); // Mapper la série 1 à l'axe Y2
-        plot.mapDatasetToRangeAxis(2, 1); // Mapper la série 2 à l'axe Y2
+        axisY2.setLabelPaint(Color.GREEN);
+        plot.setRangeAxis(1, axisY2);
+        plot.setDataset(1, datasetSmoothed);
+        plot.setDataset(2, datasetBar);
+        plot.mapDatasetToRangeAxis(1, 1);
+        plot.mapDatasetToRangeAxis(2, 1);
 
-        // Rendu pour la courbe des taux d'occupation
-        
-        XYLineAndShapeRenderer lineRendererTaux = new XYLineAndShapeRenderer(true, false); // Activer uniquement les lignes
-        lineRendererTaux.setSeriesPaint(0, Color.BLUE); // Couleur pour la série 1
-        lineRendererTaux.setSeriesStroke(0, new BasicStroke(2.0f)); // Épaisseur de la ligne
+        XYLineAndShapeRenderer lineRendererTaux = new XYLineAndShapeRenderer(true, false);
+        lineRendererTaux.setSeriesPaint(0, Color.MAGENTA);
+        lineRendererTaux.setSeriesStroke(0, new BasicStroke(2.0f));
         plot.setRenderer(2, lineRendererTaux);
 
-        // Rendu pour la courbe lissée
         XYLineAndShapeRenderer lineRendererTauxSmoothed = new XYLineAndShapeRenderer(true, false);
-        lineRendererTauxSmoothed.setSeriesPaint(0, Color.GREEN); // Couleur pour la série lissée
+        lineRendererTauxSmoothed.setSeriesPaint(0, Color.GREEN);
         lineRendererTauxSmoothed.setSeriesStroke(0, new BasicStroke(2.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
         plot.setRenderer(1, lineRendererTauxSmoothed);
-        
-        plot.setDataset(3, datasetCurveSmoothed); // Série 3 : Durée lissée
-        plot.mapDatasetToRangeAxis(3, 0); // Mapper la série lissée à l'axe Y principal
 
-        // Rendu pour la courbe lissée de la durée
+        plot.setDataset(3, datasetCurveSmoothed);
+        plot.mapDatasetToRangeAxis(3, 0);
+
         XYLineAndShapeRenderer lineRendererHeuresSmoothed = new XYLineAndShapeRenderer(true, false);
-        lineRendererHeuresSmoothed.setSeriesPaint(0, Color.MAGENTA); // Couleur pour la série lissée
+        lineRendererHeuresSmoothed.setSeriesPaint(0, Color.MAGENTA);
         lineRendererHeuresSmoothed.setSeriesStroke(0, new BasicStroke(2.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
         plot.setRenderer(3, lineRendererHeuresSmoothed);
+        
+        plot.setDataset(4, datasetMoyenneAno);
+        plot.mapDatasetToRangeAxis(4, 0); // Utiliser l'axe principal Y (heures)
 
-        // Configurer l'axe des dates
+        XYLineAndShapeRenderer rendererMoyenneAno = new XYLineAndShapeRenderer(true, false);
+        rendererMoyenneAno.setSeriesPaint(0, Color.BLUE);
+        rendererMoyenneAno.setSeriesStroke(0, new BasicStroke(2.0f));
+        plot.setRenderer(4, rendererMoyenneAno);
+        rendererMoyenneAno.setSeriesToolTipGenerator(0, (dataset, series, item) -> {
+            Number value = dataset.getY(series, item);
+            double hours = value.doubleValue();
+            int fullHours = (int) hours;
+            int minutes = (int) ((hours - fullHours) * 60);
+            String formattedDate = dateFormat.format(dataset.getX(series, item));
+            return String.format("Jour : %s, Temps moyen : %d h %02d min", formattedDate, fullHours, minutes);
+        });
+        
         DateAxis dateAxis = new DateAxis("Jour");
         dateAxis.setTimeline(org.jfree.chart.axis.SegmentedTimeline.newMondayThroughFridayTimeline());
         dateAxis.setRange(datasetCurve.getDomainBounds(true));
         plot.setDomainAxis(dateAxis);
 
         NumberAxis valueAxis = (NumberAxis) plot.getRangeAxis();
-        valueAxis.setLabelPaint(Color.RED); // Changer la couleur du label de l'axe Y
-        
-        
-        TimeSeriesCollection datasetCorrelation = new TimeSeriesCollection(seriesCorrelation);
+        valueAxis.setLabelPaint(Color.RED);
 
-        NumberAxis axisY3 = new NumberAxis("Corrélation");
-        axisY3.setLabelPaint(Color.ORANGE);
-        plot.setRangeAxis(2, axisY3);
-        plot.setDataset(4, datasetCorrelation);
-        plot.mapDatasetToRangeAxis(4, 2);
+        // Suppression du datasetCorrelation, axisY3, renderer 4
 
-       
-        
-        setToolTips(dateFormat, LineRendererHeures,lineRendererHeuresSmoothed, lineRendererTaux, lineRendererTauxSmoothed);
-        
+        setToolTips(dateFormat, LineRendererHeures, lineRendererHeuresSmoothed, lineRendererTaux, lineRendererTauxSmoothed);
 
-        //POUR L INSTANT ON MASQUE LE COEFF DE CORRELATION
-        XYLineAndShapeRenderer lineRendererCorrelation = new XYLineAndShapeRenderer(true, false);
-        lineRendererCorrelation.setSeriesPaint(0, Color.ORANGE);
-        lineRendererCorrelation.setSeriesStroke(0, new BasicStroke(2.0f));
-        plot.setRenderer(4, lineRendererCorrelation);
-        //plot.getRenderer(4).setSeriesVisible(0, false); 
-        
-        // Mettre à jour le panel du graphique
         chartPanel.removeAll();
         chartPanel.add(new ChartPanel(chart), BorderLayout.CENTER);
         chartPanel.validate();
-        
+
         redrawSeries();
     }
-	private void getDatas(Date dateDebut, Date dateFin, int windowSize) {
-		// Récupération des données depuis la base de données
+
+    private void getDatas(Date dateDebut, Date dateFin, int windowSize) {
         seriesCurve = new TimeSeries("Total heures anodisation");
         seriesBar = new TimeSeries("Taux de remplissage (%)");
         seriesSmoothed = new TimeSeries("Taux de remplissage lissé");
         seriesCurveSmoothed = new TimeSeries("Total heures lissé");
-        seriesCorrelation = new TimeSeries("Corrélation entre Taux et Durée");
-        
-       
+        seriesMoyenneAno = new TimeSeries("Temps moyen anodisation");
+
         List<Integer> tauxData = new ArrayList<>();
         List<Integer> dureeData = new ArrayList<>();
         List<Date> dates = new ArrayList<>();
@@ -357,43 +312,34 @@ public class TauxAnodisationPanel extends JPanel {
                 Date jour = resultSet.getDate("Jour");
                 double taux = resultSet.getDouble("TauxOccupationPourcentage");
                 int duree = resultSet.getInt("DureeOccupation");
+                int moyenneAno = resultSet.getInt("MoyenneAno");
+                seriesMoyenneAno.addOrUpdate(new Day(jour), moyenneAno / 3600.0); 
 
-                // Ajouter les données
-                seriesCurve.addOrUpdate(new Day(jour), duree / 3600.0); // Convertir en heures
+                seriesCurve.addOrUpdate(new Day(jour), duree / 3600.0); // heures
                 seriesBar.addOrUpdate(new Day(jour), taux);
 
-                // Stocker les données pour le lissage
                 tauxData.add((int) taux);
-                dureeData.add( (int) (duree/ 3600.0));
+                dureeData.add((int) (duree / 3600.0));
                 dates.add(jour);
             }
 
-            // Lissage des données
-            List<Double> smoothedTaux = smoothData(tauxData, windowSize); // Lissage avec une fenêtre de taille 5
+            List<Double> smoothedTaux = smoothData(tauxData, windowSize);
             for (int i = 0; i < smoothedTaux.size(); i++) {
                 seriesSmoothed.addOrUpdate(new Day(dates.get(i)), smoothedTaux.get(i));
             }
-            
-            List<Double> smoothedDuree = smoothData(dureeData,windowSize // Taille de la fenêtre pour le lissage
-                );
+
+            List<Double> smoothedDuree = smoothData(dureeData, windowSize);
             for (int i = 0; i < smoothedDuree.size(); i++) {
                 seriesCurveSmoothed.addOrUpdate(seriesCurve.getTimePeriod(i), smoothedDuree.get(i));
             }
-            
-          
-            List<Double> correlationValues = calculateCorrelation(smoothedTaux, smoothedDuree, windowSize);
-            for (int i = 0; i < correlationValues.size(); i++) {
-                seriesCorrelation.addOrUpdate(new Day(dates.get(i)), correlationValues.get(i));
-            }
 
-            
-            
+            // Suppression du calcul de corrélation
+
         } catch (SQLException ex) {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(this, "Erreur lors de la récupération des données : " + ex.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
-            
         }
-	}
+    }
 	private void setToolTips(SimpleDateFormat dateFormat, XYStepRenderer LineRendererHeures,
 			XYLineAndShapeRenderer lineRendererHeuresSmoothed,
 			XYLineAndShapeRenderer lineRendererTaux, XYLineAndShapeRenderer lineRendererTauxSmoothed) {
