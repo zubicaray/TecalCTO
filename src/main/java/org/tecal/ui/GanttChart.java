@@ -313,12 +313,12 @@ public class GanttChart extends JFrame {
 
 			if(seconds >0) {
 				minutes=toMinutes(seconds);
-				hour= mStartTime.plusSeconds(fin-CST.CPT_GANTT_OFFSET).format(timeFormatter);
+				hour= mStartTime.plusSeconds(fin).format(timeFormatter);
 				res=" sortie dans "+ minutes+" minutes à "+hour;
 			}
 			else {
 				minutes=toMinutes(-1*seconds);
-				hour= mStartTime.plusSeconds(fin-CST.CPT_GANTT_OFFSET).format(timeFormatter);;
+				hour= mStartTime.plusSeconds(fin).format(timeFormatter);;
 				res=" sortie il y a  "+ minutes+" minutes à "+hour;
 			}
 
@@ -338,15 +338,17 @@ public class GanttChart extends JFrame {
 		mTimeBar.setValue(mTimeBar.getValue()+v*mIncrement);
 		mTecalOrdo.incremente(+v);
 	}
+	public void setTecalOrdo(TecalOrdo mTecalOrdo) {
+		this.mTecalOrdo = mTecalOrdo;		
+	}
 
-	public void model_diag(TecalOrdo  inTecalOrdo){
+	public void model_diag(){
 
 		mLowerBound=0;
-		mTecalOrdo=inTecalOrdo;
-
-		LinkedHashMap<Integer, List<ElementGamme> > 	barreZones	= inTecalOrdo.getBarreZonesAll();
-		LinkedHashMap<Integer,String> 					barreLabels	= inTecalOrdo.getBarreLabels();
-		Map<Integer, List<AssignedTask>> mAssignedTasksByNumzone	= inTecalOrdo.getAssignedJobs();
+		
+		LinkedHashMap<Integer, List<ElementGamme> > 	barreZones	= mTecalOrdo.getBarreZonesAll();
+		LinkedHashMap<Integer,String> 					barreLabels	= mTecalOrdo.getBarreLabels();
+		Map<Integer, List<AssignedTask>> mAssignedTasksByNumzone	= mTecalOrdo.getAssignedJobs();
 
 		mSeriesIndexToBarreIndex.clear();
 		mBarreToIndex.clear();
@@ -553,6 +555,7 @@ public class GanttChart extends JFrame {
 		//affichage horaire => on passe en millisecondes pour JFREECHART
 		mIncrement=1000;
 		mTimeBar.setValue(toMillis());		
+		model_diag();
 		
 	}
 	private  long toMillis() {
@@ -597,7 +600,7 @@ public class GanttChart extends JFrame {
 	     if(mStartTime != null) {
 	    	// Remplacer l'axe X par un DateAxis avec un format HH:mm
 	        DateAxis axis = new DateAxis("Temps");
-	        axis.setDateFormatOverride(new SimpleDateFormat("HH:mm"));
+	        axis.setDateFormatOverride(new SimpleDateFormat("HH:mm:ss"));
 	        mPlot.setRangeAxis(axis);	     
 	     }
 

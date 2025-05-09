@@ -1,0 +1,15 @@
+le "problème de l'atelier" solutionné avec l'outils google OR
+
+Oui, j'utilise CP-SAT pour un de mes clients.
+
+L'atelier contient une machine "goulot d'étranglement", c'est à dire une machine, 
+au milieu de la chaîne de production, pouvant contenir au maximum 3 tâches à la fois.
+
+J'ai remarqué que certains mixes de jobs permettent une meilleur optimisation du solveur.
+C'est à dire un remplissement plus efficace de la machine  "goulot d'étranglement".
+
+
+Existe t'il des méthodes pour identifier quel type de mixe permet les meilleurs optimisation 
+au niveau de la machine "goulot d'étranglement".
+
+

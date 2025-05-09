@@ -39,7 +39,8 @@ Ordonnanceur pour anodisation
 ## Gestion des barres en cours
 une fois qu'une barre est démarrée, *ie* le curseur a passé la fin de la zone de chargement:
 - toutes ses zones sont loggées dans la table CPO_LOGS
-- son job passe de mJobsFuturs à mJobsEnCours qui est la struture des jobs dont les zones sont fixées une fois pour toutes dans le temps
+- son job passe de mJobsFuturs à mJobsEnCours qui est la struture des jobs dont les zones sont fixées une fois pour toutes dans le temps,
+  la méthode JobTypeFixed.simulateBridgesMoves ne prend en compte que les zones terminées
 - ses données temporelles (**AssignedTask**), calculées grace à Google OR, passent de **mAssignedTasksByBarreId** à **mPassedTasksByBarreId**; avec cette dernière structure on pourra recalculer des **FixeIntervalVar** pour le job en cours à chaque fois que l'on va générer d'autres ordonnancements.
     	
   	

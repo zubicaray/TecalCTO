@@ -58,7 +58,7 @@ import org.tecal.ui.frame.CountdownWindow;
 import org.tecal.ui.frame.ModalProgressBar;
 
 public class CPO_IHM extends JFrame {
-	public class timerGantt extends TimerTask {
+	public class TimerGantt extends TimerTask {
 		@Override
 		public void run() {
 			try {
@@ -67,10 +67,10 @@ public class CPO_IHM extends JFrame {
 				}else {					
 					mGanttTecalOR.incrementTimeBar();
 					mTecalOrdo.incremente();
-				}
-				
+				}				
 				
 				manageOngoingJobs();
+				
 			} catch (Exception e) {
 				JOptionPane.showMessageDialog(null, "Erreur dans la tâche périodique : " + e.getMessage(), "Erreur",
 						JOptionPane.ERROR_MESSAGE);
@@ -93,7 +93,7 @@ public class CPO_IHM extends JFrame {
 	private DefaultTableModel mModelDerives;
 	private JTable mTableDerives;
 
-	private timerGantt mTimer;
+	private TimerGantt mTimer;
 	private TecalOrdo mTecalOrdo;
 	private static final Logger logger = LogManager.getLogger(CPO_IHM.class);
 
@@ -130,6 +130,7 @@ public class CPO_IHM extends JFrame {
 
 	public void setTecalOrdo(TecalOrdo mTecalOrdo) {
 		this.mTecalOrdo = mTecalOrdo;
+		mGanttTecalOR.setTecalOrdo(mTecalOrdo);
 	}
 
 	private CPO_Panel mCPO_PANEL;
@@ -365,7 +366,7 @@ public class CPO_IHM extends JFrame {
 
 	private void execute() {
 
-		mGanttTecalOR.model_diag(mTecalOrdo);
+		mGanttTecalOR.model_diag();
 		mCPO_PANEL.setText(mTecalOrdo.getOutputMsg().toString());
 		setDerives();
 
@@ -376,7 +377,7 @@ public class CPO_IHM extends JFrame {
 		if (mTecalOrdo.hasSolution()) {
 
 			if (mTimer == null) {
-				this.mTimer = new timerGantt();
+				this.mTimer = new TimerGantt();
 				mGanttTecalOR.setStartTime();
 				new Timer().scheduleAtFixedRate(mTimer, 0, 1000);
 
@@ -408,19 +409,18 @@ public class CPO_IHM extends JFrame {
 	}
 
 	public CPO_IHM() {
-		mTecalOrdo = new TecalOrdo(CST.SQLSERVER);
 	
-		init();
+		initGUI();
+		setTecalOrdo(new TecalOrdo(CST.SQLSERVER));
+		
 	}
 
-
-
-	private void init() {
+	private void initGUI() {
 
 		TecalGUI.cosmeticGUI();
-		mGanttTecalOR = new GanttChart("Diagramme Gantt de la production");
-
 		mCPO_PANEL = new CPO_Panel(this);
+		mGanttTecalOR = new GanttChart("Diagramme Gantt de la production");
+		
 		setIconImages(TecalGUI.loadIcons(this));
 		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		setBounds(100, 100, 1085, 650);
@@ -559,7 +559,7 @@ public class CPO_IHM extends JFrame {
 		return mModelDerives;
 	}
 
-	public void setTimer(timerGantt mTimer) {
+	public void setTimer(TimerGantt mTimer) {
 		this.mTimer = mTimer;
 	}
 

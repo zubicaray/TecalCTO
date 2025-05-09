@@ -54,6 +54,7 @@ import javax.swing.RowFilter;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
+import javax.swing.WindowConstants;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -168,16 +169,16 @@ public class CPO_Panel extends JPanel {
 	       // Listener pour mettre à jour mTecalOrdo
 	       mTxtTpsMaxSolver.addActionListener(e -> {
 	           try {
-	               int tps = Integer.parseInt(mTxtTpsMaxSolver.getText().trim());     
+	               int tps = Integer.parseInt(mTxtTpsMaxSolver.getText().trim());
 	               mCPO_IHM.getTecalOrdo().setTEMPS_MAX_SOLVEUR(tps);
 	               //logger.info("Temps maximum du solver mis à jour : " + tps);
-	               
+
 	           } catch (NumberFormatException ex) {
 	               JOptionPane.showMessageDialog(this, "Veuillez entrer un nombre entier valide.", "Erreur", JOptionPane.ERROR_MESSAGE);
 	           }
 	       });
 
-	    
+
 	    TecalGUI.applyColorChangingBehavior(mTxtTpsMaxSolver);
 		JButton btnDownButton = new JButton();
 		btnDownButton.setHorizontalAlignment(SwingConstants.CENTER);
@@ -440,7 +441,7 @@ public class CPO_Panel extends JPanel {
 	        switch (columnIndex) {
 	            case 0: return element.numligne;
 	            case 1: return element.codezone;
-	            case 2: return element.time;
+	            case 2: return element.duree;
 	            case 3: return element.derive;
 	            case 4: return element.BloquePont;
 	            default: return null;
@@ -461,7 +462,7 @@ public class CPO_Panel extends JPanel {
 	    public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 	        ElementGamme element = gammeArray.get(rowIndex);
 	        switch (columnIndex) {
-	            case 2: element.time=Integer.parseInt(aValue.toString()); break;
+	            case 2: element.duree=Integer.parseInt(aValue.toString()); break;
 	            case 3: element.derive=(int) Double.parseDouble(aValue.toString()); break;
 	            case 4: element.BloquePont=(Boolean) aValue; break;
 	        }
@@ -546,10 +547,11 @@ public class CPO_Panel extends JPanel {
 
 	    @Override
 	    public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-	    	 if (false ==(rowIndex >= 0 && rowIndex < barres.size())) 
-	        	return;
-	    	 
-	    	 
+	    	 if (((rowIndex < 0) || (rowIndex >= barres.size()))) {
+				return;
+			}
+
+
 	    	Barre barre = barres.get(rowIndex);
 	        switch (columnIndex) {
 		        case 1: // nom barre
@@ -628,7 +630,7 @@ public class CPO_Panel extends JPanel {
 
 	}
 	public void execute() {
-		int tps = Integer.parseInt(mTxtTpsMaxSolver.getText().trim());     
+		int tps = Integer.parseInt(mTxtTpsMaxSolver.getText().trim());
 		mCPO_IHM.run(tps);
 	}
 
@@ -672,10 +674,22 @@ public class CPO_Panel extends JPanel {
 	    // Créer le modèle pour gammeArray
 	    GammeTableModel gammeModel = new GammeTableModel(selectedBarre.getGammeArray());
 	    JTable gammeTable = new JTable(gammeModel);
-	    
-	    
-	    LocalDateTime heureLimite=LocalDateTime.now();
 
+	    final JFormattedTextField[] heureField = new JFormattedTextField[1];
+	    try {
+	        MaskFormatter heureFormatter = new MaskFormatter("##:##");
+	        heureFormatter.setPlaceholderCharacter('_');
+	        heureField[0] = new JFormattedTextField(heureFormatter);
+	    } catch (java.text.ParseException ex) {
+	        heureField[0] = new JFormattedTextField();
+	    }
+	    
+	    if(selectedBarre.getHeureLimite() !=null){
+	    	LocalDateTime ldt=selectedBarre.getHeureLimite() ;
+	    	String s= ldt.format(DateTimeFormatter.ofPattern("HH:mm"));
+	    	heureField[0].setText(s);
+	    }
+	   
 	    // Configurer les colonnes
 	    gammeTable.getColumnModel().getColumn(4).setCellEditor(new DefaultCellEditor(new JCheckBox()));
 	    gammeTable.getColumnModel().getColumn(4).setCellRenderer(new DefaultTableCellRenderer() {
@@ -697,7 +711,7 @@ public class CPO_Panel extends JPanel {
 
 	    // Fenêtre modale
 	    JDialog dialog = new JDialog(cpo, "Éditeur de Gamme", true);
-	    dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+	    dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 	    dialog.setLayout(new BorderLayout(10, 10));
 
 	    // Panel pour la saisie de l'heure
@@ -706,16 +720,9 @@ public class CPO_Panel extends JPanel {
 	    topPanel.add(new JLabel("à terminer avant :"));
 	    // Boutons
 	    JButton validerButton = new JButton("valider heure");
-	    
+
 		 // Boutons
-	    final JFormattedTextField[] heureField = new JFormattedTextField[1];
-	    try {
-	        MaskFormatter heureFormatter = new MaskFormatter("##:##");
-	        heureFormatter.setPlaceholderCharacter('_');
-	        heureField[0] = new JFormattedTextField(heureFormatter);
-	    } catch (java.text.ParseException ex) {
-	        heureField[0] = new JFormattedTextField();
-	    }
+	    
 	    heureField[0].setColumns(5);
 	    topPanel.add(heureField[0]);
 	    topPanel.add(validerButton);
@@ -726,29 +733,51 @@ public class CPO_Panel extends JPanel {
 	    scrollPane.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
 	    dialog.add(scrollPane, BorderLayout.CENTER);
 
-	    
+
 
 	    validerButton.addActionListener(e -> {
 	        String texteHeure = heureField[0].getText();
 	        try {
-	            LocalDateTime saisieHeure = LocalDateTime.parse(texteHeure, DateTimeFormatter.ofPattern("HH:mm"));
+	        	
+	        	LocalDateTime heureMinPossible=LocalDateTime.now();
+	     	    heureMinPossible=heureMinPossible.plusSeconds(selectedBarre.getDuree());
+	        	
+	            LocalTime saisieHeure = LocalTime.parse(texteHeure, DateTimeFormatter.ofPattern("HH:mm"));
 	            //LocalDate aujourdHui = LocalDate.now();
-	            
+
 	            // Création de LocalDateTime avec la date d'aujourd'hui
-	            LocalDateTime saisieDateTime = LocalDateTime.now();
-	        
 	            
-	            // Si la saisie est avant la limite -> jour suivant
-	            if (saisieHeure.isBefore(heureLimite)) {
+	            LocalDate today = LocalDate.now();
+	            LocalDateTime saisieDateTime = saisieHeure.atDate(today);
+	            LocalDateTime now = LocalDateTime.now();
+
+	            // Si la saisie est avant la limite et heure saisie-> jour suivant
+	            if (now.isAfter(heureMinPossible) &&  saisieDateTime.isBefore(heureMinPossible)) {
 	                saisieDateTime = saisieDateTime.plusDays(1);
+	                selectedBarre.setHeureLimite(saisieDateTime);
+
+		            JOptionPane.showMessageDialog(dialog,
+		                "Heure validée : " + saisieDateTime.toString(),
+		                "Succès", JOptionPane.INFORMATION_MESSAGE);
+	            }
+	            else 
+	            if (now.isBefore(heureMinPossible) && saisieDateTime.isBefore(heureMinPossible)) {
+	            	 JOptionPane.showMessageDialog(dialog,
+	 		                "Heure limite impossible : " + saisieDateTime.toString(),
+	 		                "Echec", JOptionPane.ERROR_MESSAGE);
+	            }
+	            else if(saisieDateTime.isAfter(heureMinPossible)){
+	            	selectedBarre.setHeureLimite(saisieDateTime);
+
+		            JOptionPane.showMessageDialog(dialog,
+		                "Heure validée : " + saisieDateTime.toString(),
+		                "Succès", JOptionPane.INFORMATION_MESSAGE);
 	            }
 	            
-	            selectedBarre.setmHeureLimite(saisieDateTime);
-
-	            JOptionPane.showMessageDialog(dialog,
-	                "Heure validée : " + saisieDateTime.toString(),
-	                "Succès", JOptionPane.INFORMATION_MESSAGE);
 	            
+
+	           
+
 	            dialog.dispose(); // Tu peux continuer ici ton traitement
 
 	        } catch (DateTimeParseException ex1) {
@@ -774,10 +803,6 @@ public class CPO_Panel extends JPanel {
 	}
 
 	public void buildTableModelBarre() throws SQLException {
-
-
-
-
 
 		mTableBarres.setModel(mModelBarres);
 

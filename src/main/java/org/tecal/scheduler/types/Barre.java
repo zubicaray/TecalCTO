@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.tecal.scheduler.CST;
 import org.tecal.scheduler.data.SQL_DATA;
 
 public class Barre {
@@ -13,6 +14,7 @@ public class Barre {
 		private int idbarre;
 		private int vitesseDescente;
 		private int vitesseMontee;
+		
 		private boolean prioritaire;
 		private LocalDateTime mHeureLimite;
 		
@@ -87,11 +89,18 @@ public class Barre {
 		public void setGammeArray(ArrayList<ElementGamme> gammeArray) {
 			this.gammeArray = gammeArray;
 		}
-		public LocalDateTime getmHeureLimite() {
+		public LocalDateTime getHeureLimite() {
 			return mHeureLimite;
 		}
-		public void setmHeureLimite(LocalDateTime mHeureLimite) {
+		public void setHeureLimite(LocalDateTime mHeureLimite) {
 			this.mHeureLimite = mHeureLimite;
+		}
+		public int getDuree() {
+			int duree=0;
+			for( ElementGamme g:gammeArray) {
+				duree+=g.duree+CST.TEMPS_MVT_PONT;
+			}
+			return duree;
 		}
 
 	}

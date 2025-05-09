@@ -3,6 +3,8 @@ package org.tecal.scheduler;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -424,33 +426,13 @@ public class TecalOrdo {
 		IntVar objVar = model.newIntVar(0, horizon, "makespan");
 		List<IntVar> endsFutures = new ArrayList<>();
 		List<IntVar> startsFutures = new ArrayList<>();
-		HashMap<Integer,IntVar> endByBarreIdNonPrio	= new HashMap<> ();
-		HashMap<Integer,IntVar> endByBarreIdPrio	= new HashMap<> ();
-
-		for (JobType job: mJobsFuturs.values()) {
-			
-			TaskOrdo taskFirst=job.mTaskOrdoList.get(0);
-			endsFutures.add(taskFirst.getFin());
-			startsFutures.add(taskFirst.getStart());
-			
-			if(mBarresPrioritaires.contains(job.mBarreId))
-			{
-				endByBarreIdPrio.put(job.mBarreId,taskFirst.getFin());
-			}
-			else {
-				endByBarreIdNonPrio.put(job.mBarreId,taskFirst.getFin());
-			}
-			
-			
-		}
 		
-		priorisationBarres(endByBarreIdNonPrio, endByBarreIdPrio); 
+		
+		priorisationBarres(startsFutures, endsFutures); 
 		
 		// les nouvelles barres doivent commencer après celles déjà présentes
-		if(mCurrentTime>CST.CPT_GANTT_OFFSET)
+		if(mCurrentTime>0)
 			for(IntVar start:startsFutures ) {
-				//TODO
-				// a tester 
 				model.addLessThan(LinearExpr.constant(mCurrentTime+CST.TEMPS_MINIMAL_AVANT_DEMARRAGE),start);
 			}
 		
@@ -458,8 +440,6 @@ public class TecalOrdo {
 			model.addMaxEquality(objVar, endsFutures);
 			model.minimize(objVar);
 		}
-
-		
 
 		// Creates a solver and solves the model.
 		solver = new CpSolver();
@@ -475,6 +455,10 @@ public class TecalOrdo {
 		mOngoingWork=false;
 		printInfos();
 		hasSolution = false;
+		displayResults(status);
+	}
+
+	private void displayResults(CpSolverStatus status) {
 		mOutPutMsg.append("-----------------------------------------------------------------");
 		mOutPutMsg.append(System.getProperty("line.separator"));
 		if (status == CpSolverStatus.OPTIMAL || status == CpSolverStatus.FEASIBLE) {
@@ -612,8 +596,46 @@ public class TecalOrdo {
 		
 	}
 
-	private void priorisationBarres(HashMap<Integer, IntVar> endByBarreIdNonPrio,
-			HashMap<Integer, IntVar> endByBarreIdPrio) {
+	private void priorisationBarres(List<IntVar> startsFutures ,
+			List<IntVar> endsFutures ) {
+		
+		
+		HashMap<Integer,IntVar> endByBarreIdNonPrio	= new HashMap<> ();
+		HashMap<Integer,IntVar> endByBarreIdPrio	= new HashMap<> ();
+
+		for (JobType job: mJobsFuturs.values()) {
+			
+			TaskOrdo taskFirst=job.mTaskOrdoList.get(0);
+			TaskOrdo taskLast=job.mTaskOrdoList.get(job.mTaskOrdoList.size()-1);
+			endsFutures.add(taskFirst.getFin());
+			startsFutures.add(taskFirst.getStart());
+			
+			if(mBarresPrioritaires.contains(job.mBarreId))
+			{
+				endByBarreIdPrio.put(job.mBarreId,taskFirst.getFin());
+			}
+			else {
+				endByBarreIdNonPrio.put(job.mBarreId,taskFirst.getFin());
+			}
+			
+			if(mBarreFutures.containsKey(job.mBarreId))
+			{
+				Barre b=job.getBarre();
+				//LA BARRE A UNE HEURE LIMITE !!!!!!!!!!!!
+				LocalDateTime ldtMaxHourBarre=b.getHeureLimite();
+				if(ldtMaxHourBarre != null) {
+					LocalDateTime ldt=LocalDateTime.now();
+					Long seconds= ldtMaxHourBarre.atZone(ZoneId.systemDefault()).toInstant().getEpochSecond()
+							-ldt.atZone(ZoneId.systemDefault()).toInstant().getEpochSecond()+mCurrentTime;
+					model.addLessThan(taskLast.getStart(),seconds);
+				}
+				
+			}
+			
+			
+			
+		}
+		
 		for( IntVar prio:endByBarreIdPrio.values()) {
 		
 			// la fin de la barre prio est inférieure à celles des non prio
@@ -624,7 +646,7 @@ public class TecalOrdo {
 		}
 		Iterator<Integer> it = mBarresPrioritaires.iterator(); 
 		 
-	    //s'il y a lusieurs barres prioritaires il faut respecter l'ordre du LinkedHashSet 
+	    //s'il y a plusieurs barres prioritaires il faut respecter l'ordre du LinkedHashSet 
         while (it.hasNext()) {   
             // Print HashSet values 
            int barre=it.next(); 
@@ -635,6 +657,9 @@ public class TecalOrdo {
           
           // System.out.print(b+" -> "+next); 
         }
+        
+        
+        
 	}
 
 	private void createAssignedTasks() {

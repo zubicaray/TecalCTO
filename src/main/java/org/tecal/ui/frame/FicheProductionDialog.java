@@ -179,8 +179,6 @@ public class FicheProductionDialog extends JDialog {
 
 		if (resultGammeChanged == 0) {
 
-			// JOptionPane.showMessageDialog(frmTecalOrdonnanceur, "Right-click
-			// gamme="+tableOF.getModel().getValueAt(row, 1).toString());
 			int result = JOptionPane.showConfirmDialog((Component) null,
 					"OF choisi: " + of + ". Voulez-vous aussi écraser les valeurs non nulles?", "alert",
 					JOptionPane.YES_NO_CANCEL_OPTION);

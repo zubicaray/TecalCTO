@@ -3,10 +3,10 @@ USE ANODISATION;
 select max(NumFicheProduction) from ANODISATION.dbo.DetailsFichesProduction
 
 
-delete from ANODISATION.dbo.DetailsFichesProduction where NumFicheProduction>'00089639'
-delete from ANODISATION.dbo.DetailsPhasesProduction where NumFicheProduction>'00089639'
-delete from ANODISATION.dbo.DetailsGammesProduction where NumFicheProduction>'00089639'
-delete from ANODISATION.dbo.DetailsChargesProduction where NumFicheProduction>'00089639'
+delete from ANODISATION.dbo.DetailsFichesProduction where NumFicheProduction>'00080000'
+delete from ANODISATION.dbo.DetailsPhasesProduction where NumFicheProduction>'00080000'
+delete from ANODISATION.dbo.DetailsGammesProduction where NumFicheProduction>'00080000'
+delete from ANODISATION.dbo.DetailsChargesProduction where NumFicheProduction>'00080000'
 
 SELECT COLUMN_NAME, COLLATION_NAME 
 FROM INFORMATION_SCHEMA.COLUMNS 

@@ -426,9 +426,9 @@ public class JobType {
 		for (int i = 0; i < zones.size(); i++) {
 			ElementGamme gt = zones.get(i);
 			
-			tasksJob.add(new Task(gt.time, gt.numzone,gt.egouttage,gt.derive,gt.BloquePont));
+			tasksJob.add(new Task(gt.duree, gt.numzone,gt.egouttage,gt.derive,gt.BloquePont));
 			if(CST.PrintGroupementZones) 
-				System.out.println("debZone: "+gt.codezone+", gt.time="+gt.time);			
+				System.out.println("debZone: "+gt.codezone+", gt.time="+gt.duree);			
 			
 			if (gt.numzone == mParams.getNUMZONE_ANODISATION()) {
 				indexAnod=i;

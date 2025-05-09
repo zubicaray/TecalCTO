@@ -116,7 +116,7 @@ public class CST {
 	public final static int TEMPS_MVT_PONT =40;		
 	// temps de sécurité entre deux gammes différentes sur un même poste d'ano
 	public final static int TEMPS_ANO_ENTRE_P1_P2 = 30;		
-	public final static int TEMPS_MINIMAL_AVANT_DEMARRAGE = 240;	
+	public final static int TEMPS_MINIMAL_AVANT_DEMARRAGE = 120;	
 	
 	public final static int TEMPS_PONT_MEME_CUVE = 34;	
 	public final static int TEMPS_PONT_PAR_CUVE = 3;	
