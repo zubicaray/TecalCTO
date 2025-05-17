@@ -47,7 +47,7 @@ public class CST {
 	};
 	public final static String testPbC31_32[] ={"000024","000601","000734"};		
 	
-	public final static String gammesTest[] =testPbC31_32;
+	public final static String gammesTest[] =testBig;
 	//6=30-000369, 
 	public final static String TEST_PROD="{1=S4-000776, 2=S1-000776, 3=S3-000776, 5=8-000293, 6=N2-000091, 7=1-000116, 8=47-000818, 9=52-000818, 10=13-000818, 11=39-000818, 12=56-000119}";
 			

@@ -1,12 +1,22 @@
 USE ANODISATION;
 -- last: 00089639
 select max(NumFicheProduction) from ANODISATION.dbo.DetailsFichesProduction
+select min(cleprimaire) from ANODISATION.dbo.DetailsFichesProduction
+where DateEntreePoste >'2023-12-04' order by DateEntreePoste desc 
+select max(DateEntreePoste) from ANODISATION.dbo.DetailsFichesProduction
+where  NumFicheProduction='00080000'
 
 
-delete from ANODISATION.dbo.DetailsFichesProduction where NumFicheProduction>'00080000'
-delete from ANODISATION.dbo.DetailsPhasesProduction where NumFicheProduction>'00080000'
-delete from ANODISATION.dbo.DetailsGammesProduction where NumFicheProduction>'00080000'
-delete from ANODISATION.dbo.DetailsChargesProduction where NumFicheProduction>'00080000'
+delete from ANODISATION.dbo.DetailsFichesProduction where NumFicheProduction>'00090593'
+delete from ANODISATION.dbo.DetailsPhasesProduction where NumFicheProduction>'00090593'
+delete from ANODISATION.dbo.DetailsGammesProduction where NumFicheProduction>'00090593'
+delete from ANODISATION.dbo.DetailsChargesProduction where NumFicheProduction>'00090593'
+
+delete from ANODISATION.dbo.DetailsFichesProduction where cleprimaire>1402996
+delete from ANODISATION.dbo.DetailsPhasesProduction where cleprimaire>1402996
+delete from ANODISATION.dbo.DetailsGammesProduction where cleprimaire>1402996
+delete from ANODISATION.dbo.DetailsChargesProduction where cleprimaire>1402996
+
 
 SELECT COLUMN_NAME, COLLATION_NAME 
 FROM INFORMATION_SCHEMA.COLUMNS 

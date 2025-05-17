@@ -111,6 +111,7 @@ class Task {
 public class TecalOrdo {
 	
 	private long mCurrentTime;
+	private long mIncrementedTime=0;
 	private TecalOrdoParams mParams;
 	private int mTEMPS_MAX_SOLVEUR;
 	private static final Logger logger = LogManager.getLogger(TecalOrdo.class);
@@ -382,7 +383,9 @@ public class TecalOrdo {
 		mCurrentTime+=1;		
 	}
 	public void incremente(int v) {
-		mCurrentTime+=v;		
+		mCurrentTime+=v;	
+		mIncrementedTime=+v;
+		
 	}
 	public long getCurrentTime() {
 		return mCurrentTime;		
@@ -595,6 +598,13 @@ public class TecalOrdo {
 		logger.info("mCurrentTime="+mCurrentTime);
 		
 	}
+	public LocalDateTime getTime() {
+		if(mIncrementedTime !=0) {
+			LocalDateTime ldt=LocalDateTime.now();
+			return ldt.plusSeconds(mIncrementedTime);
+		}
+		return LocalDateTime.now();
+	}
 
 	private void priorisationBarres(List<IntVar> startsFutures ,
 			List<IntVar> endsFutures ) {
@@ -624,7 +634,7 @@ public class TecalOrdo {
 				//LA BARRE A UNE HEURE LIMITE !!!!!!!!!!!!
 				LocalDateTime ldtMaxHourBarre=b.getHeureLimite();
 				if(ldtMaxHourBarre != null) {
-					LocalDateTime ldt=LocalDateTime.now();
+					LocalDateTime ldt=getTime();
 					Long seconds= ldtMaxHourBarre.atZone(ZoneId.systemDefault()).toInstant().getEpochSecond()
 							-ldt.atZone(ZoneId.systemDefault()).toInstant().getEpochSecond()+mCurrentTime;
 					model.addLessThan(taskLast.getStart(),seconds);

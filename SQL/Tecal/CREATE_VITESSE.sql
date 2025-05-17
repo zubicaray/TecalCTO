@@ -19,9 +19,9 @@ CREATE TABLE vitesse_bas (
     libelle varchar(30) NOT NULL
 );
 
-    insert into vitesse_bas (id,valeur,libelle) values(0,17,'lente');
-    insert into vitesse_bas (id,valeur,libelle) values(1,0,'normale');
-    insert into vitesse_bas (id,valeur,libelle) values(2,-3,'rapide');
+insert into vitesse_bas (id,valeur,libelle) values(0,17,'lente');
+insert into vitesse_bas (id,valeur,libelle) values(1,0,'normale');
+insert into vitesse_bas (id,valeur,libelle) values(2,-3,'rapide');
 
 
 select distinct  

@@ -53,7 +53,6 @@ public class TauxAnodisationPanel extends JPanel {
     TimeSeries seriesBar;
     TimeSeries seriesSmoothed ;
     TimeSeries seriesCurveSmoothed ;
-    TimeSeries seriesMoyenneAno;
     
     public TauxAnodisationPanel() {
         sqlCnx = SQL_DATA.getInstance();
@@ -217,7 +216,7 @@ public class TauxAnodisationPanel extends JPanel {
         TimeSeriesCollection datasetBar = new TimeSeriesCollection(seriesBar);
         TimeSeriesCollection datasetSmoothed = new TimeSeriesCollection(seriesSmoothed);
         TimeSeriesCollection datasetCurveSmoothed = new TimeSeriesCollection(seriesCurveSmoothed);
-        TimeSeriesCollection datasetMoyenneAno = new TimeSeriesCollection(seriesMoyenneAno);
+        
         
         JFreeChart chart = ChartFactory.createTimeSeriesChart(
                 "Taux de remplissage et temps en anodisation",
@@ -233,6 +232,7 @@ public class TauxAnodisationPanel extends JPanel {
 
         XYStepRenderer LineRendererHeures = new XYStepRenderer();
         plot.setRenderer(0, LineRendererHeures);
+        LineRendererHeures.setSeriesPaint(0, Color.MAGENTA);
 
         NumberAxis axisY2 = new NumberAxis("Taux de remplissage (%)");
         axisY2.setLabelPaint(Color.GREEN);
@@ -243,7 +243,7 @@ public class TauxAnodisationPanel extends JPanel {
         plot.mapDatasetToRangeAxis(2, 1);
 
         XYLineAndShapeRenderer lineRendererTaux = new XYLineAndShapeRenderer(true, false);
-        lineRendererTaux.setSeriesPaint(0, Color.MAGENTA);
+        lineRendererTaux.setSeriesPaint(0, Color.GREEN);
         lineRendererTaux.setSeriesStroke(0, new BasicStroke(2.0f));
         plot.setRenderer(2, lineRendererTaux);
 
@@ -258,23 +258,11 @@ public class TauxAnodisationPanel extends JPanel {
         XYLineAndShapeRenderer lineRendererHeuresSmoothed = new XYLineAndShapeRenderer(true, false);
         lineRendererHeuresSmoothed.setSeriesPaint(0, Color.MAGENTA);
         lineRendererHeuresSmoothed.setSeriesStroke(0, new BasicStroke(2.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-        plot.setRenderer(3, lineRendererHeuresSmoothed);
-        
-        plot.setDataset(4, datasetMoyenneAno);
+        plot.setRenderer(3, lineRendererHeuresSmoothed);        
+       
         plot.mapDatasetToRangeAxis(4, 0); // Utiliser l'axe principal Y (heures)
 
-        XYLineAndShapeRenderer rendererMoyenneAno = new XYLineAndShapeRenderer(true, false);
-        rendererMoyenneAno.setSeriesPaint(0, Color.BLUE);
-        rendererMoyenneAno.setSeriesStroke(0, new BasicStroke(2.0f));
-        plot.setRenderer(4, rendererMoyenneAno);
-        rendererMoyenneAno.setSeriesToolTipGenerator(0, (dataset, series, item) -> {
-            Number value = dataset.getY(series, item);
-            double hours = value.doubleValue();
-            int fullHours = (int) hours;
-            int minutes = (int) ((hours - fullHours) * 60);
-            String formattedDate = dateFormat.format(dataset.getX(series, item));
-            return String.format("Jour : %s, Temps moyen : %d h %02d min", formattedDate, fullHours, minutes);
-        });
+       
         
         DateAxis dateAxis = new DateAxis("Jour");
         dateAxis.setTimeline(org.jfree.chart.axis.SegmentedTimeline.newMondayThroughFridayTimeline());
@@ -282,7 +270,7 @@ public class TauxAnodisationPanel extends JPanel {
         plot.setDomainAxis(dateAxis);
 
         NumberAxis valueAxis = (NumberAxis) plot.getRangeAxis();
-        valueAxis.setLabelPaint(Color.RED);
+        valueAxis.setLabelPaint(Color.MAGENTA);
 
         // Suppression du datasetCorrelation, axisY3, renderer 4
 
@@ -300,7 +288,7 @@ public class TauxAnodisationPanel extends JPanel {
         seriesBar = new TimeSeries("Taux de remplissage (%)");
         seriesSmoothed = new TimeSeries("Taux de remplissage lissé");
         seriesCurveSmoothed = new TimeSeries("Total heures lissé");
-        seriesMoyenneAno = new TimeSeries("Temps moyen anodisation");
+       
 
         List<Integer> tauxData = new ArrayList<>();
         List<Integer> dureeData = new ArrayList<>();
@@ -312,14 +300,13 @@ public class TauxAnodisationPanel extends JPanel {
                 Date jour = resultSet.getDate("Jour");
                 double taux = resultSet.getDouble("TauxOccupationPourcentage");
                 int duree = resultSet.getInt("DureeOccupation");
-                int moyenneAno = resultSet.getInt("MoyenneAno");
-                seriesMoyenneAno.addOrUpdate(new Day(jour), moyenneAno / 3600.0); 
-
-                seriesCurve.addOrUpdate(new Day(jour), duree / 3600.0); // heures
+            
+               
+                seriesCurve.addOrUpdate(new Day(jour), duree ); // heures
                 seriesBar.addOrUpdate(new Day(jour), taux);
 
                 tauxData.add((int) taux);
-                dureeData.add((int) (duree / 3600.0));
+                dureeData.add((int) (duree ));
                 dates.add(jour);
             }
 
@@ -375,6 +362,7 @@ public class TauxAnodisationPanel extends JPanel {
             return String.format("Jour : %s, Taux : %.2f %%", formattedDate, value.doubleValue());
         });
         
+   
        
 
 	}

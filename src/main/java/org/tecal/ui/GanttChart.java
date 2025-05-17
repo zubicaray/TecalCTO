@@ -337,6 +337,7 @@ public class GanttChart extends JFrame {
 	public void  foreward(int v) {
 		mTimeBar.setValue(mTimeBar.getValue()+v*mIncrement);
 		mTecalOrdo.incremente(+v);
+		//mStartTime=mStartTime.minusSeconds(v);
 	}
 	public void setTecalOrdo(TecalOrdo mTecalOrdo) {
 		this.mTecalOrdo = mTecalOrdo;		

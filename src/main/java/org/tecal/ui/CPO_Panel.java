@@ -739,17 +739,17 @@ public class CPO_Panel extends JPanel {
 	        String texteHeure = heureField[0].getText();
 	        try {
 	        	
-	        	LocalDateTime heureMinPossible=LocalDateTime.now();
-	     	    heureMinPossible=heureMinPossible.plusSeconds(selectedBarre.getDuree());
+	        	LocalDateTime now = mCPO_IHM.getTecalOrdo().getTime();
+	        	LocalDateTime heureMinPossible=now.plusSeconds(selectedBarre.getDuree());
 	        	
 	            LocalTime saisieHeure = LocalTime.parse(texteHeure, DateTimeFormatter.ofPattern("HH:mm"));
 	            //LocalDate aujourdHui = LocalDate.now();
 
 	            // Création de LocalDateTime avec la date d'aujourd'hui
 	            
-	            LocalDate today = LocalDate.now();
+	            LocalDate today = now.toLocalDate();
 	            LocalDateTime saisieDateTime = saisieHeure.atDate(today);
-	            LocalDateTime now = LocalDateTime.now();
+	            
 
 	            // Si la saisie est avant la limite et heure saisie-> jour suivant
 	            if (now.isAfter(heureMinPossible) &&  saisieDateTime.isBefore(heureMinPossible)) {

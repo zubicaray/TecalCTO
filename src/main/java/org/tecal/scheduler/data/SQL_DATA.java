@@ -419,31 +419,75 @@ public  ResultSet getTauxAnodisationJours( Date dateDebut , Date dateFin ) {
 	dt = c.getTime();
 	
 	String query = """
-          
+			DECLARE @DateDebut DATE = ?;
+			DECLARE @DateFin DATE = ?;
             
 		SELECT
-		    J as Jour,DureeOccupation,
-		    DureeOccupation*100/DureeMaxPossible as TauxOccupationPourcentage,
-		    MoyenneAno
-		    
+			S.J as Jour,S.DureeOccupation,
+			S.DureeOccupation*100/S.DureeMaxPossible as TauxOccupationPourcentage
 		FROM (
-		    SELECT
-		        CAST(DateEntreePoste AS DATE ) as J,
-		        DATEDIFF(SECOND, Min(DateEntreePoste) ,max(DateSortiePoste))*3 AS DureeMaxPossible,
-		        SUM(DATEDIFF(SECOND, DateEntreePoste ,DateSortiePoste)) AS DureeOccupation,
-		        AVG(DATEDIFF(SECOND, DateEntreePoste ,DateSortiePoste)) AS MoyenneAno
-		
-		    FROM DetailsFichesProduction
-		    WHERE NumPoste IN (18, 19, 20) -- Postes concernés
-		        AND DateEntreePoste >= ? -- Exclure les enregistrements terminés avant la période
-		        AND DateSortiePoste < ?   -- Exclure les enregistrements commençant après la période
-		    GROUP BY 
-		        CAST(DateEntreePoste AS DATE)
-		    HAVING 
-		        COUNT(*) > 0 -- Elimine les jours sans occupation
-		) T
-		    ORDER BY Jour;
+			SELECT
+				CAST(DateEntreePoste AS DATE ) as J,
+				DATEDIFF(HOUR, Min(DateEntreePoste) ,max(DateSortiePoste))*3*3600 AS DureeMaxPossible,
+				SUM(DATEDIFF(HOUR, DateEntreePoste ,DateSortiePoste))*3600 AS DureeOccupation
+				
+			FROM DetailsFichesProduction
+			WHERE NumPoste IN (18, 19, 20) -- Postes concernés
+				AND DateEntreePoste >= @DateDebut -- Exclure les enregistrements terminés avant la période
+				AND DateSortiePoste < @DateFin   -- Exclure les enregistrements commençant après la période
+				AND DATEDIFF(HOUR, DateEntreePoste ,DateSortiePoste) >0
+			GROUP BY 
+				CAST(DateEntreePoste AS DATE)
+			HAVING 
+				COUNT(*) > 0 -- Elimine les jours sans occupation
+			
+		) S ORDER BY S.J
             """;
+	// TODO: calcul du temps total
+	/*
+	query = """
+			DECLARE @DateDebut DATE = ?;
+			DECLARE @DateFin DATE = ?;
+            
+		SELECT
+			S.J as Jour,S.DureeOccupation,
+			S.DureeOccupation*100/S.DureeMaxPossible as TauxOccupationPourcentage,
+		    T.DureeTotale
+			
+		FROM (
+			SELECT
+				CAST(DateEntreePoste AS DATE ) as J,
+				DATEDIFF(HOUR, Min(DateEntreePoste) ,max(DateSortiePoste))*3 AS DureeMaxPossible,
+				SUM(DATEDIFF(HOUR, DateEntreePoste ,DateSortiePoste)) AS DureeOccupation
+				
+			FROM DetailsFichesProduction
+			WHERE NumPoste IN (18, 19, 20) -- Postes concernés
+				AND DateEntreePoste >= @DateDebut -- Exclure les enregistrements terminés avant la période
+				AND DateSortiePoste < @DateFin   -- Exclure les enregistrements commençant après la période
+			GROUP BY 
+				CAST(DateEntreePoste AS DATE)
+			HAVING 
+				COUNT(*) > 0 -- Elimine les jours sans occupation
+		) S,
+		(
+			SELECT
+				CAST(DateEntreePoste AS DATE ) as J,
+				DATEDIFF(HOUR, Min(DateEntreePoste) ,max(DateSortiePoste)) AS DureeReelle,
+				SUM(DATEDIFF(HOUR, DateEntreePoste ,DateSortiePoste)) AS DureeTotale
+		
+			FROM DetailsFichesProduction
+			WHERE 
+				DateEntreePoste >= @DateDebut -- Exclure les enregistrements terminés avant la période
+				AND DateSortiePoste < @DateFin   -- Exclure les enregistrements commençant après la période
+			GROUP BY 
+				CAST(DateEntreePoste AS DATE)
+			HAVING 
+				COUNT(*) > 0 -- Elimine les jours sans occupation
+		) T
+		WHERE S.J=T.J
+		ORDER BY T.J;
+            """;
+        */
 	try {
 		
 		 PreparedStatement statement = mConnection.prepareStatement(query);

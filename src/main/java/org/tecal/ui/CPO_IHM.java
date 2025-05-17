@@ -95,6 +95,9 @@ public class CPO_IHM extends JFrame {
 
 	private TimerGantt mTimer;
 	private TecalOrdo mTecalOrdo;
+	private JButton mBtnForeButton;
+	private JButton mBtnBackButton;
+	private JButton  mBigFore;
 	private static final Logger logger = LogManager.getLogger(CPO_IHM.class);
 
 	public class MyExceptionHandler {
@@ -127,6 +130,11 @@ public class CPO_IHM extends JFrame {
 	public TecalOrdo getTecalOrdo() {
 		return mTecalOrdo;
 	}
+	public void showButtons(boolean b) {
+		mBtnForeButton.setVisible(b);
+		mBtnBackButton.setVisible(b);
+		mBigFore.setVisible(b);
+	}
 
 	public void setTecalOrdo(TecalOrdo mTecalOrdo) {
 		this.mTecalOrdo = mTecalOrdo;
@@ -134,8 +142,7 @@ public class CPO_IHM extends JFrame {
 	}
 
 	private CPO_Panel mCPO_PANEL;
-	private JButton btnForeButton;
-	private JButton btnBackButton;
+
 	private JButton btnStartButton;
 
 	public CPO_Panel getCpoPanel() {
@@ -189,6 +196,7 @@ public class CPO_IHM extends JFrame {
 					frame.setTitle("Tecal CPO - " + version);
 					if (hostname.equals("zubi-Latitude-5300")) {
 						frame.runTest();
+						frame.showButtons(true);
 					}
 
 					frame.addWindowListener(new WindowAdapter() {
@@ -282,7 +290,7 @@ public class CPO_IHM extends JFrame {
 
 			List<AssignedTask> listTask = mTecalOrdo.getAssignedTasksByBarreId().get(i);
 
-			LocalDateTime d = LocalDateTime.now();
+			LocalDateTime d = mTecalOrdo.getTime();
 			LocalDateTime start = mGanttTecalOR.getStartTime();
 			int cptZone = 1;
 
@@ -421,6 +429,8 @@ public class CPO_IHM extends JFrame {
 		mCPO_PANEL = new CPO_Panel(this);
 		mGanttTecalOR = new GanttChart("Diagramme Gantt de la production");
 		
+		
+		
 		setIconImages(TecalGUI.loadIcons(this));
 		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		setBounds(100, 100, 1085, 650);
@@ -460,21 +470,25 @@ public class CPO_IHM extends JFrame {
 										.addContainerGap()));
 		panelButtons.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 
-		btnBackButton = new JButton();
-		panelButtons.add(btnBackButton);
-		CPO_Panel.setIconButton(this, btnBackButton, "icons8-back-16.png");
+		mBtnBackButton = new JButton();
+		panelButtons.add(mBtnBackButton);
+		CPO_Panel.setIconButton(this, mBtnBackButton, "icons8-back-16.png");
 
 		btnStartButton = new JButton();
 		panelButtons.add(btnStartButton);
 		CPO_Panel.setIconButton(this, btnStartButton, "icons8-jouer-16.png");
 
-		btnForeButton = new JButton();
-		panelButtons.add(btnForeButton);
-		JButton bigFore = new JButton();
-		panelButtons.add(bigFore);
+		mBtnForeButton = new JButton();
+		panelButtons.add(mBtnForeButton);
+		mBigFore = new JButton();
+		panelButtons.add(mBigFore);
+		
+		mBtnForeButton.setVisible(false);
+		mBtnBackButton.setVisible(false);
+		mBigFore.setVisible(false);
 
 		mPanelGantt.setLayout(gl_panelGantt);
-		CPO_Panel.setIconButton(this, btnForeButton, "icons8-fore-16.png");
+		CPO_Panel.setIconButton(this, mBtnForeButton, "icons8-fore-16.png");
 
 		btnStartButton.addActionListener(new ActionListener() {
 			@Override
@@ -484,7 +498,7 @@ public class CPO_IHM extends JFrame {
 			}
 		});
 
-		btnForeButton.addActionListener(new ActionListener() {
+		mBtnForeButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (mGanttTecalOR != null) {
@@ -493,7 +507,7 @@ public class CPO_IHM extends JFrame {
 			}
 		});
 
-		btnBackButton.addActionListener(new ActionListener() {
+		mBtnBackButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (mGanttTecalOR != null) {
@@ -501,9 +515,9 @@ public class CPO_IHM extends JFrame {
 				}
 			}
 		});
-		CPO_Panel.setIconButton(this, bigFore, "icons8-fore-16.png");
+		CPO_Panel.setIconButton(this, mBigFore, "icons8-fore-16.png");
 
-		bigFore.addActionListener(new ActionListener() {
+		mBigFore.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (mGanttTecalOR != null) {
